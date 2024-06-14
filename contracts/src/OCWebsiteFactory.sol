@@ -4,12 +4,17 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
+import { LibStrings } from "./library/LibStrings.sol";
 import "./OCWebsite/OCWebsite.sol";
+import "./OCWebsite/ClonableOCWebsite.sol";
 import "./OCWebsiteFactoryToken.sol";
-import "./library/Strings.sol";
 import "./interfaces/IStorageBackend.sol";
 
-contract OCWebsiteFactory {
+interface IFactoryExtension {
+  function getName() external view returns (string memory);
+}
+
+contract OCWebsiteFactory is ERC721Enumerable {
     OCWebsite public immutable factoryFrontend;
     OCWebsiteFactoryToken public immutable factoryToken;
 
@@ -48,7 +53,7 @@ contract OCWebsiteFactory {
         string domain;
         OCWebsite factoryFrontend;
         OCWebsiteFactoryToken factoryToken;
-        OCWebsite websiteImplementation;
+        ClonableOCWebsite websiteImplementation;
     }
     constructor(ConstructorParams memory _params) ERC721Enumerable("OCWebsite", "OCW") {
         owner = msg.sender;
@@ -61,8 +66,8 @@ contract OCWebsiteFactory {
         websiteImplementation = _params.websiteImplementation;
 
         // Adding some backlinks
-        factoryFrontend.setBlogFactory(this);
-        factoryToken.setBlogFactory(this);
+        // factoryFrontend.setBlogFactory(this);
+        factoryToken.setWebsiteFactory(this);
     }
 
     /**
@@ -70,7 +75,7 @@ contract OCWebsiteFactory {
      */
     function addWebsite() public payable returns(address) {
 
-        OCWebsite newWebsite = OCWebsite(Clones.clone(address(websiteImplementation)));
+        ClonableOCWebsite newWebsite = ClonableOCWebsite(Clones.clone(address(websiteImplementation)));
 
         newWebsite.initialize(this);
         websites.push(newWebsite);
@@ -79,7 +84,7 @@ contract OCWebsiteFactory {
         // Mint an ERC721 token
         _safeMint(msg.sender, websites.length - 1);
 
-        emit BlogCreated(websites.length - 1, address(newWebsite));
+        emit WebsiteCreated(websites.length - 1, address(newWebsite));
 
         return address(newWebsite);
     }
@@ -150,7 +155,7 @@ contract OCWebsiteFactory {
         // Make sure name is unique
         for(uint i = 0; i < storageBackends.length; i++) {
             require(address(storageBackends[i]) != address(storageBackend), "Storage backend already added");
-            require(Strings.compare(storageBackends[i].backendName(), storageBackend.backendName()) == false, "Storage backend name already used");
+            require(LibStrings.compare(storageBackends[i].backendName(), storageBackend.backendName()) == false, "Storage backend name already used");
         }
 
         storageBackends.push(storageBackend);
@@ -159,7 +164,7 @@ contract OCWebsiteFactory {
     function getStorageBackendIndexByName(string memory name) public view returns (uint16 index) {
         bool found = false;
         for(uint16 i = 0; i < storageBackends.length; i++) {
-            if(Strings.compare(storageBackends[i].backendName(), name)) {
+            if(LibStrings.compare(storageBackends[i].backendName(), name)) {
                 index = i;
                 found = true;
             }
@@ -213,7 +218,7 @@ contract OCWebsiteFactory {
 
         for(uint i = 0; i < extensions.length; i++) {
             require(address(extensions[i]) != address(_extension), "Extension already added");
-            require(Strings.compare(extensions[i].getName(), _extension.getName()) == false, "Extension name already used");
+            require(LibStrings.compare(extensions[i].getName(), _extension.getName()) == false, "Extension name already used");
         }
 
         extensions.push(_extension);

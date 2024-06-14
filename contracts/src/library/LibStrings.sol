@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 // Strings... always a mess of cherry-picking from different sources
-library Strings {    
+library LibStrings {    
     // From https://github.com/ensdomains/ens-contracts/blob/master/contracts/ethregistrar/StringUtils.sol
     function strlen(string memory s) internal pure returns (uint256) {
         uint256 len;

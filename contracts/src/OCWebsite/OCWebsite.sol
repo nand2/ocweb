@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
-import { Strings } from "../library/Strings.sol";
+import { LibStrings } from "../library/LibStrings.sol";
 
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
@@ -11,9 +11,9 @@ import "../interfaces/IStorageBackend.sol";
 import "./FrontendLibrary.sol";
 import "./StaticWebsite.sol";
 
-contract OCWebsite is FrontendLibrary, FrontendWebsite {
+contract OCWebsite is FrontendLibrary, StaticWebsite {
 
-    constructor(address owner, IFrontendLibrary _frontendLibrary) FrontendWebsite(owner) FrontendWebsite(_frontendLibrary) {
+    constructor(address owner) FrontendLibrary(owner) StaticWebsite(this) {
     }
 
     // FrontendFilesSet[] public frontendVersions;
@@ -182,7 +182,7 @@ contract OCWebsite is FrontendLibrary, FrontendWebsite {
     //     FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
 
     //     for(uint i = 0; i < frontend.files.length; i++) {
-    //         if(Strings.compare(filePath, frontend.files[i].filePath)) {
+    //         if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
     //             return frontend.storageBackend.uploadedSize(frontend.files[i].contentKey);
     //         }
     //     }
@@ -278,7 +278,7 @@ contract OCWebsite is FrontendLibrary, FrontendWebsite {
 
     // function _findFileIndexByNameInFrontendVersion(FrontendFilesSet storage frontend, string memory filePath) internal view returns (bool, uint) {
     //     for(uint i = 0; i < frontend.files.length; i++) {
-    //         if(Strings.compare(filePath, frontend.files[i].filePath)) {
+    //         if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
     //             return (true, i);
     //         }
     //     }
@@ -307,7 +307,7 @@ contract OCWebsite is FrontendLibrary, FrontendWebsite {
     //     // is broken (due to bad web3:// URL parsing in the browser)
     //     // Todo: clarify the behavior of the "#" character in resourceRequest mode, this 
     //     // character is not forwarded to the web server in HTTP
-    //     if(resource.length == 0 || Strings.compare(resource[0], "#")) {
+    //     if(resource.length == 0 || LibStrings.compare(resource[0], "#")) {
     //         filePath = "index.html";
     //     }
     //     else {
@@ -321,14 +321,14 @@ contract OCWebsite is FrontendLibrary, FrontendWebsite {
 
     //     // Search for the requested resource in our static file list
     //     for(uint i = 0; i < frontend.files.length; i++) {
-    //         if(Strings.compare(filePath, frontend.files[i].filePath)) {
+    //         if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
     //             // web3:// chunk feature : if the file is big, we will send the file
     //             // in chunks
     //             // Determine the requested chunk
     //             uint chunkIndex = 0;
     //             for(uint j = 0; j < params.length; j++) {
-    //                 if(Strings.compare(params[j].key, "chunk")) {
-    //                     chunkIndex = Strings.stringToUint(params[j].value);
+    //                 if(LibStrings.compare(params[j].key, "chunk")) {
+    //                     chunkIndex = LibStrings.stringToUint(params[j].value);
     //                     break;
     //                 }
     //             }
@@ -350,7 +350,7 @@ contract OCWebsite is FrontendLibrary, FrontendWebsite {
     //             // If there is more chunk remaining, add a pointer to the next chunk
     //             if(nextChunkId > 0) {
     //                 headers[2].key = "web3-next-chunk";
-    //                 headers[2].value = string.concat("/", filePath, "?chunk=", Strings.toString(nextChunkId));
+    //                 headers[2].value = string.concat("/", filePath, "?chunk=", LibStrings.toString(nextChunkId));
     //             }
 
     //             return (statusCode, body, headers);
@@ -358,7 +358,7 @@ contract OCWebsite is FrontendLibrary, FrontendWebsite {
     //     }
 
     //     // blogFactoryAddress.json : it exposes the addess of the blog factory
-    //     if(resource.length == 1 && Strings.compare(resource[0], "blogFactoryAddress.json")) {
+    //     if(resource.length == 1 && LibStrings.compare(resource[0], "blogFactoryAddress.json")) {
     //         uint chainid = block.chainid;
     //         // Special case: Sepolia chain id 11155111 is > 65k, which breaks URL parsing in EVM browser
     //         // As a temporary measure, we will test Sepolia with a fake chain id of 11155
@@ -366,7 +366,7 @@ contract OCWebsite is FrontendLibrary, FrontendWebsite {
     //         //     chainid = 11155;
     //         // }
     //         // Manual JSON serialization, safe with the vars we encode
-    //         body = string.concat("{\"address\":\"", Strings.toHexString(address(blogFactory)), "\", \"chainId\":", Strings.toString(chainid), "}");
+    //         body = string.concat("{\"address\":\"", LibStrings.toHexString(address(blogFactory)), "\", \"chainId\":", LibStrings.toString(chainid), "}");
     //         statusCode = 200;
     //         headers = new KeyValue[](1);
     //         headers[0].key = "Content-type";

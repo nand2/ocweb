@@ -1,38 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {Script, console} from "forge-std/Script.sol";
-import {DBlogFactory} from "../src/DBlogFactory.sol";
-import {DBlogFactoryToken} from "../src/DBlogFactoryToken.sol";
-import {DBlogFactoryFrontend} from "../src/DBlogFactoryFrontend.sol";
-import {DBlogFrontendLibrary} from "../src/DBlogFrontendLibrary.sol";
-import {DBlogFrontend} from "../src/DBlogFrontend.sol";
-import {DBlog} from "../src/DBlog.sol";
-import {StorageBackendSSTORE2} from "../src/StorageBackendSSTORE2.sol";
-
-// EthFS
-import {FileStore, File} from "ethfs/FileStore.sol";
+import { Script, console } from "forge-std/Script.sol";
+import { OCWebsiteFactory } from "../src/OCWebsiteFactory.sol";
+import { OCWebsiteFactoryToken } from "../src/OCWebsiteFactoryToken.sol";
+import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
+import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
+import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
 
 // ENS
-import {ENSRegistry} from "ens-contracts/registry/ENSRegistry.sol";
-import {ReverseRegistrar} from "ens-contracts/reverseRegistrar/ReverseRegistrar.sol";
-import {Root} from "ens-contracts/root/Root.sol";
-import {BaseRegistrarImplementation} from "ens-contracts/ethregistrar/BaseRegistrarImplementation.sol";
-import {DummyOracle} from "ens-contracts/ethregistrar/DummyOracle.sol";
-import {ExponentialPremiumPriceOracle} from "ens-contracts/ethregistrar/ExponentialPremiumPriceOracle.sol";
-import {AggregatorInterface} from "ens-contracts/ethregistrar/StablePriceOracle.sol";
-import {StaticMetadataService} from "ens-contracts/wrapper/StaticMetadataService.sol";
-import {NameWrapper} from "ens-contracts/wrapper/NameWrapper.sol";
-import {IMetadataService} from "ens-contracts/wrapper/IMetadataService.sol";
-import {ETHRegistrarController} from "ens-contracts/ethregistrar/ETHRegistrarController.sol";
-import {OwnedResolver} from "ens-contracts/resolvers/OwnedResolver.sol";
-import {ExtendedDNSResolver} from "ens-contracts/resolvers/profiles/ExtendedDNSResolver.sol";
-import {PublicResolver} from "ens-contracts/resolvers/PublicResolver.sol";
-import {IPriceOracle} from "ens-contracts/ethregistrar/IPriceOracle.sol";
+import { ENSRegistry } from "ens-contracts/registry/ENSRegistry.sol";
+import { ReverseRegistrar } from "ens-contracts/reverseRegistrar/ReverseRegistrar.sol";
+import { Root } from "ens-contracts/root/Root.sol";
+import { BaseRegistrarImplementation } from "ens-contracts/ethregistrar/BaseRegistrarImplementation.sol";
+import { DummyOracle } from "ens-contracts/ethregistrar/DummyOracle.sol";
+import { ExponentialPremiumPriceOracle } from "ens-contracts/ethregistrar/ExponentialPremiumPriceOracle.sol";
+import { AggregatorInterface } from "ens-contracts/ethregistrar/StablePriceOracle.sol";
+import { StaticMetadataService } from "ens-contracts/wrapper/StaticMetadataService.sol";
+import { NameWrapper } from "ens-contracts/wrapper/NameWrapper.sol";
+import { IMetadataService } from "ens-contracts/wrapper/IMetadataService.sol";
+import { ETHRegistrarController } from "ens-contracts/ethregistrar/ETHRegistrarController.sol";
+import { OwnedResolver } from "ens-contracts/resolvers/OwnedResolver.sol";
+import { ExtendedDNSResolver } from "ens-contracts/resolvers/profiles/ExtendedDNSResolver.sol";
+import { PublicResolver } from "ens-contracts/resolvers/PublicResolver.sol";
+import { IPriceOracle } from "ens-contracts/ethregistrar/IPriceOracle.sol";
 
 // EthStorage
-import {TestEthStorageContractKZG} from "storage-contracts-v1/TestEthStorageContractKZG.sol";
-import {StorageContract} from "storage-contracts-v1/StorageContract.sol";
+import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageContractKZG.sol";
+import { StorageContract } from "storage-contracts-v1/StorageContract.sol";
 
 contract DBlogFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -66,68 +61,56 @@ contract DBlogFactoryScript is Script {
         // Get ENS nameWrapper (will deploy ENS and register domain name if necessary)
         (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController) = registerDomainAndGetEnsContracts(targetChain, domain);
 
-        // Get ETHFS filestore
-        FileStore store = getFileStore(targetChain);
-        console.log("FileStore: ", vm.toString(address(store)));
-        // Add the IBM font
-        if(targetChain == TargetChain.LOCAL) {
-            bytes memory fileContents = vm.readFileBinary("assets/IBMPlexMono-Regular.woff2.base64");
-            (address fontFilePointer, ) = store.createFile("IBMPlexMono-Regular.woff2", string(fileContents));
-        }
+        // // Get ETHFS filestore
+        // FileStore store = getFileStore(targetChain);
+        // console.log("FileStore: ", vm.toString(address(store)));
+        // // Add the IBM font
+        // if(targetChain == TargetChain.LOCAL) {
+        //     bytes memory fileContents = vm.readFileBinary("assets/IBMPlexMono-Regular.woff2.base64");
+        //     (address fontFilePointer, ) = store.createFile("IBMPlexMono-Regular.woff2", string(fileContents));
+        // }
 
         // Get EthStorage
         TestEthStorageContractKZG ethStorage = getEthStorage(targetChain);
 
-        DBlogFactory factory;
+        OCWebsiteFactory factory;
         {
             // Create the factory frontend
-            DBlogFactoryFrontend factoryFrontend = new DBlogFactoryFrontend();
+            OCWebsite factoryFrontend = new OCWebsite(this);
 
             // Create the factory token
-            DBlogFactoryToken factoryToken = new DBlogFactoryToken();
+            OCWebsiteFactoryToken factoryToken = new OCWebsiteFactoryToken();
 
-            // Create the dblog frontend library
-            DBlogFrontendLibrary blogFrontendLibrary = new DBlogFrontendLibrary();
-
-            // Create the blog and blogFrontend implementations
-            DBlog blogImplementation = new DBlog();
-            DBlogFrontend blogFrontendImplementation = new DBlogFrontend();
+            // Create the website implementations
+            ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
 
             // Deploying the blog factory
-            factory = new DBlogFactory(DBlogFactory.ConstructorParams({
+            factory = new OCWebsiteFactory(OCWebsiteFactory.ConstructorParams({
                 topdomain: "eth",
                 domain: domain,
                 factoryFrontend: factoryFrontend,
                 factoryToken: factoryToken,
-                blogImplementation: blogImplementation,
-                blogFrontendImplementation: blogFrontendImplementation,
-                blogFrontendLibrary: blogFrontendLibrary,
-                ensNameWrapper: nameWrapper,
-                ensEthRegistrarController: ethRegistrarController,
-                ensBaseRegistrar: baseRegistrar,
-                ethfsFileStore: store
+                websiteImplementation: websiteImplementation
             }));
 
-            console.log("DBlogFactory: ", address(factory));
-            console.log("DBlogFactoryToken: ", address(factoryToken));
-            console.log("DBlogFactoryFrontend: ", address(factoryFrontend));
-            console.log("DBlogFrontendLibrary: ", address(blogFrontendLibrary));
-            console.log("DBlogImplementation: ", address(blogImplementation));
-            console.log("DBlogFrontendImplementation: ", address(blogFrontendImplementation));
+            console.log("OCWebsiteFactory: ", address(factory));
+            console.log("OCWebsiteFactoryToken: ", address(factoryToken));
+            console.log("OCWebsiteFactory frontend: ", address(factoryFrontend));
+            console.log("OCWebsite implementation: ", address(websiteImplementation));
 
-            // Printing the web3:// address of the factory frontend
-            string memory web3FactoryFrontendAddress = string.concat("web3://", vm.toString(address(factory.factoryFrontend())));
-            if(block.chainid > 1) {
-                web3FactoryFrontendAddress = string.concat(web3FactoryFrontendAddress, ":", vm.toString(block.chainid));
-            }
-            console.log("web3:// factory frontend: ", web3FactoryFrontendAddress);
+            // // Printing the web3:// address of the factory frontend
+            // string memory web3FactoryFrontendAddress = string.concat("web3://", vm.toString(address(factory.factoryFrontend())));
+            // if(block.chainid > 1) {
+            //     web3FactoryFrontendAddress = string.concat(web3FactoryFrontendAddress, ":", vm.toString(block.chainid));
+            // }
+            // console.log("web3:// factory frontend: ", web3FactoryFrontendAddress);
 
-            // Printing the web3:// address of the factory contract
-            string memory web3FactoryAddress = string.concat("web3://", vm.toString(address(factory)));
-            if(block.chainid > 1) {
-                web3FactoryAddress = string.concat(web3FactoryAddress, ":", vm.toString(block.chainid));
-            }
-            console.log("web3:// factory: ", web3FactoryAddress);
+            // // Printing the web3:// address of the factory contract
+            // string memory web3FactoryAddress = string.concat("web3://", vm.toString(address(factory)));
+            // if(block.chainid > 1) {
+            //     web3FactoryAddress = string.concat(web3FactoryAddress, ":", vm.toString(block.chainid));
+            // }
+            // console.log("web3:// factory: ", web3FactoryAddress);
         }
 
         // Add the SSTORE2 storage backend
@@ -143,32 +126,32 @@ contract DBlogFactoryScript is Script {
             nameWrapper.setResolver(dblogDomainNamehash, address(factory));
         }
 
-        // Transferring dblog.eth to the factory
-        if(targetChain == TargetChain.SEPOLIA || targetChain == TargetChain.HOLESKY || targetChain == TargetChain.MAINNET || targetChain == TargetChain.LOCAL) {
-            bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
-            bytes32 dblogDomainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
+        // // Transferring dblog.eth to the factory
+        // if(targetChain == TargetChain.SEPOLIA || targetChain == TargetChain.HOLESKY || targetChain == TargetChain.MAINNET || targetChain == TargetChain.LOCAL) {
+        //     bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
+        //     bytes32 dblogDomainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
 
-            nameWrapper.safeTransferFrom(msg.sender, address(factory), uint(dblogDomainNamehash), 1, "");
-            // Testnet: Temporary testing (double checking we can fetch back the domain)
-            if(targetChain != TargetChain.MAINNET) {
-                factory.testnetSendBackDomain();
-                nameWrapper.safeTransferFrom(msg.sender, address(factory), uint(dblogDomainNamehash), 1, "");
-            }
-        }
+        //     nameWrapper.safeTransferFrom(msg.sender, address(factory), uint(dblogDomainNamehash), 1, "");
+        //     // Testnet: Temporary testing (double checking we can fetch back the domain)
+        //     if(targetChain != TargetChain.MAINNET) {
+        //         factory.testnetSendBackDomain();
+        //         nameWrapper.safeTransferFrom(msg.sender, address(factory), uint(dblogDomainNamehash), 1, "");
+        //     }
+        // }
 
-        // Adding the main blog
-        factory.addBlog{value: factory.getSubdomainFee()}(string.concat(vm.envString("PRODUCT_NAME"), " news"), string.concat("Latest news about the ", domain, ".eth platform"), domain);
-        string memory web3BlogFrontendAddress = string.concat("web3://", vm.toString(address(factory.blogs(0).frontend())));
-        if(block.chainid > 1) {
-            web3BlogFrontendAddress = string.concat(web3BlogFrontendAddress, ":", vm.toString(block.chainid));
-        }
-        console.log("web3://dblog.dblog.eth frontend: ", web3BlogFrontendAddress);
+        // // Adding the main blog
+        // factory.addBlog{value: factory.getSubdomainFee()}(string.concat(vm.envString("PRODUCT_NAME"), " news"), string.concat("Latest news about the ", domain, ".eth platform"), domain);
+        // string memory web3BlogFrontendAddress = string.concat("web3://", vm.toString(address(factory.blogs(0).frontend())));
+        // if(block.chainid > 1) {
+        //     web3BlogFrontendAddress = string.concat(web3BlogFrontendAddress, ":", vm.toString(block.chainid));
+        // }
+        // console.log("web3://dblog.dblog.eth frontend: ", web3BlogFrontendAddress);
 
-        string memory web3BlogAddress = string.concat("web3://", vm.toString(address(factory.blogs(0))));
-        if(block.chainid > 1) {
-            web3BlogAddress = string.concat(web3BlogAddress, ":", vm.toString(block.chainid));
-        }
-        console.log("web3://dblog.dblog.eth: ", web3BlogAddress);
+        // string memory web3BlogAddress = string.concat("web3://", vm.toString(address(factory.blogs(0))));
+        // if(block.chainid > 1) {
+        //     web3BlogAddress = string.concat(web3BlogAddress, ":", vm.toString(block.chainid));
+        // }
+        // console.log("web3://dblog.dblog.eth: ", web3BlogAddress);
 
         vm.stopBroadcast();
     }
@@ -300,43 +283,43 @@ contract DBlogFactoryScript is Script {
         return (nameWrapper, registrar, registrarController);
     }
 
-    /**
-     * Optionally deploy FileStore, get FileStore address
-     * Target chain:
-     * - local: Deploy FileStore, return the address
-     * - sepolia : Return the address
-     * - mainnet : Return the address
-     */
-    function getFileStore(TargetChain targetChain) public returns (FileStore) {
-        FileStore store;
+    // /**
+    //  * Optionally deploy FileStore, get FileStore address
+    //  * Target chain:
+    //  * - local: Deploy FileStore, return the address
+    //  * - sepolia : Return the address
+    //  * - mainnet : Return the address
+    //  */
+    // function getFileStore(TargetChain targetChain) public returns (FileStore) {
+    //     FileStore store;
         
-        // Local: Deploy new filestore
-        if(targetChain == TargetChain.LOCAL) {
-            store = new FileStore(address(0x4e59b44847b379578588920cA78FbF26c0B4956C));
-        }
-        // Sepolia : Get existing value
-        else if(targetChain == TargetChain.SEPOLIA) {
-            store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-        }
-        // Holesky : Get existing value
-        else if(targetChain == TargetChain.HOLESKY) {
-            store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-        }
-        // Mainnet : Get existing value
-        else if(targetChain == TargetChain.MAINNET) {
-            store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-        }
-        // Base : Get existing value
-        else if(targetChain == TargetChain.BASE) {
-            store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-        }
-        // Base Sepolia : Get existing value
-        else if(targetChain == TargetChain.BASE_SEPOLIA) {
-            store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-        }
+    //     // Local: Deploy new filestore
+    //     if(targetChain == TargetChain.LOCAL) {
+    //         store = new FileStore(address(0x4e59b44847b379578588920cA78FbF26c0B4956C));
+    //     }
+    //     // Sepolia : Get existing value
+    //     else if(targetChain == TargetChain.SEPOLIA) {
+    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
+    //     }
+    //     // Holesky : Get existing value
+    //     else if(targetChain == TargetChain.HOLESKY) {
+    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
+    //     }
+    //     // Mainnet : Get existing value
+    //     else if(targetChain == TargetChain.MAINNET) {
+    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
+    //     }
+    //     // Base : Get existing value
+    //     else if(targetChain == TargetChain.BASE) {
+    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
+    //     }
+    //     // Base Sepolia : Get existing value
+    //     else if(targetChain == TargetChain.BASE_SEPOLIA) {
+    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
+    //     }
         
-        return store;
-    }
+    //     return store;
+    // }
 
     struct Config {
         uint256 maxKvSizeBits;

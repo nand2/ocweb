@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
-import { Strings } from "../library/Strings.sol";
+import { LibStrings } from "../library/LibStrings.sol";
 
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
@@ -141,7 +141,7 @@ contract FrontendLibrary is IFrontendLibrary {
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
 
         for(uint i = 0; i < frontend.files.length; i++) {
-            if(Strings.compare(filePath, frontend.files[i].filePath)) {
+            if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
                 return frontend.storageBackend.uploadedSize(address(this), frontend.files[i].contentKey);
             }
         }
@@ -237,7 +237,7 @@ contract FrontendLibrary is IFrontendLibrary {
 
     function _findFileIndexByNameInFrontendVersion(FrontendFilesSet storage frontend, string memory filePath) internal view returns (bool, uint) {
         for(uint i = 0; i < frontend.files.length; i++) {
-            if(Strings.compare(filePath, frontend.files[i].filePath)) {
+            if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
                 return (true, i);
             }
         }
