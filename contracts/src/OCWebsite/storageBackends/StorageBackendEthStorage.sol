@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IStorageBackend} from "./interfaces/IStorageBackend.sol";
+import { IStorageBackend } from "../../interfaces/IStorageBackend.sol";
 
 // EthStorage
-import {TestEthStorageContractKZG} from "storage-contracts-v1/TestEthStorageContractKZG.sol";
+import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageContractKZG.sol";
 import { DecentralizedKV } from "storage-contracts-v1/DecentralizedKV.sol";
 
 contract StorageBackendEthStorage is IStorageBackend {
