@@ -1,0 +1,21 @@
+[profile.default]
+src = "contracts/src"
+test = "contracts/test"
+out = "contracts/out"
+broadcast = "contracts/broadcast"
+libs = ["contracts/lib"]
+script = "contracts/script"
+cache_path = "contracts/cache"
+remappings = [
+  # "solady=contracts/lib/solady/src/",
+  # "@openzeppelin/contracts=contracts/lib/openzeppelin-contracts/contracts/", 
+  # "@openzeppelin/contracts-upgradeable=contracts/lib/openzeppelin-contracts-upgradeable/contracts/", 
+  # "ethfs=contracts/lib/ethfs/packages/contracts/src/"
+]
+
+solc = "0.8.24"
+evm_version = "cancun"
+
+fs_permissions = [{ path = "dist/frontend-factory/", access = "read" }, { path = "dist/frontend-blog/", access = "read" }, { path = "assets/", access = "read" }]
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
