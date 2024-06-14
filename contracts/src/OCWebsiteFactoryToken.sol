@@ -1,37 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import { DBlogFactory } from "./DBlogFactory.sol";
-import { DBlog } from "./DBlog.sol";
+
 import "./library/Strings.sol";
 import "./library/Base64.sol";
-import "./interfaces/FileInfos.sol";
+import "./interfaces/IFileInfos.sol";
 import "./interfaces/IStorageBackend.sol";
+import "./OCWebsiteFactory.sol";
 
-contract DBlogFactoryToken {
-    DBlogFactory public blogFactory;
+contract OCWebsiteFactoryToken {
+    OCWebsiteFactory public websiteFactory;
 
     constructor() {}
 
     // Due to difficulties with verifying source of contracts deployed by contracts, and 
-    // this contract and DBlogFactory pointing to each other, we add the pointer to the blog factory
+    // this contract and DwebsiteFactory pointing to each other, we add the pointer to the blog factory
     // in this method, after this contract has been created.
-    // Security : This can be only called once. Both pointers are set on DBlogFactory constructor, 
+    // Security : This can be only called once. Both pointers are set on DwebsiteFactory constructor, 
     // so this method can be open
-    function setBlogFactory(DBlogFactory _blogFactory) public {
+    function setwebsiteFactory(DwebsiteFactory _websiteFactory) public {
         // We can only set the blog factory once
-        require(address(blogFactory) == address(0), "Already set");
-        blogFactory = _blogFactory;
+        require(address(websiteFactory) == address(0), "Already set");
+        websiteFactory = _websiteFactory;
     }
 
     function tokenWeb3Address(uint tokenId) public view returns (string memory web3Address) {
-        require(tokenId < blogFactory.getBlogCount(), "Token does not exist");
+        require(tokenId < websiteFactory.getBlogCount(), "Token does not exist");
 
-        DBlog blog = blogFactory.blogs(tokenId);
+        DBlog blog = websiteFactory.blogs(tokenId);
 
         uint subdomainLength = bytes(blog.subdomain()).length;
         if(subdomainLength > 0) {
-            web3Address = string.concat("web3://", blog.subdomain(), ".", blogFactory.domain(), ".", blogFactory.topdomain());
+            web3Address = string.concat("web3://", blog.subdomain(), ".", websiteFactory.domain(), ".", websiteFactory.topdomain());
         }
         else {
             web3Address = string.concat(
@@ -39,7 +39,7 @@ contract DBlogFactoryToken {
                 Strings.toHexString(address(blog.frontend())));
 
             uint chainId = block.chainid;
-            IStorageBackend storageBackend = blogFactory.storageBackends(blog.frontend().blogFrontendVersion().storageBackendIndex);
+            IStorageBackend storageBackend = websiteFactory.storageBackends(blog.frontend().blogFrontendVersion().storageBackendIndex);
             if(Strings.compare(storageBackend.backendName(), "EthStorage")) {
                 if(block.chainid == 1) {
                     chainId = 333;
@@ -55,20 +55,20 @@ contract DBlogFactoryToken {
     }
 
     function tokenSVG(uint tokenId) public view returns (string memory) {
-        require(tokenId < blogFactory.getBlogCount(), "Token does not exist");
+        require(tokenId < websiteFactory.getBlogCount(), "Token does not exist");
 
-        DBlog blog = blogFactory.blogs(tokenId);
+        DBlog blog = websiteFactory.blogs(tokenId);
 
         // Prepare the brand initial: Uppercase the first 2 letters
         bytes memory brandInitialsBytes = new bytes(2);
-        brandInitialsBytes[0] = bytes1(uint8(bytes(blogFactory.domain())[0]) - 32);
-        brandInitialsBytes[1] = bytes1(uint8(bytes(blogFactory.domain())[1]) - 32);
+        brandInitialsBytes[0] = bytes1(uint8(bytes(websiteFactory.domain())[0]) - 32);
+        brandInitialsBytes[1] = bytes1(uint8(bytes(websiteFactory.domain())[1]) - 32);
         string memory brandInitials = string(brandInitialsBytes);
 
         // Prepare the colors
         string memory color = "#61c23e";
         string memory colorShadow = "#48912d";
-        if(Strings.compare(blogFactory.domain(), "bblog")) {
+        if(Strings.compare(websiteFactory.domain(), "bblog")) {
             color = "#0052ff";
             colorShadow = "#003ec2";
         }
@@ -85,7 +85,7 @@ contract DBlogFactoryToken {
             svgAddressPart = string.concat(
                 '<text x="20" y="53" font-size="25">',
                     '<tspan x="20" dy="1em" font-size="', Strings.toString(subdomainFontSize), '">', blog.subdomain(), '.</tspan>',
-                    '<tspan x="20" dy="1.2em" opacity="0.6">', blogFactory.domain(), '.', blogFactory.topdomain(), '</tspan>',
+                    '<tspan x="20" dy="1.2em" opacity="0.6">', websiteFactory.domain(), '.', websiteFactory.topdomain(), '</tspan>',
                 '</text>'
             );
         }
@@ -108,7 +108,7 @@ contract DBlogFactoryToken {
                 '<style>'
                     '@font-face{'
                         'font-family: "IBMPlexMono";src:url(data:font/woff2;base64,',
-                        blogFactory.ethFsFileStore().readFile("IBMPlexMono-Regular.woff2"),
+                        websiteFactory.ethFsFileStore().readFile("IBMPlexMono-Regular.woff2"),
                         ') format("woff2");'
                         'font-weight: normal;'
                         'font-style: normal;'
@@ -143,9 +143,9 @@ contract DBlogFactoryToken {
     }
 
     function tokenURI(uint tokenId) public view returns (string memory) {
-        require(tokenId < blogFactory.getBlogCount(), "Token does not exist");
+        require(tokenId < websiteFactory.getBlogCount(), "Token does not exist");
 
-        DBlog blog = blogFactory.blogs(tokenId);
+        DBlog blog = websiteFactory.blogs(tokenId);
 
         string memory svg = tokenSVG(tokenId);
         string memory web3Address = tokenWeb3Address(tokenId);

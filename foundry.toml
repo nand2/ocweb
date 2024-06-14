@@ -7,10 +7,9 @@ libs = ["contracts/lib"]
 script = "contracts/script"
 cache_path = "contracts/cache"
 remappings = [
-  # "solady=contracts/lib/solady/src/",
-  # "@openzeppelin/contracts=contracts/lib/openzeppelin-contracts/contracts/", 
-  # "@openzeppelin/contracts-upgradeable=contracts/lib/openzeppelin-contracts-upgradeable/contracts/", 
-  # "ethfs=contracts/lib/ethfs/packages/contracts/src/"
+  "solady=contracts/lib/solady/src/",
+  "@openzeppelin/contracts=contracts/lib/openzeppelin-contracts/contracts/", 
+  "@openzeppelin/contracts-upgradeable=contracts/lib/openzeppelin-contracts-upgradeable/contracts/"
 ]
 
 solc = "0.8.24"

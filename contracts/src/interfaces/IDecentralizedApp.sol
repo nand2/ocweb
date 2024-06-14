@@ -6,6 +6,7 @@ struct KeyValue {
     string value;
 }
 
+// EIP-5219 interface
 interface IDecentralizedApp {
     /// @notice                     Send an HTTP GET-like request to this contract
     /// @param  resource            The resource to request (e.g. "/asdf/1234" turns in to `["asdf", "1234"]`)
