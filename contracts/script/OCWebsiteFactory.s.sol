@@ -76,7 +76,7 @@ contract DBlogFactoryScript is Script {
         OCWebsiteFactory factory;
         {
             // Create the factory frontend
-            OCWebsite factoryFrontend = new OCWebsite(this);
+            OCWebsite factoryFrontend = new OCWebsite(msg.sender);
 
             // Create the factory token
             OCWebsiteFactoryToken factoryToken = new OCWebsiteFactoryToken();
@@ -92,6 +92,7 @@ contract DBlogFactoryScript is Script {
                 factoryToken: factoryToken,
                 websiteImplementation: websiteImplementation
             }));
+            factoryFrontend.transferOwnership(address(factory));
 
             console.log("OCWebsiteFactory: ", address(factory));
             console.log("OCWebsiteFactoryToken: ", address(factoryToken));

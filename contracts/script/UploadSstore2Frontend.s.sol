@@ -5,6 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {LibString} from "solady/utils/LibString.sol";
 
 import "../src/interfaces/IFrontendLibrary.sol";
+import "../src/interfaces/IStorageBackendLibrary.sol";
 import "../src/interfaces/IStorageBackend.sol";
 
 contract UploadSstore2Frontend is Script {
@@ -21,19 +22,20 @@ contract UploadSstore2Frontend is Script {
         vm.startBroadcast();
 
         IFrontendLibrary frontendLibrary = IFrontendLibrary(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
+        IStorageBackendLibrary storageBackendLibrary = IStorageBackendLibrary(vm.envAddress("ISTORAGE_BACKEND_LIBRARY_CONTRACT_ADDRESS"));
 
         // Get the SSTORE2 storage backend
-        uint16 storageBackendIndex = frontendLibrary.getStorageBackendIndexByName("SSTORE2");
+        IStorageBackend storageBackend = storageBackendLibrary.getStorageBackendByName("SSTORE2");
 
         // If there is already a frontend version which is unlocked, we wipe it and replace it
-        if(frontendLibrary.frontendVersionsCount() > 0 && frontendLibrary.getFrontendVersion(frontendLibrary.frontendVersionsCount() - 1).locked == false) {
+        if(frontendLibrary.getFrontendVersions().length > 0 && frontendLibrary.getFrontendVersion(frontendLibrary.getFrontendVersions().length - 1).locked == false) {
             console.log("Resetting and replacing latest frontend version");
-            frontendLibrary.resetLatestFrontendVersion();
+            frontendLibrary.removeAllFilesFromFrontendVersion(frontendLibrary.getFrontendVersions().length - 1);
         }
         // Otherwise we add a new version
         else {
             console.log("Adding new frontend version");
-            frontendLibrary.addFrontendVersion(storageBackendIndex, "Initial version");
+            frontendLibrary.addFrontendVersion(storageBackend, "Initial version");
         }
 
         // Get the files to upload
@@ -64,18 +66,19 @@ contract UploadSstore2Frontend is Script {
                 }
                 bytes memory chunk = bytes(LibString.slice(string(fileContents), start, end));
                 console.log("    - Uploading chunk", j, "of size", chunk.length);
+                string memory filePath = string.concat(files[i].subFolder, files[i].filename);
                 if(j == 0) {
                     IFrontendLibrary.FileUploadInfos[] memory fileUploadInfos = new IFrontendLibrary.FileUploadInfos[](1);
                     fileUploadInfos[0] = IFrontendLibrary.FileUploadInfos({
-                        filePath: string.concat(files[i].subFolder, files[i].filename),
+                        filePath: filePath,
                         fileSize: fileContents.length,
                         contentType: files[i].mimeType,
                         data: chunk
                     });
-                    frontendLibrary.addFilesToCurrentFrontendVersion(fileUploadInfos);
+                    frontendLibrary.addFilesToFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, fileUploadInfos);
                 }
                 else {
-                    frontendLibrary.appendToFileInCurrentFrontendVersion(i, chunk);
+                    frontendLibrary.appendToFileInFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, filePath, chunk);
                 }
             }
         }

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 interface IStorageBackend {
-    function backendName() external view returns (string memory);
+    function name() external view returns (string memory);
 
     // Create a new file of a specified size
     // data can be either the actual data, or an abi-encoded struct

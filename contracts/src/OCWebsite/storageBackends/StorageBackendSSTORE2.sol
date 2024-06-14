@@ -19,7 +19,7 @@ contract StorageBackendSSTORE2 is IStorageBackend {
     // Size of the data that can be stored in a single chunk with SSTORE2
     uint public constant MAX_CHUNK_SIZE = 0x6000 - 1;
     
-    function backendName() public pure returns (string memory) {
+    function name() public pure returns (string memory) {
         return "SSTORE2";
     }
 

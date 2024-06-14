@@ -9,12 +9,13 @@ import "./OCWebsite/OCWebsite.sol";
 import "./OCWebsite/ClonableOCWebsite.sol";
 import "./OCWebsiteFactoryToken.sol";
 import "./interfaces/IStorageBackend.sol";
+import "./interfaces/IStorageBackendLibrary.sol";
 
 interface IFactoryExtension {
   function getName() external view returns (string memory);
 }
 
-contract OCWebsiteFactory is ERC721Enumerable {
+contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     OCWebsite public immutable factoryFrontend;
     OCWebsiteFactoryToken public immutable factoryToken;
 
@@ -55,7 +56,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
         OCWebsiteFactoryToken factoryToken;
         ClonableOCWebsite websiteImplementation;
     }
-    constructor(ConstructorParams memory _params) ERC721Enumerable("OCWebsite", "OCW") {
+    constructor(ConstructorParams memory _params) ERC721("OCWebsite", "OCW") {
         owner = msg.sender;
 
         topdomain = _params.topdomain;
@@ -77,7 +78,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
 
         ClonableOCWebsite newWebsite = ClonableOCWebsite(Clones.clone(address(websiteImplementation)));
 
-        newWebsite.initialize(this);
+        newWebsite.initialize(msg.sender, address(this));
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
 
@@ -155,37 +156,39 @@ contract OCWebsiteFactory is ERC721Enumerable {
         // Make sure name is unique
         for(uint i = 0; i < storageBackends.length; i++) {
             require(address(storageBackends[i]) != address(storageBackend), "Storage backend already added");
-            require(LibStrings.compare(storageBackends[i].backendName(), storageBackend.backendName()) == false, "Storage backend name already used");
+            require(LibStrings.compare(storageBackends[i].name(), storageBackend.name()) == false, "Storage backend name already used");
         }
 
         storageBackends.push(storageBackend);
     }
 
-    function getStorageBackendIndexByName(string memory name) public view returns (uint16 index) {
+    function getStorageBackends() public view returns (IStorageBackendWithName[] memory) {
+        IStorageBackendWithName[] memory backends = new IStorageBackendWithName[](storageBackends.length);
+        for(uint i = 0; i < storageBackends.length; i++) {
+            backends[i] = IStorageBackendWithName({
+                storageBackend: storageBackends[i],
+                name: storageBackends[i].name()
+            });
+        }
+
+        return backends;
+    }
+
+    function getStorageBackendByName(string memory name) public view returns (IStorageBackend) {
         bool found = false;
-        for(uint16 i = 0; i < storageBackends.length; i++) {
-            if(LibStrings.compare(storageBackends[i].backendName(), name)) {
+        uint index = 0;
+        for(uint i = 0; i < storageBackends.length; i++) {
+            if(LibStrings.compare(storageBackends[i].name(), name)) {
                 index = i;
                 found = true;
             }
         }
         require(found, "Storage backend not found");
 
-        return index;
+        return storageBackends[index];
     }
 
-    function getStorageBackendByName(string memory name) public view returns (IStorageBackend) {
-        return storageBackends[getStorageBackendIndexByName(name)];
-    }
 
-    function getStorageBackendNames() public view returns (string[] memory) {
-        string[] memory names = new string[](storageBackends.length);
-        for(uint i = 0; i < storageBackends.length; i++) {
-            names[i] = storageBackends[i].backendName();
-        }
-
-        return names;
-    }
 
 
     //

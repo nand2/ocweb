@@ -31,7 +31,7 @@ contract StorageBackendEthStorage is IStorageBackend {
         ethStorage = _ethStorage;
     }
 
-    function backendName() public pure returns (string memory) {
+    function name() public pure returns (string memory) {
         return "EthStorage";
     }
 

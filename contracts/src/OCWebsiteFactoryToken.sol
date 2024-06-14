@@ -42,7 +42,7 @@ contract OCWebsiteFactoryToken {
             uint chainId = block.chainid;
             IStorageBackend storageBackend = website.getLiveFrontendVersion().storageBackend;
             // TODO: Override based on storageBackend
-            // if(LibStrings.compare(storageBackend.backendName(), "EthStorage")) {
+            // if(LibStrings.compare(storageBackend.name(), "EthStorage")) {
             //     // if(block.chainid == 1) {
             //     //     chainId = 333;
             //     // }
