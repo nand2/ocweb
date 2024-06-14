@@ -9,7 +9,9 @@ cache_path = "contracts/cache"
 remappings = [
   "solady=contracts/lib/solady/src/",
   "@openzeppelin/contracts=contracts/lib/openzeppelin-contracts/contracts/", 
-  "@openzeppelin/contracts-upgradeable=contracts/lib/openzeppelin-contracts-upgradeable/contracts/"
+  "@openzeppelin/contracts-upgradeable=contracts/lib/openzeppelin-contracts-upgradeable/contracts/",
+  "ens-contracts=contracts/lib/ens-contracts/contracts/", 
+  "@ensdomains/buffer=contracts/lib/buffer/"
 ]
 
 solc = "0.8.24"
