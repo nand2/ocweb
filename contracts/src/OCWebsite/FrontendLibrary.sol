@@ -27,7 +27,7 @@ contract FrontendLibrary is IFrontendLibrary {
         owner = _owner;
     }
 
-    function transferOwnership(address _newOwner) public onlyOwner {
+    function transferOwnership(address _newOwner) public virtual onlyOwner {
         owner = _newOwner;
     }
 
@@ -56,6 +56,15 @@ contract FrontendLibrary is IFrontendLibrary {
     }
 
     /**
+     * Get a frontend version
+     * @param frontendIndex The index of the frontend version
+     */
+    function getFrontendVersion(uint256 frontendIndex) public view returns (FrontendFilesSet memory) {
+        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        return frontendVersions[frontendIndex];
+    }
+
+    /**
      * Remove a frontend version
      * @param frontendIndex The index of the frontend version
      */
@@ -69,7 +78,7 @@ contract FrontendLibrary is IFrontendLibrary {
     /**
      * Get the default frontend version used in the website
      */
-    function getDefaultFrontend() public view returns (uint256 frontendIndex) {
+    function getDefaultFrontendIndex() public view returns (uint256 frontendIndex) {
         return defaultFrontendIndex;
     }
 
@@ -77,7 +86,7 @@ contract FrontendLibrary is IFrontendLibrary {
      * Set the default frontend version used in the website
      * @param frontendIndex The index of the frontend version
      */
-    function setDefaultFrontend(uint256 frontendIndex) public onlyOwner {
+    function setDefaultFrontendIndex(uint256 frontendIndex) public onlyOwner {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         defaultFrontendIndex = frontendIndex;
     }

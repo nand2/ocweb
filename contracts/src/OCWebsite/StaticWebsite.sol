@@ -17,7 +17,7 @@ contract StaticWebsite {
         frontendLibrary = _frontendLibrary;
     }
 
-    function getFrontendLibrary() public view override returns (IFrontendLibrary) {
+    function getFrontendLibrary() public view virtual returns (IFrontendLibrary) {
         return frontendLibrary;
     }
 

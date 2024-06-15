@@ -39,7 +39,7 @@ contract ClonableOCWebsite is OCWebsite {
      * can transfer the ownership.
      * @param _newOwner The new owner of the website
      */
-    function transferOwnership(address _newOwner) public onlyOwnershipControllerOrOwnerIfNotSet {
+    function transferOwnership(address _newOwner) public override onlyOwnershipControllerOrOwnerIfNotSet {
         owner = _newOwner;
     }
 }

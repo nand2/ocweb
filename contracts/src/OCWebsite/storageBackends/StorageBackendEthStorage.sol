@@ -39,7 +39,7 @@ contract StorageBackendEthStorage is IStorageBackend {
      * @param data abi.encoded structure: array of uint256 containing the data size of the blobs
      * @param fileSize The total filesize of the file to store.
      */
-    function create(bytes memory data, uint fileSize) public returns (uint index, uint fundsUsed) {
+    function create(bytes memory data, uint fileSize) public payable returns (uint index, uint fundsUsed) {
         // Determine the number of chunks. All chunks must be full except the last one.
         uint chunkCount = fileSize / MAX_CHUNK_SIZE;
         if (fileSize % MAX_CHUNK_SIZE != 0) {
@@ -92,7 +92,7 @@ contract StorageBackendEthStorage is IStorageBackend {
         return (files[msg.sender].length - 1, fundsUsed);
     }
 
-    function append(uint index, bytes memory data) public returns (uint fundsUsed) {
+    function append(uint index, bytes memory data) public payable returns (uint fundsUsed) {
         require(index < files[msg.sender].length, "File not found");
         File storage file = files[msg.sender][index];
         require(file.chunkIds[file.chunkIds.length - 1] == 0, "File is already complete");

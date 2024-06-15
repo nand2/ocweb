@@ -22,10 +22,13 @@ contract UploadSstore2Frontend is Script {
         vm.startBroadcast();
 
         IFrontendLibrary frontendLibrary = IFrontendLibrary(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
-        IStorageBackendLibrary storageBackendLibrary = IStorageBackendLibrary(vm.envAddress("ISTORAGE_BACKEND_LIBRARY_CONTRACT_ADDRESS"));
 
         // Get the SSTORE2 storage backend
-        IStorageBackend storageBackend = storageBackendLibrary.getStorageBackendByName("SSTORE2");
+        IStorageBackend storageBackend;
+        {
+            IStorageBackendLibrary storageBackendLibrary = IStorageBackendLibrary(vm.envAddress("ISTORAGE_BACKEND_LIBRARY_CONTRACT_ADDRESS"));
+            storageBackend = storageBackendLibrary.getStorageBackendByName("SSTORE2");
+        }
 
         // If there is already a frontend version which is unlocked, we wipe it and replace it
         if(frontendLibrary.getFrontendVersions().length > 0 && frontendLibrary.getFrontendVersion(frontendLibrary.getFrontendVersions().length - 1).locked == false) {
@@ -66,11 +69,10 @@ contract UploadSstore2Frontend is Script {
                 }
                 bytes memory chunk = bytes(LibString.slice(string(fileContents), start, end));
                 console.log("    - Uploading chunk", j, "of size", chunk.length);
-                string memory filePath = string.concat(files[i].subFolder, files[i].filename);
                 if(j == 0) {
                     IFrontendLibrary.FileUploadInfos[] memory fileUploadInfos = new IFrontendLibrary.FileUploadInfos[](1);
                     fileUploadInfos[0] = IFrontendLibrary.FileUploadInfos({
-                        filePath: filePath,
+                        filePath: string.concat(files[i].subFolder, files[i].filename),
                         fileSize: fileContents.length,
                         contentType: files[i].mimeType,
                         data: chunk
@@ -78,7 +80,7 @@ contract UploadSstore2Frontend is Script {
                     frontendLibrary.addFilesToFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, fileUploadInfos);
                 }
                 else {
-                    frontendLibrary.appendToFileInFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, filePath, chunk);
+                    frontendLibrary.appendToFileInFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
                 }
             }
         }
