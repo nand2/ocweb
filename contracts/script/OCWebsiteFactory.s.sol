@@ -29,7 +29,7 @@ import { IPriceOracle } from "ens-contracts/ethregistrar/IPriceOracle.sol";
 import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageContractKZG.sol";
 import { StorageContract } from "storage-contracts-v1/StorageContract.sol";
 
-contract DBlogFactoryScript is Script {
+contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
 
     function setUp() public {}
@@ -75,9 +75,6 @@ contract DBlogFactoryScript is Script {
 
         OCWebsiteFactory factory;
         {
-            // Create the factory frontend
-            OCWebsite factoryFrontend = new OCWebsite(msg.sender);
-
             // Create the factory token
             OCWebsiteFactoryToken factoryToken = new OCWebsiteFactoryToken();
 
@@ -88,30 +85,38 @@ contract DBlogFactoryScript is Script {
             factory = new OCWebsiteFactory(OCWebsiteFactory.ConstructorParams({
                 topdomain: "eth",
                 domain: domain,
-                factoryFrontend: factoryFrontend,
                 factoryToken: factoryToken,
                 websiteImplementation: websiteImplementation
             }));
-            factoryFrontend.transferOwnership(address(factory));
+
+            // Initialize the websiteImplementation just in case someone else does
+            // initialize it and use it
+            websiteImplementation.initialize(address(factory), address(0));
+
+            // Create a website from the factory, to use as frontend for the factory itself
+            OCWebsite factoryFrontend = factory.mintWebsite();
+            factory.setFrontend(factoryFrontend);
+            
+            
 
             console.log("OCWebsiteFactory: ", address(factory));
             console.log("OCWebsiteFactoryToken: ", address(factoryToken));
             console.log("OCWebsiteFactory frontend: ", address(factoryFrontend));
             console.log("OCWebsite implementation: ", address(websiteImplementation));
 
-            // // Printing the web3:// address of the factory frontend
-            // string memory web3FactoryFrontendAddress = string.concat("web3://", vm.toString(address(factory.factoryFrontend())));
-            // if(block.chainid > 1) {
-            //     web3FactoryFrontendAddress = string.concat(web3FactoryFrontendAddress, ":", vm.toString(block.chainid));
-            // }
-            // console.log("web3:// factory frontend: ", web3FactoryFrontendAddress);
+            // Printing the web3:// address of the factory frontend
+            string memory web3FactoryFrontendAddress = string.concat("web3://", vm.toString(address(factory.factoryFrontend())));
+            if(block.chainid > 1) {
+                web3FactoryFrontendAddress = string.concat(web3FactoryFrontendAddress, ":", vm.toString(block.chainid));
+            }
+            console.log("web3:// factory frontend: ", web3FactoryFrontendAddress);
 
-            // // Printing the web3:// address of the factory contract
-            // string memory web3FactoryAddress = string.concat("web3://", vm.toString(address(factory)));
-            // if(block.chainid > 1) {
-            //     web3FactoryAddress = string.concat(web3FactoryAddress, ":", vm.toString(block.chainid));
-            // }
-            // console.log("web3:// factory: ", web3FactoryAddress);
+            // Printing the web3:// address of the factory contract
+            string memory web3FactoryAddress = string.concat("web3://", vm.toString(address(factory)));
+            if(block.chainid > 1) {
+                web3FactoryAddress = string.concat(web3FactoryAddress, ":", vm.toString(block.chainid));
+            }
+            console.log("web3:// factory: ", web3FactoryAddress);
         }
 
         // Add the SSTORE2 storage backend
@@ -120,12 +125,12 @@ contract DBlogFactoryScript is Script {
             factory.addStorageBackend(storageBackend);
         }
 
-        // Set the ENS resolver of dblog.eth to the contract
-        if(targetChain == TargetChain.SEPOLIA || targetChain == TargetChain.HOLESKY || targetChain == TargetChain.MAINNET || targetChain == TargetChain.LOCAL) {
-            bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
-            bytes32 dblogDomainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
-            nameWrapper.setResolver(dblogDomainNamehash, address(factory));
-        }
+        // // Set the ENS resolver of dblog.eth to the contract
+        // if(targetChain == TargetChain.SEPOLIA || targetChain == TargetChain.HOLESKY || targetChain == TargetChain.MAINNET || targetChain == TargetChain.LOCAL) {
+        //     bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
+        //     bytes32 dblogDomainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
+        //     nameWrapper.setResolver(dblogDomainNamehash, address(factory));
+        // }
 
         // // Transferring dblog.eth to the factory
         // if(targetChain == TargetChain.SEPOLIA || targetChain == TargetChain.HOLESKY || targetChain == TargetChain.MAINNET || targetChain == TargetChain.LOCAL) {

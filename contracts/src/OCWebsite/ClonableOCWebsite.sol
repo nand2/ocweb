@@ -31,6 +31,9 @@ contract ClonableOCWebsite is OCWebsite {
         require(owner == address(0), "Already initialized");
         owner = _owner;
         ownershipController = _ownershipController;
+
+        // Point the frontendLibrary to ourselves
+        frontendLibrary = this;
     }
 
     /**

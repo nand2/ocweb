@@ -16,10 +16,10 @@ interface IFactoryExtension {
 }
 
 contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
-    OCWebsite public immutable factoryFrontend;
+    OCWebsite public factoryFrontend;
     OCWebsiteFactoryToken public immutable factoryToken;
 
-    OCWebsite public immutable websiteImplementation;
+    ClonableOCWebsite public immutable websiteImplementation;
 
     OCWebsite[] public websites;
     mapping(OCWebsite=> uint) public websiteToIndex;
@@ -52,7 +52,6 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     struct ConstructorParams {
         string topdomain;
         string domain;
-        OCWebsite factoryFrontend;
         OCWebsiteFactoryToken factoryToken;
         ClonableOCWebsite websiteImplementation;
     }
@@ -62,19 +61,21 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         topdomain = _params.topdomain;
         domain = _params.domain;
 
-        factoryFrontend = _params.factoryFrontend;
         factoryToken = _params.factoryToken;
         websiteImplementation = _params.websiteImplementation;
 
         // Adding some backlinks
-        // factoryFrontend.setBlogFactory(this);
         factoryToken.setWebsiteFactory(this);
+    }
+
+    function setFrontend(OCWebsite _frontend) public onlyOwner {
+        factoryFrontend = _frontend;
     }
 
     /**
      * Add a new website
      */
-    function addWebsite() public payable returns(address) {
+    function mintWebsite() public payable returns(ClonableOCWebsite) {
 
         ClonableOCWebsite newWebsite = ClonableOCWebsite(Clones.clone(address(websiteImplementation)));
 
@@ -87,7 +88,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
 
         emit WebsiteCreated(websites.length - 1, address(newWebsite));
 
-        return address(newWebsite);
+        return newWebsite;
     }
 
 

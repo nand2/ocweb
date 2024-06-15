@@ -7,7 +7,7 @@ import "./IStorageBackend.sol";
 interface IFrontendLibrary {
     // Add/get/remove frontend versions
     function addFrontendVersion(IStorageBackend storageBackend, string memory description) external;
-    function getFrontendVersions() external returns (FrontendFilesSet[] memory);
+    function getFrontendVersions() external view returns (FrontendFilesSet[] memory);
     function getFrontendVersion(uint256 frontendIndex) external view returns (FrontendFilesSet memory);
     function removeFrontendVersion(uint256 frontendIndex) external;
 

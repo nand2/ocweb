@@ -51,7 +51,7 @@ contract FrontendLibrary is IFrontendLibrary {
     /**
      * Get all frontend versions
      */
-    function getFrontendVersions() public returns (FrontendFilesSet[] memory) {
+    function getFrontendVersions() public view returns (FrontendFilesSet[] memory) {
         return frontendVersions;
     }
 

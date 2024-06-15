@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev-factory": "vite frontend-factory",
+    "build-factory": "vite build frontend-factory",
+    "preview-factory": "vite preview frontend-factory"
   },
   "repository": {
     "type": "git",
@@ -14,5 +16,11 @@
   "bugs": {
     "url": "https://github.com/nand2/ocweb/issues"
   },
-  "homepage": "https://github.com/nand2/ocweb#readme"
+  "homepage": "https://github.com/nand2/ocweb#readme",
+  "devDependencies": {
+    "vite": "^5.3.1"
+  },
+  "dependencies": {
+    "@zoltu/ethereum-abi-encoder": "^5.0.4"
+  }
 }
