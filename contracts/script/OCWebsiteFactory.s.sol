@@ -80,12 +80,13 @@ contract OCWebsiteFactoryScript is Script {
                 websiteImplementation: websiteImplementation
             }));
 
-            // Initialize the websiteImplementation just in case someone else does
-            // initialize it and use it
-            websiteImplementation.initialize(address(factory), address(0));
+            // Transfer the website implementation ownership to the factory
+            // Not strictly necessary, but let's be sure it stays never changed
+            websiteImplementation.transferOwnership(address(factory));
 
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite();
+            factoryFrontend.addStaticContractAddress("factory", address(factory), block.chainid);
             factory.setFrontend(factoryFrontend);
             
             

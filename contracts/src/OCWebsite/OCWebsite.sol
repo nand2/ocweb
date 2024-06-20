@@ -8,12 +8,18 @@ import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IFrontendLibrary.sol";
 import "../interfaces/IStorageBackend.sol";
+
 import "./FrontendLibrary.sol";
 import "./StaticWebsite.sol";
+import "./ContractAddressesWebsite.sol";
 
-contract OCWebsite is FrontendLibrary, StaticWebsite {
+contract OCWebsite is FrontendLibrary, StaticWebsite, ContractAddressesWebsite {
 
-    constructor(address owner) FrontendLibrary(owner) StaticWebsite(this) {
+    constructor() FrontendLibrary() StaticWebsite(this) ContractAddressesWebsite() {
     }
 
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override(StaticWebsite, ContractAddressesWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+
+        (statusCode, body, headers) = super._processWeb3Request(resource, params);
+    }
 }

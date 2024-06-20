@@ -9,7 +9,9 @@ import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 import "../interfaces/IFrontendLibrary.sol";
 
-contract StaticWebsite {
+import "./Website.sol";
+
+contract StaticWebsite is Website {
 
     IFrontendLibrary public frontendLibrary;
   
@@ -35,19 +37,15 @@ contract StaticWebsite {
 
 
     //
-    // web3:// protocol implementation
+    // web3:// protocol
     //
-
-    // Indicate we are serving a website with the resource request mode
-    function resolveMode() external pure returns (bytes32) {
-        return "5219";
-    }
 
     /**
      * Hook to override
-     * For a given web3:// request, compute the file path of the requested asset to serve
+     * Static frontend serving: For a given web3:// request, compute the file path of 
+     * the requested static asset to serve
      */
-    function _getAssetFilePathForRequest(string[] memory resource, KeyValue[] memory params) internal virtual view returns (string memory filePath) {
+    function _getStaticFrontendAssetFilePathForRequest(string[] memory resource, KeyValue[] memory params) internal virtual view returns (string memory filePath) {
         if(resource.length == 0) {
             filePath = "index.html";
         }
@@ -60,14 +58,17 @@ contract StaticWebsite {
             }
         }
     }
-        
 
-    // Implementation for the ERC-5219 resource request mode
-    function request(string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+    /**
+     * Return an answer to a web3:// request after the static frontend is served
+     * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
+     *                   process the call
+     */
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         FrontendFilesSet memory frontend = getLiveFrontendVersion();
 
         // Compute the filePath of the requested resource
-        string memory filePath = _getAssetFilePathForRequest(resource, params);
+        string memory filePath = _getStaticFrontendAssetFilePathForRequest(resource, params);
 
         // Search for the requested resource in our static file list
         for(uint i = 0; i < frontend.files.length; i++) {
@@ -117,24 +118,6 @@ contract StaticWebsite {
             }
         }
 
-        // // blogFactoryAddress.json : it exposes the addess of the blog factory
-        // if(resource.length == 1 && LibStrings.compare(resource[0], "blogFactoryAddress.json")) {
-        //     uint chainid = block.chainid;
-        //     // Special case: Sepolia chain id 11155111 is > 65k, which breaks URL parsing in EVM browser
-        //     // As a temporary measure, we will test Sepolia with a fake chain id of 11155
-        //     // if(chainid == 11155111) {
-        //     //     chainid = 11155;
-        //     // }
-        //     // Manual JSON serialization, safe with the vars we encode
-        //     body = string.concat("{\"address\":\"", LibStrings.toHexString(address(blogFactory)), "\", \"chainId\":", LibStrings.toString(chainid), "}");
-        //     statusCode = 200;
-        //     headers = new KeyValue[](1);
-        //     headers[0].key = "Content-type";
-        //     headers[0].value = "application/json";
-        //     return (statusCode, body, headers);
-        // }
-        
-        statusCode = 404;
+        (statusCode, body, headers) = super._processWeb3Request(resource, params);
     }
-
 }

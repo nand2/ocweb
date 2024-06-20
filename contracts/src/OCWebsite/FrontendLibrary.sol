@@ -3,33 +3,18 @@ pragma solidity ^0.8.13;
 
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 import { LibStrings } from "../library/LibStrings.sol";
+import { Ownable } from "../library/Ownable.sol";
 
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IFrontendLibrary.sol";
 import "../interfaces/IStorageBackend.sol";
 
-contract FrontendLibrary is IFrontendLibrary {
+contract FrontendLibrary is IFrontendLibrary, Ownable {
 
     FrontendFilesSet[] public frontendVersions;
     // The index of the frontend being used
     uint256 public defaultFrontendIndex;
-
-    // The owner of the website
-    address public owner;
-    
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
-        _;
-    }
-
-    constructor(address _owner) {
-        owner = _owner;
-    }
-
-    function transferOwnership(address _newOwner) public virtual onlyOwner {
-        owner = _newOwner;
-    }
 
 
     //

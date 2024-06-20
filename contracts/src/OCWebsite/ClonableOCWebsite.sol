@@ -5,7 +5,7 @@ import "./OCWebsite.sol";
 
 contract ClonableOCWebsite is OCWebsite {
 
-    constructor() OCWebsite(address(0)) {
+    constructor() OCWebsite() {
     }
 
     // An optional controller for the ownership. 
