@@ -73,7 +73,8 @@ contract OCWebsiteFactoryScript is Script {
             ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
 
             // Deploying the blog factory
-            factory = new OCWebsiteFactory(OCWebsiteFactory.ConstructorParams({
+            factory = new OCWebsiteFactory{salt: bytes32(vm.envBytes("CONTRACT_SALT"))}(OCWebsiteFactory.ConstructorParams({
+                owner: msg.sender,
                 topdomain: "eth",
                 domain: domain,
                 factoryToken: factoryToken,

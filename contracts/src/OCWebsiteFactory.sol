@@ -50,13 +50,14 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
      * @param _domain dblog
      */
     struct ConstructorParams {
+        address owner;
         string topdomain;
         string domain;
         OCWebsiteFactoryToken factoryToken;
         ClonableOCWebsite websiteImplementation;
     }
     constructor(ConstructorParams memory _params) ERC721("OCWebsite", "OCW") {
-        owner = msg.sender;
+        owner = _params.owner;
 
         topdomain = _params.topdomain;
         domain = _params.domain;
