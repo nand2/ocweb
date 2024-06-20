@@ -29,6 +29,7 @@ contract ClonableOCWebsite is OCWebsite {
      */
     function initialize(address _owner, address _ownershipController) public {
         require(owner == address(0), "Already initialized");
+        require(_owner != address(0), "Invalid new owner");
         owner = _owner;
         ownershipController = _ownershipController;
 
@@ -43,6 +44,7 @@ contract ClonableOCWebsite is OCWebsite {
      * @param _newOwner The new owner of the website
      */
     function transferOwnership(address _newOwner) public override onlyOwnershipControllerOrOwnerIfNotSet {
+        require(_newOwner != address(0), "Invalid new owner");
         owner = _newOwner;
     }
 }
