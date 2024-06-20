@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 import "./library/LibStrings.sol";
 import "./library/Base64.sol";
@@ -11,8 +12,12 @@ import "./OCWebsite/OCWebsite.sol";
 
 contract OCWebsiteFactoryToken {
     OCWebsiteFactory public websiteFactory;
+    
+    address fontData;
 
-    constructor() {}
+    constructor(bytes memory font) {
+        fontData = SSTORE2.write(font);
+    }
 
     // Due to difficulties with verifying source of contracts deployed by contracts, and 
     // this contract and DwebsiteFactory pointing to each other, we add the pointer to the blog factory
@@ -61,10 +66,11 @@ contract OCWebsiteFactoryToken {
 
         OCWebsite website = websiteFactory.websites(tokenId);
 
-        // Prepare the brand initial: Uppercase the first 2 letters
-        bytes memory brandInitialsBytes = new bytes(2);
+        // Prepare the brand initial: Uppercase the first 3 letters
+        bytes memory brandInitialsBytes = new bytes(3);
         brandInitialsBytes[0] = bytes1(uint8(bytes(websiteFactory.domain())[0]) - 32);
         brandInitialsBytes[1] = bytes1(uint8(bytes(websiteFactory.domain())[1]) - 32);
+        brandInitialsBytes[2] = bytes1(uint8(bytes(websiteFactory.domain())[2]) - 32);
         string memory brandInitials = string(brandInitialsBytes);
 
         // Prepare the colors
@@ -73,40 +79,24 @@ contract OCWebsiteFactoryToken {
 
         // Prepare the address part
         string memory svgAddressPart = "";
-        // uint subdomainLength = bytes(blog.subdomain()).length;
-        // if(subdomainLength > 0) {
-        //     uint subdomainFontSize = 25;
-        //     if(subdomainLength >= 15) {
-        //         subdomainFontSize = 23 - (subdomainLength - 15);
-        //     }
+        string memory addressStr = tokenWeb3Address(tokenId);
+        addressStr = LibStrings.substring(addressStr, 7, bytes(addressStr).length);
+        string memory addressStrPart1 = LibStrings.substring(addressStr, 0, 24);
+        string memory addressStrPart2 = LibStrings.substring(addressStr, 24, bytes(addressStr).length);
 
-        //     svgAddressPart = string.concat(
-        //         '<text x="20" y="53" font-size="25">',
-        //             '<tspan x="20" dy="1em" font-size="', LibStrings.toString(subdomainFontSize), '">', blog.subdomain(), '.</tspan>',
-        //             '<tspan x="20" dy="1.2em" opacity="0.6">', websiteFactory.domain(), '.', websiteFactory.topdomain(), '</tspan>',
-        //         '</text>'
-        //     );
-        // }
-        // else {
-            string memory addressStr = tokenWeb3Address(tokenId);
-            addressStr = LibStrings.substring(addressStr, 7, bytes(addressStr).length);
-            string memory addressStrPart1 = LibStrings.substring(addressStr, 0, 24);
-            string memory addressStrPart2 = LibStrings.substring(addressStr, 24, bytes(addressStr).length);
-
-            svgAddressPart = string.concat(
-                '<text x="20" y="90" font-size="15">'
-                    '<tspan x="20" dy="-1.2em">', addressStrPart1, '</tspan>'
-                    '<tspan x="20" dy="1.2em">', addressStrPart2, '</tspan>'
-                '</text>'
-            );
-        // }
+        svgAddressPart = string.concat(
+            '<text x="20" y="90" font-size="15">'
+                '<tspan x="20" dy="-1.2em">', addressStrPart1, '</tspan>'
+                '<tspan x="20" dy="1.2em">', addressStrPart2, '</tspan>'
+            '</text>'
+        );
 
         return string.concat(
             '<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">'
                 '<style>'
                     '@font-face{'
                         'font-family: "IBMPlexMono";src:url(data:font/woff2;base64,',
-                        // websiteFactory.ethFsFileStore().readFile("IBMPlexMono-Regular.woff2"),
+                        Base64.encode(SSTORE2.read(fontData)),
                         ') format("woff2");'
                         'font-weight: normal;'
                         'font-style: normal;'
@@ -128,12 +118,8 @@ contract OCWebsiteFactoryToken {
                 //     '<tspan x="20" dy="-1.2em">0x1613beB3B2C4f22Ee086B2</tspan>'
                 //     '<tspan x="20" dy="1.2em">b38C1476A3cE7f78E8:333</tspan>'
                 // '</text>'
-                // '<text x="20" y="53" font-size="25">'
-                //     '<tspan x="20" dy="1em">nand.</tspan>'
-                //     '<tspan x="20" dy="1.2em" opacity="0.6">dblog.eth</tspan>'
-                // '</text>'
                 svgAddressPart,
-                '<text x="160" y="230" font-size="60">',
+                '<text x="122" y="230" font-size="60">',
                     brandInitials,
                 '</text>'
             '</svg>'
@@ -147,55 +133,12 @@ contract OCWebsiteFactoryToken {
 
         string memory svg = tokenSVG(tokenId);
         string memory web3Address = tokenWeb3Address(tokenId);
-        // string memory subdomain = blog.subdomain();
-        // uint subdomainLength = bytes(subdomain).length;
-        string memory extraAttrs = "";
-        // if(subdomainLength > 0) {
-        //     // Determine character set
-        //     string memory characterSet = "";
-        //     bool isLetterCharacterSet = true;
-        //     bool isNumberCharacterSet = true;
-        //     for(uint i = 0; i < subdomainLength; i++) {
-        //         bytes1 char = bytes(subdomain)[i];
-        //         if(uint8(char) < 97 || uint8(char) > 122) {
-        //             isLetterCharacterSet = false;
-        //             break;
-        //         }
-        //         if(uint8(char) < 48 || uint8(char) > 57) {
-        //             isNumberCharacterSet = false;
-        //             break;
-        //         }
-        //     }
-        //     if(isLetterCharacterSet) {
-        //         characterSet = "letter";
-        //     }
-        //     else if(isNumberCharacterSet) {
-        //         characterSet = "digit";
-        //     }
-        //     else {
-        //         characterSet = "mixed";
-        //     }
-        
-        //     extraAttrs = string.concat(
-        //         ', {'
-        //             '"trait_type": "Subdomain length", '
-        //             '"value": ', LibStrings.toString(subdomainLength),
-        //         '}, {'
-        //             '"trait_type": "Character set", '
-        //             '"value": "', characterSet, '"'
-        //         '}'
-        //     );
-        // }
 
         return string.concat(
             '{'
                 '"id": "', LibStrings.toString(tokenId), '", '
                 '"name": "', web3Address, '", '
                 '"description": "A on-chain website using the web3:// protocol", '
-                // '"attributes": [{'
-                //     '"trait_type": "Has subdomain", '
-                //     '"value": ', (subdomainLength > 0 ? 'true' : 'false'), ''
-                // '}', extraAttrs, '], '
                 '"image": "data:image/svg+xml;base64,', Base64.encode(bytes(svg)),'", '
                 '"external_url": "', web3Address, '"'
             '}'

@@ -61,22 +61,13 @@ contract OCWebsiteFactoryScript is Script {
         // Get ENS nameWrapper (will deploy ENS and register domain name if necessary)
         (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController) = registerDomainAndGetEnsContracts(targetChain, domain);
 
-        // // Get ETHFS filestore
-        // FileStore store = getFileStore(targetChain);
-        // console.log("FileStore: ", vm.toString(address(store)));
-        // // Add the IBM font
-        // if(targetChain == TargetChain.LOCAL) {
-        //     bytes memory fileContents = vm.readFileBinary("assets/IBMPlexMono-Regular.woff2.base64");
-        //     (address fontFilePointer, ) = store.createFile("IBMPlexMono-Regular.woff2", string(fileContents));
-        // }
-
         // Get EthStorage
         TestEthStorageContractKZG ethStorage = getEthStorage(targetChain);
 
         OCWebsiteFactory factory;
         {
             // Create the factory token
-            OCWebsiteFactoryToken factoryToken = new OCWebsiteFactoryToken();
+            OCWebsiteFactoryToken factoryToken = new OCWebsiteFactoryToken(vm.readFileBinary("assets/IBMPlexMono-Regular-subset.woff2"));
 
             // Create the website implementations
             ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
@@ -288,44 +279,6 @@ contract OCWebsiteFactoryScript is Script {
 
         return (nameWrapper, registrar, registrarController);
     }
-
-    // /**
-    //  * Optionally deploy FileStore, get FileStore address
-    //  * Target chain:
-    //  * - local: Deploy FileStore, return the address
-    //  * - sepolia : Return the address
-    //  * - mainnet : Return the address
-    //  */
-    // function getFileStore(TargetChain targetChain) public returns (FileStore) {
-    //     FileStore store;
-        
-    //     // Local: Deploy new filestore
-    //     if(targetChain == TargetChain.LOCAL) {
-    //         store = new FileStore(address(0x4e59b44847b379578588920cA78FbF26c0B4956C));
-    //     }
-    //     // Sepolia : Get existing value
-    //     else if(targetChain == TargetChain.SEPOLIA) {
-    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-    //     }
-    //     // Holesky : Get existing value
-    //     else if(targetChain == TargetChain.HOLESKY) {
-    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-    //     }
-    //     // Mainnet : Get existing value
-    //     else if(targetChain == TargetChain.MAINNET) {
-    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-    //     }
-    //     // Base : Get existing value
-    //     else if(targetChain == TargetChain.BASE) {
-    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-    //     }
-    //     // Base Sepolia : Get existing value
-    //     else if(targetChain == TargetChain.BASE_SEPOLIA) {
-    //         store = FileStore(0xFe1411d6864592549AdE050215482e4385dFa0FB);
-    //     }
-        
-    //     return store;
-    // }
 
     struct Config {
         uint256 maxKvSizeBits;
