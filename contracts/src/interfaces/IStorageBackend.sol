@@ -20,6 +20,9 @@ interface IStorageBackend {
     // The total size of the file
     function size(address owner, uint index) external view returns (uint);
 
+    // Some storage backends (e.g. EthStorage) require a different chain ID to read the data
+    // than to store the data. This function returns the chain ID to use to read the data
+    function getReadChainId() external view returns (uint);
     // Read the file contents, starting from a chunk ID
     // It will try to read as much as possible in a single call, and may return 
     // a nextChunkId if the data is too large to fit in a single call

@@ -146,6 +146,10 @@ contract StorageBackendSSTORE2 is IStorageBackend {
         return files[owner][index].size;
     }
 
+    function getReadChainId() public view returns (uint) {
+        return block.chainid;
+    }
+
     /**
      * Read the file starting from a specific chunk.
      * @param index The index of the file to read.

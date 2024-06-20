@@ -35,30 +35,14 @@ contract OCWebsiteFactoryToken {
 
         OCWebsite website = websiteFactory.websites(tokenId);
 
-        // uint subdomainLength = bytes(website.subdomain()).length;
-        // if(subdomainLength > 0) {
-        //     web3Address = string.concat("web3://", website.subdomain(), ".", websiteFactory.domain(), ".", websiteFactory.topdomain());
-        // }
-        // else {
-            web3Address = string.concat(
-                "web3://", 
-                LibStrings.toHexString(address(website)));
+        web3Address = string.concat(
+            "web3://", 
+            LibStrings.toHexString(address(website)));
 
-            uint chainId = block.chainid;
-            IStorageBackend storageBackend = website.getLiveFrontendVersion().storageBackend;
-            // TODO: Override based on storageBackend
-            // if(LibStrings.compare(storageBackend.name(), "EthStorage")) {
-            //     // if(block.chainid == 1) {
-            //     //     chainId = 333;
-            //     // }
-            //     // else if(block.chainid == 11155111) {
-            //     //     chainId = 3333;
-            //     // }
-            // }
-            if(chainId > 1) {
-                web3Address = string.concat(web3Address, ":", LibStrings.toString(chainId));
-            }
-        // }
+        uint chainId = block.chainid;
+        if(chainId > 1) {
+            web3Address = string.concat(web3Address, ":", LibStrings.toString(chainId));
+        }
     }
 
     function tokenSVG(uint tokenId) public view returns (string memory) {

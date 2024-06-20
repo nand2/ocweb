@@ -190,6 +190,21 @@ contract StorageBackendEthStorage is IStorageBackend {
     }
 
     /**
+     * EthStorage has a different chain id for reading the data than for storing the data.
+     */
+    function getReadChainId() public view returns (uint result) {
+        if(block.chainid == 1) {
+            result = 333;
+        }
+        else if(block.chainid == 11155111) {
+            result = 3333;
+        }
+        else {
+            result = block.chainid;
+        }
+    }
+
+    /**
      * Read the file starting from a specific chunk.
      * @param index The index of the file to read.
      * @param startingChunkId The index of the chunk to start reading from.

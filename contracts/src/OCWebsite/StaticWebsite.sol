@@ -47,7 +47,7 @@ contract StaticWebsite {
      * Hook to override
      * For a given web3:// request, compute the file path of the requested asset to serve
      */
-    function _getAssetFilePathForRequest(string[] memory resource, KeyValue[] memory params) internal view returns (string memory filePath) {
+    function _getAssetFilePathForRequest(string[] memory resource, KeyValue[] memory params) internal virtual view returns (string memory filePath) {
         if(resource.length == 0) {
             filePath = "index.html";
         }
@@ -72,6 +72,17 @@ contract StaticWebsite {
         // Search for the requested resource in our static file list
         for(uint i = 0; i < frontend.files.length; i++) {
             if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
+                IStorageBackend storageBackend = frontend.storageBackend;
+
+                // Storage backend read chain id check. If not the same, we need to redirect
+                if(storageBackend.getReadChainId() != block.chainid) {
+                    headers = new KeyValue[](1);
+                    headers[0].key = "Location";
+                    headers[0].value = string.concat("web3://", LibStrings.toHexString(address(this)), ":", LibStrings.toString(storageBackend.getReadChainId()), "/", filePath);
+                    statusCode = 302;
+                    return (statusCode, body, headers);
+                }
+
                 // web3:// chunk feature : if the file is big, we will send the file
                 // in chunks
                 // Determine the requested chunk
@@ -83,7 +94,6 @@ contract StaticWebsite {
                     }
                 }
 
-                IStorageBackend storageBackend = frontend.storageBackend;
                 (bytes memory data, uint nextChunkId) = storageBackend.read(address(this), frontend.files[i].contentKey, chunkIndex);
                 body = string(data);
                 statusCode = 200;
