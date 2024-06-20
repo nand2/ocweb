@@ -155,7 +155,7 @@ const frontendABI = [
               {"internalType":"string","name":"contentType","type":"string"},
               {"internalType":"bytes32[]","name":"contentKeys","type":"bytes32[]"}
             ],
-            "internalType":"struct FileInfos[]",
+            "internalType":"struct PartialFileInfos[]",
             "name":"files",
             "type":"tuple[]"
           },

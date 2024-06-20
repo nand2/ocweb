@@ -99,19 +99,25 @@ contract StaticWebsite is ResourceRequestWebsite {
                 body = string(data);
                 statusCode = 200;
 
-                uint headersCount = 2;
+                uint headersCount = 1;
+                if(frontend.files[i].compressionAlgorithm != CompressionAlgorithm.NONE) {
+                    headersCount++;
+                }
                 if(nextChunkId > 0) {
-                    headersCount = 3;
+                    headersCount++;
                 }
                 headers = new KeyValue[](headersCount);
                 headers[0].key = "Content-type";
                 headers[0].value = frontend.files[i].contentType;
-                headers[1].key = "Content-Encoding";
-                headers[1].value = "gzip";
+                if(frontend.files[i].compressionAlgorithm != CompressionAlgorithm.NONE) {
+                    headers[1].key = "Content-Encoding";
+                    // We support brotli or gzip only
+                    headers[1].value = frontend.files[i].compressionAlgorithm == CompressionAlgorithm.BROTLI ? "br" : "gzip";
+                }
                 // If there is more chunk remaining, add a pointer to the next chunk
                 if(nextChunkId > 0) {
-                    headers[2].key = "web3-next-chunk";
-                    headers[2].value = string.concat("/", filePath, "?chunk=", LibStrings.toString(nextChunkId));
+                    headers[headers.length - 1].key = "web3-next-chunk";
+                    headers[headers.length - 1].value = string.concat("/", filePath, "?chunk=", LibStrings.toString(nextChunkId));
                 }
 
                 return (statusCode, body, headers);

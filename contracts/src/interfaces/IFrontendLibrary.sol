@@ -24,6 +24,8 @@ interface IFrontendLibrary {
         uint256 fileSize;
         // The content type of the file, e.g. "image/png"
         string contentType;
+        // The compression algorithm used for the file data
+        CompressionAlgorithm compressionAlgorithm;
         // The data for the storage backend. May be only a part of the file and require
         // subsequent calls to appendToFileInFrontendVersion()
         bytes data;

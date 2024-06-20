@@ -3,24 +3,32 @@ pragma solidity ^0.8.13;
 
 import { IStorageBackend } from "./IStorageBackend.sol";
 
+enum CompressionAlgorithm {
+    NONE,
+    GZIP,
+    BROTLI
+}
+
 // A file : Filename, content type and pointer to the data 
-// What remains unspecified: The storage backend address where the data is stored, and
-// the compression algorithm used
-struct FileInfos {
+// What remains unspecified: The storage backend address where the data is stored
+struct PartialFileInfos {
     // The path of the file, without root slash. E.g. "images/logo.png"
     string filePath;
     // The content type of the file, e.g. "image/png"
     string contentType;
 
-    // Pointer to the file contents on a storage backend
-    uint contentKey;
+    // Compression algorithm used for the file data
+    CompressionAlgorithm compressionAlgorithm;
     // Is the file complete? Has it been uploaded fully?
     bool complete;
+
+    // Pointer to the file contents on a storage backend
+    uint contentKey;
 }
 
 // File infos with the storage backend included
-struct FileInfosWithStorageBackend {
-    FileInfos fileInfos;
+struct FileInfos {
+    PartialFileInfos fileInfos;
 
     // Storage backend of the file
     IStorageBackend storageBackend;
@@ -30,7 +38,7 @@ struct FileInfosWithStorageBackend {
 // The whole frontend share the same storage backend
 struct FrontendFilesSet {
     // The files of the frontend
-    FileInfos[] files;
+    PartialFileInfos[] files;
 
     // Storage backend of the frontend files
     IStorageBackend storageBackend;

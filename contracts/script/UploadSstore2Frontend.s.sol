@@ -45,7 +45,7 @@ contract UploadSstore2Frontend is Script {
         FileNameAndCompressedName[] memory files = abi.decode(vm.envBytes("FILE_ARGS"), (FileNameAndCompressedName[]));
         string memory compressedFilesBasePath = vm.envString("COMPRESSED_FILES_BASE_PATH");
 
-        // Upload them, store them into FileInfos format
+        // Upload them, store them into PartialFileInfos format
         for (uint256 i = 0; i < files.length; i++) {
             console.log("Handling file", files[i].filename, files[i].compressedFileName);
             console.log("    ", files[i].mimeType, files[i].subFolder);
@@ -75,6 +75,7 @@ contract UploadSstore2Frontend is Script {
                         filePath: string.concat(files[i].subFolder, files[i].filename),
                         fileSize: fileContents.length,
                         contentType: files[i].mimeType,
+                        compressionAlgorithm: CompressionAlgorithm.GZIP,
                         data: chunk
                     });
                     frontendLibrary.addFilesToFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, fileUploadInfos);

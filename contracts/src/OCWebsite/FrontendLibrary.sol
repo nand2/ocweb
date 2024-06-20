@@ -109,10 +109,11 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             }
             // If not found, add the file
             else {
-                FileInfos memory fileInfos = FileInfos({
+                PartialFileInfos memory fileInfos = PartialFileInfos({
                     contentKey: contentKey,
                     filePath: fileUploadInfos[i].filePath,
                     contentType: fileUploadInfos[i].contentType,
+                    compressionAlgorithm: fileUploadInfos[i].compressionAlgorithm,
                     complete: frontend.storageBackend.isComplete(address(this), contentKey)
                 });
                 frontend.files.push(fileInfos);
