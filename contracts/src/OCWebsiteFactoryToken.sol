@@ -66,13 +66,6 @@ contract OCWebsiteFactoryToken {
 
         OCWebsite website = websiteFactory.websites(tokenId);
 
-        // Prepare the brand initial: Uppercase the first 3 letters
-        bytes memory brandInitialsBytes = new bytes(3);
-        brandInitialsBytes[0] = bytes1(uint8(bytes(websiteFactory.domain())[0]) - 32);
-        brandInitialsBytes[1] = bytes1(uint8(bytes(websiteFactory.domain())[1]) - 32);
-        brandInitialsBytes[2] = bytes1(uint8(bytes(websiteFactory.domain())[2]) - 32);
-        string memory brandInitials = string(brandInitialsBytes);
-
         // Prepare the colors
         string memory color = "#e0a43a";
         string memory colorShadow = "#b0802e";
@@ -119,8 +112,8 @@ contract OCWebsiteFactoryToken {
                 //     '<tspan x="20" dy="1.2em">b38C1476A3cE7f78E8:333</tspan>'
                 // '</text>'
                 svgAddressPart,
-                '<text x="122" y="230" font-size="60">',
-                    brandInitials,
+                '<text x="70" y="230" font-size="30">'
+                    'OCWebsite'
                 '</text>'
             '</svg>'
         );
