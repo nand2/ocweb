@@ -14,6 +14,7 @@ contract Ownable {
     }
 
     function transferOwnership(address _newOwner) public virtual onlyOwner {
+        require(_newOwner != address(0), "Invalid new owner");
         owner = _newOwner;
     }
 }

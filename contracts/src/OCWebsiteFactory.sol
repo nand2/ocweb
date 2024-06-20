@@ -16,7 +16,7 @@ interface IFactoryExtension {
 }
 
 contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
-    OCWebsite public factoryFrontend;
+    OCWebsite public website;
     OCWebsiteFactoryToken public immutable factoryToken;
 
     ClonableOCWebsite public immutable websiteImplementation;
@@ -69,8 +69,8 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         factoryToken.setWebsiteFactory(this);
     }
 
-    function setFrontend(OCWebsite _frontend) public onlyOwner {
-        factoryFrontend = _frontend;
+    function setWebsite(OCWebsite _website) public onlyOwner {
+        website = _website;
     }
 
     /**

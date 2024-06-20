@@ -213,7 +213,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   echo "Detected OCWebsiteFactory: $OCWEBSITEFACTORY_ADDRESS"
 
   # Fetch the address of the OCWebsiteFactoryFrontend
-  OCWEBSITEFACTORY_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .function == "setFrontend(address)")][0].arguments[0]')
+  OCWEBSITEFACTORY_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .function == "setWebsite(address)")][0].arguments[0]')
   echo "Uploading frontend to OCWebsiteFactoryFrontend ($OCWEBSITEFACTORY_FRONTEND_ADDRESS) ..."
 
   # EthStorage frontend

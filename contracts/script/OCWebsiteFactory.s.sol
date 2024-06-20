@@ -7,6 +7,8 @@ import { OCWebsiteFactoryToken } from "../src/OCWebsiteFactoryToken.sol";
 import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
 import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
 import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
+import { IFrontendLibrary } from "../src/interfaces/IFrontendLibrary.sol";
+import { CompressionAlgorithm } from "../src/interfaces/IFileInfos.sol";
 
 // ENS
 import { ENSRegistry } from "ens-contracts/registry/ENSRegistry.sol";
@@ -89,7 +91,8 @@ contract OCWebsiteFactoryScript is Script {
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite();
             factoryFrontend.addStaticContractAddress("factory", address(factory), block.chainid);
-            factory.setFrontend(factoryFrontend);
+            factory.setWebsite(factoryFrontend);
+
             
             
 
@@ -99,11 +102,11 @@ contract OCWebsiteFactoryScript is Script {
             console.log("OCWebsite implementation: ", address(websiteImplementation));
 
             // Printing the web3:// address of the factory frontend
-            string memory web3FactoryFrontendAddress = string.concat("web3://", vm.toString(address(factory.factoryFrontend())));
+            string memory web3FactoryWebsiteAddress = string.concat("web3://", vm.toString(address(factory.website())));
             if(block.chainid > 1) {
-                web3FactoryFrontendAddress = string.concat(web3FactoryFrontendAddress, ":", vm.toString(block.chainid));
+                web3FactoryWebsiteAddress = string.concat(web3FactoryWebsiteAddress, ":", vm.toString(block.chainid));
             }
-            console.log("web3:// factory frontend: ", web3FactoryFrontendAddress);
+            console.log("web3:// factory website: ", web3FactoryWebsiteAddress);
 
             // Printing the web3:// address of the factory contract
             string memory web3FactoryAddress = string.concat("web3://", vm.toString(address(factory)));
@@ -118,40 +121,6 @@ contract OCWebsiteFactoryScript is Script {
             StorageBackendSSTORE2 storageBackend = new StorageBackendSSTORE2();
             factory.addStorageBackend(storageBackend);
         }
-
-        // // Set the ENS resolver of dblog.eth to the contract
-        // if(targetChain == TargetChain.SEPOLIA || targetChain == TargetChain.HOLESKY || targetChain == TargetChain.MAINNET || targetChain == TargetChain.LOCAL) {
-        //     bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
-        //     bytes32 dblogDomainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
-        //     nameWrapper.setResolver(dblogDomainNamehash, address(factory));
-        // }
-
-        // // Transferring dblog.eth to the factory
-        // if(targetChain == TargetChain.SEPOLIA || targetChain == TargetChain.HOLESKY || targetChain == TargetChain.MAINNET || targetChain == TargetChain.LOCAL) {
-        //     bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
-        //     bytes32 dblogDomainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
-
-        //     nameWrapper.safeTransferFrom(msg.sender, address(factory), uint(dblogDomainNamehash), 1, "");
-        //     // Testnet: Temporary testing (double checking we can fetch back the domain)
-        //     if(targetChain != TargetChain.MAINNET) {
-        //         factory.testnetSendBackDomain();
-        //         nameWrapper.safeTransferFrom(msg.sender, address(factory), uint(dblogDomainNamehash), 1, "");
-        //     }
-        // }
-
-        // // Adding the main blog
-        // factory.addBlog{value: factory.getSubdomainFee()}(string.concat(vm.envString("PRODUCT_NAME"), " news"), string.concat("Latest news about the ", domain, ".eth platform"), domain);
-        // string memory web3BlogFrontendAddress = string.concat("web3://", vm.toString(address(factory.blogs(0).frontend())));
-        // if(block.chainid > 1) {
-        //     web3BlogFrontendAddress = string.concat(web3BlogFrontendAddress, ":", vm.toString(block.chainid));
-        // }
-        // console.log("web3://dblog.dblog.eth frontend: ", web3BlogFrontendAddress);
-
-        // string memory web3BlogAddress = string.concat("web3://", vm.toString(address(factory.blogs(0))));
-        // if(block.chainid > 1) {
-        //     web3BlogAddress = string.concat(web3BlogAddress, ":", vm.toString(block.chainid));
-        // }
-        // console.log("web3://dblog.dblog.eth: ", web3BlogAddress);
 
         vm.stopBroadcast();
     }

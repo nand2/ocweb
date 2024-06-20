@@ -12,13 +12,14 @@ import "../interfaces/IStorageBackend.sol";
 import "./FrontendLibrary.sol";
 import "./StaticWebsite.sol";
 import "./ContractAddressesWebsite.sol";
+import "./ProxyWebsite.sol";
 
-contract OCWebsite is FrontendLibrary, StaticWebsite, ContractAddressesWebsite {
+contract OCWebsite is FrontendLibrary, StaticWebsite, ContractAddressesWebsite, ProxyWebsite {
 
-    constructor() FrontendLibrary() StaticWebsite(this) ContractAddressesWebsite() {
+    constructor() FrontendLibrary() StaticWebsite(this) ContractAddressesWebsite() ProxyWebsite() {
     }
 
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override(StaticWebsite, ContractAddressesWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override(StaticWebsite, ContractAddressesWebsite, ProxyWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
 
         (statusCode, body, headers) = super._processWeb3Request(resource, params);
     }
