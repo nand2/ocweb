@@ -21,6 +21,7 @@
     "vite": "^5.3.1"
   },
   "dependencies": {
-    "@zoltu/ethereum-abi-encoder": "^5.0.4"
+    "@zoltu/ethereum-abi-encoder": "^5.0.4",
+    "ttf2woff2": "^5.0.0"
   }
 }
