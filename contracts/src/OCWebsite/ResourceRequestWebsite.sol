@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "../interfaces/IDecentralizedApp.sol";
 
-contract Website is IDecentralizedApp {
+contract ResourceRequestWebsite is IDecentralizedApp {
 
     // Indicate we are serving a website with the resource request mode
     function resolveMode() external pure returns (bytes32) {

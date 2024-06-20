@@ -4,14 +4,14 @@ pragma solidity ^0.8.13;
 import { LibStrings } from "../library/LibStrings.sol";
 import { Ownable } from "../library/Ownable.sol";
 
-import "./Website.sol";
+import "./ResourceRequestWebsite.sol";
 
 /**
  * Extension: Expose a list of contract addresses at the /contractAddresses.json endpoint
  * This is useful for the frontend to know where to find the contracts and to start building
  * web3:// addresses to call them
  */
-contract ContractAddressesWebsite is Website, Ownable {
+contract ContractAddressesWebsite is ResourceRequestWebsite, Ownable {
     struct AddressAndChainId {
         string name;
         address addr;

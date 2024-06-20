@@ -3,7 +3,9 @@ pragma solidity ^0.8.13;
 
 import { IStorageBackend } from "./IStorageBackend.sol";
 
-// A file : Filename, content type and pointer to the data on an unspecified storage backend
+// A file : Filename, content type and pointer to the data 
+// What remains unspecified: The storage backend address where the data is stored, and
+// the compression algorithm used
 struct FileInfos {
     // The path of the file, without root slash. E.g. "images/logo.png"
     string filePath;

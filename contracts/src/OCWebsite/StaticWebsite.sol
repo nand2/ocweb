@@ -9,9 +9,9 @@ import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 import "../interfaces/IFrontendLibrary.sol";
 
-import "./Website.sol";
+import "./ResourceRequestWebsite.sol";
 
-contract StaticWebsite is Website {
+contract StaticWebsite is ResourceRequestWebsite {
 
     IFrontendLibrary public frontendLibrary;
   
