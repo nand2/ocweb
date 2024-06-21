@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
 import { abi as FactoryABI } from '../utils/factoryABI.js';
+import { useContractAddresses } from '../utils/queries.js';
 
 defineProps({
   msg: String,
@@ -11,13 +12,14 @@ const { isConnected, chainId } = useAccount();
 const { chains, switchChain } = useSwitchChain()
 const { data: hash, isPending, error, writeContract } = useWriteContract()
 
+const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 
 function mint() {
   switchChain({ chainId: 31337 })
 
   writeContract({ 
     abi: FactoryABI,
-    address: '0xe6e340d132b5f46d1e472debcd681b2abc16e57e', //TODO
+    address: contractAddresses.value.factory.address,
     functionName: 'mintWebsite',
     args: [],
   })
@@ -45,8 +47,9 @@ const { isLoading: isConfirming, isSuccess: isConfirmed } =
     </p>
 
     <div>
-      <button type="button" class="mint-button" @click="mint" v-bind:disabled="isConnected == false || isPending || isConfirming">
-        {{ isConnected == false ? "Connect your wallet first" : (isPending || isConfirming) ? "Minting in progress..." : "Mint OCWebsite" }}
+      <button type="button" class="mint-button" @click="mint" 
+        v-bind:disabled="contractAddressesLoaded == false || isConnected == false || isPending || isConfirming">
+        {{ contractAddressesLoaded == false ? "Loading..." : isConnected == false ? "Connect your wallet first" : (isPending || isConfirming) ? "Minting in progress..." : "Mint OCWebsite" }}
       </button>
 
       <div v-if="isConfirming">
