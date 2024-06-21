@@ -1,6 +1,7 @@
 {
   "name": "ocweb",
   "version": "0.0.1",
+  "type": "module",
   "description": "",
   "scripts": {
     "dev-factory": "vite frontend-factory",
@@ -18,10 +19,13 @@
   },
   "homepage": "https://github.com/nand2/ocweb#readme",
   "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
     "vite": "^5.3.1"
   },
   "dependencies": {
     "@zoltu/ethereum-abi-encoder": "^5.0.4",
-    "ttf2woff2": "^5.0.0"
+    "ttf2woff2": "^5.0.0",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.3"
   }
 }

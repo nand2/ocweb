@@ -1,0 +1,95 @@
+:root {
+  --color-root-bg: #242424;
+
+  --color-popup-bg: var(--color-root-bg);
+  --color-panel-bg: #1a1a1a;
+
+  --color-heading: #dfdfdf;
+  --color-divider: #8b8b8b;
+  --color-text: #fafafa;
+  --color-text-muted: #888;
+  --color-text-error: #ff4d4d;
+  --color-link: #e0a43a;
+  --color-link-hover: #be8b32;
+  --color-bglink: var(--color-text);
+  --color-bglink-hover-bg: #79581e;
+  --color-bglink-selected-bg: #79581e;
+
+  --color-button-bg: #1a1a1a;
+  --color-button-secondary-bg: #1e1e1e;
+  --color-button: var(--color-text);
+  --color-button-disabled: #888;
+  --color-button-hover-border: #79581e;
+
+  --color-input-bg: #1a1a1a;
+  --color-input-border: #00000066;
+  --color-input-focus-outline: rgb(116, 116, 116);
+
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-text);
+  background-color: var(--color-root-bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+
+/** 
+ * EVM browser specific workaround: 
+ * As a workaround to another issue, in dark mode electron, EVM browser put pre color as black.
+ */
+@media (prefers-color-scheme: dark) {pre {color: rgba(255, 255, 255, 0.87)}}
+
+a {
+  color: var(--color-link);
+  text-decoration: inherit;
+}
+a:hover {
+  color: var(--color-link-hover);
+}
+
+body {
+  margin: 0;
+}
+
+form input, form textarea {
+  padding: 0.5em;
+  border-radius: 8px;
+  border: 1px solid var(--color-input-border);
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  transition: border-color 0.25s;
+}
+
+form input:focus-visible, orm textarea:focus-visible {
+  outline: 1px solid var(--color-input-focus-outline);
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.5em 1em;
+  font-size: 1em;
+  font-family: inherit;
+  background-color: var(--color-button-bg);
+  color: var(--color-button);
+  transition: border-color 0.25s;
+}
+button[disabled] {
+  cursor: default;
+  color: var(--color-button-disabled);
+}
+button:not([disabled]) {
+  cursor: pointer;
+}
+button:not([disabled]):hover {
+  border-color: var(--color-button-hover-border);
+}
+button.secondary {
+  background-color: var(--color-button-secondary-bg);
+}
+
+
+
