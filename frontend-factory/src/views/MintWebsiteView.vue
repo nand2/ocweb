@@ -14,7 +14,7 @@ import HelloWorld from '../components/MintForm.vue'
   .mint-area-container {
     display: flex;
     place-items: center;
-    height: 100vh;
+    height: calc(100vh - 5em);
   }
 
   .mint-area {

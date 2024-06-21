@@ -1,10 +1,13 @@
 <script setup>
 import { ref } from 'vue'
-import { fetchEip1193Provider } from '../utils/ethereum'
+import { useAccount, useSwitchChain } from '@wagmi/vue';
 
 defineProps({
   msg: String,
 })
+
+const { isConnected, chainId } = useAccount();
+const { chains, switchChain } = useSwitchChain()
 
 const mintInProgress = ref(false)
 const errorMessage = ref('')
@@ -13,6 +16,8 @@ function mint() {
   mintInProgress.value = true
   errorMessage.value = ''
   console.log('Minting...')
+
+  switchChain({ chainId: 31337 })
 
   // setTimeout(() => {
   //   errorMessage.value = 'Minting failed'
@@ -24,6 +29,7 @@ function mint() {
   }, 2000)
 }
 </script>
+
 
 <template>
   <div class="mint-area">
@@ -42,7 +48,9 @@ function mint() {
     </p>
 
     <div>
-      <button type="button" @click="mint" v-bind:disabled="mintInProgress">{{ mintInProgress ? "Minting in progress..." : "Mint OCWebsite" }}</button>
+      <button type="button" class="mint-button" @click="mint" v-bind:disabled="isConnected == false || mintInProgress">
+        {{ isConnected == false ? "Connect your wallet first" : mintInProgress ? "Minting in progress..." : "Mint OCWebsite" }}
+      </button>
 
       <div class="error">
         {{ errorMessage }}
@@ -51,9 +59,14 @@ function mint() {
   </div>
 </template>
 
+
 <style scoped>
 .mint-area {
   text-align: center;
+}
+
+.mint-button {
+  font-size: 1.2em;;
 }
 
 .error {

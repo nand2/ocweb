@@ -1,5 +1,5 @@
 <script setup>
-import HelloWorld from './components/MintForm.vue'
+import WalletConnect from './components/WalletConnect.vue'
 </script>
 
 
@@ -20,6 +20,10 @@ import HelloWorld from './components/MintForm.vue'
     </div>
     <div class="body">
 
+      <div class="body-top-menu">
+        <WalletConnect />
+      </div>
+
       <RouterView />
 
     </div>
@@ -35,7 +39,7 @@ import HelloWorld from './components/MintForm.vue'
 
 .sidebar {
   border-right: 1px solid var(--color-divider);
-  padding: 2em 1em;
+  padding: 1.5em 1em;
   display: flex;
   flex-direction: column;
   gap: 2em;
@@ -51,7 +55,7 @@ import HelloWorld from './components/MintForm.vue'
 }
 
 .logo {
-  height: 1.8em;
+  height: 1.5em;
 }
 
 .menu {
@@ -73,6 +77,13 @@ import HelloWorld from './components/MintForm.vue'
 .menu > a.router-link-active {
   background-color: var(--color-bglink-selected-bg);
 
+}
+
+.body-top-menu {
+  padding: 1em 1.5em;
+  border-bottom: 1px solid var(--color-divider);
+  display: flex;
+  justify-content: flex-end;
 }
 
 .body {
