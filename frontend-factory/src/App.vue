@@ -1,5 +1,7 @@
 <script setup>
 import WalletConnect from './components/WalletConnect.vue'
+import LayourTextWindowReverseIcon from './icons/LayoutTextWindowReverseIcon.vue'
+import MagicIcon from './icons/MagicIcon.vue';
 </script>
 
 
@@ -13,8 +15,8 @@ import WalletConnect from './components/WalletConnect.vue'
       </div>
 
       <div class="menu">
-        <RouterLink to="/">My OCWebsites</RouterLink>
-        <RouterLink to="/mint">Mint OCWebsite</RouterLink>
+        <RouterLink to="/"><span class="menu-icon"><LayourTextWindowReverseIcon /></span> My OCWebsites</RouterLink>
+        <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span> Mint OCWebsite</RouterLink>
       </div>
 
     </div>
@@ -70,6 +72,7 @@ import WalletConnect from './components/WalletConnect.vue'
   font-size: 1.3em;
   color: var(--color-bglink);
   text-decoration: none;
+  white-space: nowrap;
 }
 .menu > a:hover {
   background-color: var(--color-button-hover-border);
@@ -77,6 +80,14 @@ import WalletConnect from './components/WalletConnect.vue'
 .menu > a.router-link-active {
   background-color: var(--color-bglink-selected-bg);
 
+}
+
+.menu > a .menu-icon {
+  margin-right: 0.75em;
+}
+
+.menu > a .menu-icon svg {
+  scale: 1.5;
 }
 
 .body-top-menu {
