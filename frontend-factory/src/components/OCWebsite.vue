@@ -2,7 +2,7 @@
   import { computed, defineProps } from 'vue';
   import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
   import { useQuery } from '@tanstack/vue-query'
-  import { useContractAddresses, useOCWebsiteListByOwner } from '../utils/queries.js';
+  import { useContractAddresses } from '../utils/queries.js';
 
   const props = defineProps({
     tokenId: {
@@ -12,19 +12,23 @@
     contractAddress: {
       type: String,
       required: true,
-    }
+    },
+    chainId: {
+      type: Number,
+      required: true,
+    },
   })
 
   const { isConnected, address } = useAccount();
   const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 
-  const factoryAddress = computed(() => contractAddresses.value?.factory.address)
+  const factoryAddress = computed(() => contractAddresses.value?.factories.find(f => f.chainId === props.chainId)?.address)
 
   // Load the token SVG template
   const { isSuccess: tokenTemplateLoaded, data: tokenSVGTemplate } = useQuery({
-    queryKey: ['OCWebsiteTokenTemplate'],
+    queryKey: ['OCWebsiteTokenTemplate', factoryAddress, props.chainId],
     queryFn: async () => {
-      const response = await fetch(`web3://${factoryAddress.value}:31337/tokenSVGTemplate?returns=(string)`)
+      const response = await fetch(`web3://${factoryAddress.value}:${props.chainId}/tokenSVGTemplate?returns=(string)`)
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }

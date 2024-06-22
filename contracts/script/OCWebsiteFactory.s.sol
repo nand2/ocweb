@@ -57,6 +57,17 @@ contract OCWebsiteFactoryScript is Script {
             } else if(keccak256(abi.encodePacked(vm.envString("TARGET_CHAIN"))) == keccak256(abi.encodePacked("base"))) {
                 targetChain = TargetChain.BASE;
             }
+            else {
+                console.log("Unknown target chain: ", targetChainString);
+                return;
+            }
+
+            // Checking that the short name is known
+            string memory shortName = getChainShortName(targetChain);
+            if(bytes(shortName).length == 0) {
+                console.log("Unknown short name for chain ", targetChainString);
+                return;
+            }
         }
         string memory domain = vm.envString("DOMAIN");
 
@@ -93,10 +104,16 @@ contract OCWebsiteFactoryScript is Script {
 
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite();
-            factoryFrontend.addStaticContractAddress("factory", address(factory), block.chainid);
+            // Add the factory contract address to the frontend
+            factoryFrontend.addStaticContractAddress(string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
+            // Testing: Add hardcoded factory for sepolia
+            factoryFrontend.addStaticContractAddress(string.concat("factory-", "sep"), 0x0578C5e76273237F2109F0921E5A55EB5676B014, 11155111);
+
+            // Add internal redirect to index.html, for 404 handling, and #/ handling
             string[] memory internalRedirect = new string[](1);
             internalRedirect[0] = "index.html";
             factoryFrontend.setGlobalInternalRedirect(internalRedirect, new KeyValue[](0));
+            // Set the website as the factory frontend
             factory.setWebsite(factoryFrontend);
 
             
@@ -304,5 +321,21 @@ contract OCWebsiteFactoryScript is Script {
         console.log("EthStorage: ", vm.toString(address(ethStorageContract)));
 
         return ethStorageContract;
+    }
+
+    function getChainShortName(TargetChain targetChain) public pure returns (string memory) {
+        if(targetChain == TargetChain.LOCAL) {
+            return "hardhat";
+        } else if(targetChain == TargetChain.SEPOLIA) {
+            return "sep";
+        } else if(targetChain == TargetChain.HOLESKY) {
+            return "holesky";
+        } else if(targetChain == TargetChain.MAINNET) {
+            return "eth";
+        } else if(targetChain == TargetChain.BASE_SEPOLIA) {
+            return "basesep";
+        } else if(targetChain == TargetChain.BASE) {
+            return "base";
+        }
     }
 }

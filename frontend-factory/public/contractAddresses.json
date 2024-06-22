@@ -1,1 +1,1 @@
-{"self":{"address":"0x4f57f9239efcbf43e5920f579d03b3849c588396","chainId":31337},"factory":{"address":"0xe6e340d132b5f46d1e472debcd681b2abc16e57e","chainId":31337}}
+{"self":{"address":"0x4f57f9239efcbf43e5920f579d03b3849c588396","chainId":31337},"factory-hardhat":{"address":"0xe6e340d132b5f46d1e472debcd681b2abc16e57e","chainId":31337},"factory-sep":{"address":"0x0578c5e76273237f2109f0921e5a55eb5676b014","chainId":11155111}}
