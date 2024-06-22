@@ -2,13 +2,6 @@
 pragma solidity ^0.8.13;
 
 import { Script, console } from "forge-std/Script.sol";
-import { OCWebsiteFactory } from "../src/OCWebsiteFactory.sol";
-import { OCWebsiteFactoryToken } from "../src/OCWebsiteFactoryToken.sol";
-import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
-import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
-import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
-import { IFrontendLibrary } from "../src/interfaces/IFrontendLibrary.sol";
-import { CompressionAlgorithm } from "../src/interfaces/IFileInfos.sol";
 
 // ENS
 import { ENSRegistry } from "ens-contracts/registry/ENSRegistry.sol";
@@ -30,6 +23,16 @@ import { IPriceOracle } from "ens-contracts/ethregistrar/IPriceOracle.sol";
 // EthStorage
 import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageContractKZG.sol";
 import { StorageContract } from "storage-contracts-v1/StorageContract.sol";
+
+import { IFrontendLibrary } from "../src/interfaces/IFrontendLibrary.sol";
+import { CompressionAlgorithm } from "../src/interfaces/IFileInfos.sol";
+import { KeyValue } from "../src/interfaces/IDecentralizedApp.sol";
+
+import { OCWebsiteFactory } from "../src/OCWebsiteFactory.sol";
+import { OCWebsiteFactoryToken } from "../src/OCWebsiteFactoryToken.sol";
+import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
+import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
+import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
 
 contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -91,6 +94,9 @@ contract OCWebsiteFactoryScript is Script {
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite();
             factoryFrontend.addStaticContractAddress("factory", address(factory), block.chainid);
+            string[] memory internalRedirect = new string[](1);
+            internalRedirect[0] = "index.html";
+            factoryFrontend.setGlobalInternalRedirect(internalRedirect, new KeyValue[](0));
             factory.setWebsite(factoryFrontend);
 
             

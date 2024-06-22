@@ -37,17 +37,17 @@ contract ProxyWebsite is ResourceRequestWebsite, Ownable {
     return proxiedWebsites;
   }
 
-  function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override virtual view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+  function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override virtual view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
 
     ResourceRequestWebsite[] memory websites = _getProxiedWebsites();
     for (uint i = 0; i < websites.length; i++) {
       ResourceRequestWebsite website = websites[i];
       (statusCode, body, headers) = website.request(resource, params);
       if (statusCode != 0 && statusCode != 404) {
-        return (statusCode, body, headers);
+        return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
       }
     }
 
-    (statusCode, body, headers) = super._processWeb3Request(resource, params);
+    (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
   }
 }

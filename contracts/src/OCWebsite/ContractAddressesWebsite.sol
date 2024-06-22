@@ -64,7 +64,7 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, Ownable {
      * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
      *                   process the call
      */
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
         if(resource.length == 1 && LibStrings.compare(resource[0], "contractAddresses.json")) {
             // We output all the static contract addresses and ourselves
             // Manual JSON serialization, safe with the vars we encode
@@ -88,10 +88,10 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, Ownable {
             headers = new KeyValue[](1);
             headers[0].key = "Content-type";
             headers[0].value = "application/json";
-            return (statusCode, body, headers);
+            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
         }
 
-        (statusCode, body, headers) = super._processWeb3Request(resource, params);
+        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
     }
         
 }

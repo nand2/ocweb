@@ -64,7 +64,7 @@ contract StaticWebsite is ResourceRequestWebsite {
      * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
      *                   process the call
      */
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
         FrontendFilesSet memory frontend = getLiveFrontendVersion();
 
         // Compute the filePath of the requested resource
@@ -81,7 +81,7 @@ contract StaticWebsite is ResourceRequestWebsite {
                     headers[0].key = "Location";
                     headers[0].value = string.concat("web3://", LibStrings.toHexString(address(this)), ":", LibStrings.toString(storageBackend.getReadChainId()), "/", filePath);
                     statusCode = 302;
-                    return (statusCode, body, headers);
+                    return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
                 }
 
                 // web3:// chunk feature : if the file is big, we will send the file
@@ -120,10 +120,10 @@ contract StaticWebsite is ResourceRequestWebsite {
                     headers[headers.length - 1].value = string.concat("/", filePath, "?chunk=", LibStrings.toString(nextChunkId));
                 }
 
-                return (statusCode, body, headers);
+                return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
             }
         }
 
-        (statusCode, body, headers) = super._processWeb3Request(resource, params);
+        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
     }
 }
