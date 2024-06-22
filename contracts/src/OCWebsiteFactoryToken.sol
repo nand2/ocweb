@@ -45,28 +45,10 @@ contract OCWebsiteFactoryToken {
         }
     }
 
-    function tokenSVG(uint tokenId) public view returns (string memory) {
-        require(tokenId < websiteFactory.totalSupply(), "Token does not exist");
-
-        OCWebsite website = websiteFactory.websites(tokenId);
-
+    function tokenSVGByVars(string memory addressStrPart1, string memory addressStrPart2) public view returns (string memory) {
         // Prepare the colors
         string memory color = "#e0a43a";
         string memory colorShadow = "#b0802e";
-
-        // Prepare the address part
-        string memory svgAddressPart = "";
-        string memory addressStr = tokenWeb3Address(tokenId);
-        addressStr = LibStrings.substring(addressStr, 7, bytes(addressStr).length);
-        string memory addressStrPart1 = LibStrings.substring(addressStr, 0, 24);
-        string memory addressStrPart2 = LibStrings.substring(addressStr, 24, bytes(addressStr).length);
-
-        svgAddressPart = string.concat(
-            '<text x="20" y="90" font-size="15">'
-                '<tspan x="20" dy="-1.2em">', addressStrPart1, '</tspan>'
-                '<tspan x="20" dy="1.2em">', addressStrPart2, '</tspan>'
-            '</text>'
-        );
 
         return string.concat(
             '<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">'
@@ -89,18 +71,30 @@ contract OCWebsiteFactoryToken {
                 '<rect width="256" height="256" fill="', color, '" />'
                 '<text x="20" y="45" font-size="30">'
                     'web3://'
-                '</text>',
-                // Samples:
-                // '<text x="20" y="90" font-size="15">'
-                //     '<tspan x="20" dy="-1.2em">0x1613beB3B2C4f22Ee086B2</tspan>'
-                //     '<tspan x="20" dy="1.2em">b38C1476A3cE7f78E8:333</tspan>'
-                // '</text>'
-                svgAddressPart,
+                '</text>'
+                '<text x="20" y="90" font-size="15">'
+                    '<tspan x="20" dy="-1.2em">', addressStrPart1, '</tspan>'
+                    '<tspan x="20" dy="1.2em">', addressStrPart2, '</tspan>'
+                '</text>'
                 '<text x="70" y="230" font-size="30">'
                     'OCWebsite'
                 '</text>'
             '</svg>'
         );
+    }
+
+    function tokenSVG(uint tokenId) public view returns (string memory) {
+        require(tokenId < websiteFactory.totalSupply(), "Token does not exist");
+
+        OCWebsite website = websiteFactory.websites(tokenId);
+
+        // Prepare the address part
+        string memory addressStr = tokenWeb3Address(tokenId);
+        addressStr = LibStrings.substring(addressStr, 7, bytes(addressStr).length);
+        string memory addressStrPart1 = LibStrings.substring(addressStr, 0, 24);
+        string memory addressStrPart2 = LibStrings.substring(addressStr, 24, bytes(addressStr).length);
+
+        return tokenSVGByVars(addressStrPart1, addressStrPart2);
     }
 
     function tokenURI(uint tokenId) public view returns (string memory) {

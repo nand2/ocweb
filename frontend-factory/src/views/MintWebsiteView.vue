@@ -1,11 +1,11 @@
 <script setup>
-import HelloWorld from '../components/MintForm.vue'
+import MintForm from '../components/MintForm.vue'
 </script>
 
 <template>
   <div class="mint-area-container">
     <div class="mint-area">
-      <HelloWorld />
+      <MintForm />
     </div>
   </div>
 </template>

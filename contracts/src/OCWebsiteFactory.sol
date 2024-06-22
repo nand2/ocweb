@@ -93,60 +93,6 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     }
 
 
-    /**
-     * For frontend: Get a batch of parameters in a single call
-     */
-    // function getParameters() public view returns (string memory _topdomain, string memory _domain, address _frontend, address _blogImplementation, uint subdomainFee) {
-    //     return (topdomain, domain, address(factoryFrontend), address(blogImplementation), getSubdomainFee());
-    // }
-
-    // /**
-    //  * For frontend: Get the list of blogs
-    //  */
-    // struct BlogInfo {
-    //     uint256 id;
-    //     address blogAddress;
-    //     address blogFrontendAddress;
-    //     string subdomain;
-    //     string title;
-    //     string description;
-    //     uint256 postCount;
-    // }
-    // function getBlogInfoList(uint startIndex, uint limit) public view returns (BlogInfo[] memory blogInfos, uint256 blogCount) {
-    //     uint256 blogsCount = blogs.length;
-    //     uint256 actualLimit = limit;
-    //     if(startIndex >= blogsCount) {
-    //         actualLimit = 0;
-    //     } else if(startIndex + limit > blogsCount) {
-    //         actualLimit = blogsCount - startIndex;
-    //     }
-
-    //     blogInfos = new BlogInfo[](actualLimit);
-    //     for(uint i = 0; i < actualLimit; i++) {
-    //         DBlog blog = blogs[startIndex + i];
-    //         blogInfos[i] = BlogInfo({
-    //             id: startIndex + i,
-    //             blogAddress: address(blog),
-    //             blogFrontendAddress: address(blog.frontend()),
-    //             subdomain: blog.subdomain(),
-    //             title: blog.title(),
-    //             description: blog.description(),
-    //             postCount: blog.getPostCount()
-    //         });
-    //     }
-
-    //     return (blogInfos, blogsCount);
-    // }
-
-    // function getBlogAddress(uint256 index) public view returns (address) {
-    //     require(index < blogs.length, "Blog does not exist");
-
-    //     return address(blogs[index]);
-    // }
-    
-    // function getBlogCount() public view returns (uint256) {
-    //     return blogs.length;
-    // }
 
 
     //
@@ -197,6 +143,18 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     // ERC721
     //
 
+    function _beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize) internal override {
+        super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
+
+        // Update the owner of the website, when moving the token (not minting)
+        if(from != address(0)) {
+            for(uint i = 0; i < batchSize; i++) {
+                OCWebsite userWebsite = websites[firstTokenId + i];
+                userWebsite.transferOwnership(to);
+            }
+        }
+    }
+
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(tokenId < websites.length, "Token does not exist");
 
@@ -207,6 +165,28 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         require(tokenId < websites.length, "Token does not exist");
 
         return factoryToken.tokenSVG(tokenId);
+    }
+
+    function tokenSVGTemplate() public view returns (string memory) {
+        return factoryToken.tokenSVGByVars("{addressPart1}", "{addressPart2}");
+    }
+
+    struct DetailedToken {
+        uint tokenId;
+        address contractAddress;
+    }
+    function detailedTokensOfOwner(address user) public view returns (DetailedToken[] memory tokens) {
+        uint tokenCount = balanceOf(user);
+        tokens = new DetailedToken[](tokenCount);
+        for(uint i = 0; i < tokenCount; i++) {
+            uint tokenId = tokenOfOwnerByIndex(user, i);
+            tokens[i] = DetailedToken({
+                tokenId: tokenId,
+                contractAddress: address(websites[tokenId])
+            });
+        }
+
+        return tokens;
     }
 
 

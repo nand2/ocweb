@@ -16,7 +16,7 @@ import MagicIcon from './icons/MagicIcon.vue';
 
       <div class="menu">
         <RouterLink to="/"><span class="menu-icon"><LayourTextWindowReverseIcon /></span> My OCWebsites</RouterLink>
-        <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span> Mint OCWebsite</RouterLink>
+        <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span> Mint an OCWebsite</RouterLink>
       </div>
 
     </div>
