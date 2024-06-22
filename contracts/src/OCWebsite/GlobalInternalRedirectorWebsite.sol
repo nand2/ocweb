@@ -5,7 +5,7 @@ import { Ownable } from "../library/Ownable.sol";
 
 import "./ResourceRequestWebsite.sol";
 
-contract InternalRedirectorWebsite is ResourceRequestWebsite, Ownable {
+contract GlobalInternalRedirectorWebsite is ResourceRequestWebsite, Ownable {
   string[] public globalInternalRedirectResource;
   KeyValue[] public globalInternalRedirectParams;
 

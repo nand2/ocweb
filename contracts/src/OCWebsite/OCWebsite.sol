@@ -13,14 +13,14 @@ import "./FrontendLibrary.sol";
 import "./StaticWebsite.sol";
 import "./ContractAddressesWebsite.sol";
 import "./ProxyWebsite.sol";
-import "./InternalRedirectorWebsite.sol";
+import "./GlobalInternalRedirectorWebsite.sol";
 
-contract OCWebsite is InternalRedirectorWebsite, ProxyWebsite, ContractAddressesWebsite, StaticWebsite, FrontendLibrary {
+contract OCWebsite is GlobalInternalRedirectorWebsite, ProxyWebsite, ContractAddressesWebsite, StaticWebsite, FrontendLibrary {
 
-    constructor() FrontendLibrary() StaticWebsite(this) ContractAddressesWebsite() ProxyWebsite() InternalRedirectorWebsite() {
+    constructor() FrontendLibrary() StaticWebsite(this) ContractAddressesWebsite() ProxyWebsite() GlobalInternalRedirectorWebsite() {
     }
 
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override(InternalRedirectorWebsite, ProxyWebsite, ContractAddressesWebsite, StaticWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override(GlobalInternalRedirectorWebsite, ProxyWebsite, ContractAddressesWebsite, StaticWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
 
         (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
     }
