@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import { Ownable } from "../library/Ownable.sol";
+import { SettingsLockable } from "../library/SettingsLockable.sol";
 
 import "./ResourceRequestWebsite.sol";
 
-contract GlobalInternalRedirectorWebsite is ResourceRequestWebsite, Ownable {
+contract GlobalInternalRedirectorWebsite is ResourceRequestWebsite, SettingsLockable {
   string[] public globalInternalRedirectResource;
   KeyValue[] public globalInternalRedirectParams;
 
   constructor() {}
 
-  function setGlobalInternalRedirect(string[] memory resource, KeyValue[] memory params) public onlyOwner {
+  function setGlobalInternalRedirect(string[] memory resource, KeyValue[] memory params) public onlyOwner settingsUnlocked {
     delete globalInternalRedirectResource;
     for(uint i = 0; i < resource.length; i++) {
       globalInternalRedirectResource.push(resource[i]);

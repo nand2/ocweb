@@ -13,20 +13,27 @@ import "../interfaces/IStorageBackend.sol";
 contract FrontendLibrary is IFrontendLibrary, Ownable {
 
     FrontendFilesSet[] public frontendVersions;
-    // The index of the frontend being used
+    // The index of the default frontend to use
     uint256 public defaultFrontendIndex;
+    // Is the frontend library locked?
+    bool public frontendLibraryLocked;
 
 
     //
     // IFrontendLibrary implementation
     //
 
+    modifier frontendLibraryUnlocked() {
+        require(frontendLibraryLocked == false, "Frontend library is locked");
+        _;
+    }
+
     /**
      * Add a new frontend version
      * @param storageBackend Address of the storage backend
      * @param _description A description of the frontend version
      */
-    function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwner {
+    function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwner frontendLibraryUnlocked {
         frontendVersions.push();
         FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
         newFrontend.storageBackend = storageBackend;
@@ -53,7 +60,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Remove a frontend version
      * @param frontendIndex The index of the frontend version
      */
-    function removeFrontendVersion(uint256 frontendIndex) public onlyOwner {
+    function removeFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         require(!frontendVersions[frontendIndex].locked, "Frontend version is locked");
         frontendVersions[frontendIndex] = frontendVersions[frontendVersions.length - 1];
@@ -71,7 +78,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Set the default frontend version used in the website
      * @param frontendIndex The index of the frontend version
      */
-    function setDefaultFrontendIndex(uint256 frontendIndex) public onlyOwner {
+    function setDefaultFrontendIndex(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         defaultFrontendIndex = frontendIndex;
     }
@@ -81,7 +88,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      * @param fileUploadInfos The files to add
      */
-    function addFilesToFrontendVersion(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) public payable onlyOwner {
+    function addFilesToFrontendVersion(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) public payable onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         require(!frontend.locked, "Frontend version is locked");
@@ -150,7 +157,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param filePath The path of the file to read
      * @param data The data to give to the storage backend
      */
-    function appendToFileInFrontendVersion(uint256 frontendIndex, string memory filePath, bytes memory data) public payable onlyOwner {
+    function appendToFileInFrontendVersion(uint256 frontendIndex, string memory filePath, bytes memory data) public payable onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         require(!frontend.locked, "Frontend version is locked");
@@ -189,7 +196,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      * @param filePaths The paths of the files to remove
      */
-    function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) public onlyOwner {
+    function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) public onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         require(!frontend.locked, "Frontend version is locked");
@@ -208,7 +215,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Remove all files from a frontend version
      * @param frontendIndex The index of the frontend version
      */
-    function removeAllFilesFromFrontendVersion(uint256 frontendIndex) public onlyOwner {
+    function removeAllFilesFromFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked  {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         require(!frontend.locked, "Frontend version is locked");
@@ -223,12 +230,20 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Lock a frontend version
      * @param frontendIndex The index of the frontend version
      */
-    function lockFrontendVersion(uint256 frontendIndex) public onlyOwner {
+    function lockFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         require(!frontend.locked, "Frontend version is already locked");
         frontend.locked = true;
     }
+
+    /**
+     * Lock the whole frontend library
+     */
+    function lockFrontendLibrary() public onlyOwner {
+        frontendLibraryLocked = true;
+    }
+
 
     function _findFileIndexByNameInFrontendVersion(FrontendFilesSet storage frontend, string memory filePath) internal view returns (bool, uint) {
         for(uint i = 0; i < frontend.files.length; i++) {

@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import { Ownable } from "../library/Ownable.sol";
+import { SettingsLockable } from "../library/SettingsLockable.sol";
 
 import "./ResourceRequestWebsite.sol";
 
-contract ProxyWebsite is ResourceRequestWebsite, Ownable {
+contract ProxyWebsite is ResourceRequestWebsite, SettingsLockable {
   ResourceRequestWebsite[] public proxiedWebsites;
-  bool public proxiedWebsitesLocked = false;
 
   constructor() {}
 
-  function addProxiedWebsite(ResourceRequestWebsite website) public onlyOwner {
-    require(proxiedWebsitesLocked == false, "Locked");
+  function addProxiedWebsite(ResourceRequestWebsite website) public onlyOwner settingsUnlocked {
     proxiedWebsites.push(website);
   }
 
@@ -20,17 +18,11 @@ contract ProxyWebsite is ResourceRequestWebsite, Ownable {
     return proxiedWebsites;
   }
 
-  function removeProxiedWebsite(uint index) public onlyOwner {
-    require(proxiedWebsitesLocked == false, "Locked");
+  function removeProxiedWebsite(uint index) public onlyOwner settingsUnlocked {
     require(index < proxiedWebsites.length, "Index out of bounds");
 
     proxiedWebsites[index] = proxiedWebsites[proxiedWebsites.length - 1];
     proxiedWebsites.pop();
-  }
-
-  function lockProxiedWebsites() public onlyOwner {
-    require(proxiedWebsitesLocked == false, "Locked");
-    proxiedWebsitesLocked = true;
   }
 
   function _getProxiedWebsites() internal virtual view returns (ResourceRequestWebsite[] memory) {

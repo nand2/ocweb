@@ -43,4 +43,6 @@ interface IFrontendLibrary {
 
     // Lock a frontend version: It won't be editable anymore, and cannot be deleted
     function lockFrontendVersion(uint256 frontendIndex) external;
+    // Lock the whole frontend library
+    // function lockFrontendLibrary() external;
 }

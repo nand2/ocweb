@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { LibStrings } from "../library/LibStrings.sol";
-import { Ownable } from "../library/Ownable.sol";
+import { SettingsLockable } from "../library/SettingsLockable.sol";
 
 import "./ResourceRequestWebsite.sol";
 
@@ -11,19 +11,17 @@ import "./ResourceRequestWebsite.sol";
  * This is useful for the frontend to know where to find the contracts and to start building
  * web3:// addresses to call them
  */
-contract ContractAddressesWebsite is ResourceRequestWebsite, Ownable {
+contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
     struct AddressAndChainId {
         string name;
         address addr;
         uint chainId;
     }
     AddressAndChainId[] public staticContractAddresses;
-    bool public staticContractAddressesLocked = false;
 
     constructor() {}
 
-    function addStaticContractAddress(string memory name, address addr, uint chainId) public onlyOwner {
-        require(staticContractAddressesLocked == false, "Locked");
+    function addStaticContractAddress(string memory name, address addr, uint chainId) public onlyOwner settingsUnlocked {
         // Reserved names
         require(LibStrings.compare(name, "self") == false, "Name reserved");
         // Ensure the name was not used yet
@@ -38,17 +36,11 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, Ownable {
         return staticContractAddresses;
     }
 
-    function removeStaticContractAddress(uint index) public onlyOwner {
-        require(staticContractAddressesLocked == false, "Locked");
+    function removeStaticContractAddress(uint index) public onlyOwner settingsUnlocked {
         require(index < staticContractAddresses.length, "Index out of bounds");
 
         staticContractAddresses[index] = staticContractAddresses[staticContractAddresses.length - 1];
         staticContractAddresses.pop();
-    }
-
-    function lockStaticContractAddresses() public onlyOwner {
-        require(staticContractAddressesLocked == false, "Locked");
-        staticContractAddressesLocked = true;
     }
 
     /**
