@@ -1,62 +1,56 @@
 <script setup>
-import { computed } from 'vue';
-import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
-import { useQuery } from '@tanstack/vue-query'
-import { useContractAddresses } from '../utils/queries.js';
-import OCWebsite from '../components/OCWebsite.vue';
+import { useAccount } from '@wagmi/vue';
+
+import { useSupportedChains } from '../utils/ethereum.js';
+import ChainOCWebsites from '../components/ChainOCWebsites.vue';
 
 
-const { isConnected, address } = useAccount();
-const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
-
-const factoryAddress = computed(() => contractAddresses.value?.factories[0].address)
-
-// Fetch the OCWebsites owned by the user
-const { data: ocWebsites, isSuccess: ocWebsitesLoaded } =  useQuery({
-  queryKey: ['OCWebsiteList', factoryAddress, address],
-  queryFn: async () => {
-    const response = await fetch(`web3://${factoryAddress.value}:31337/detailedTokensOfOwner/${address.value}?returns=((uint256,address)[])`)
-    if (!response.ok) {
-      throw new Error('Network response was not ok')
-    }
-    const decodedResponse = await response.json()
-    return decodedResponse[0].map(([tokenId, contractAddress]) => ({ tokenId: parseInt(tokenId, 16), contractAddress }))
-  },
-  staleTime: 3600 * 1000,
-  enabled: computed(() => contractAddressesLoaded.value && isConnected.value),
-})
+const { isConnected } = useAccount();
+const { isSuccess: supportedChainsLoaded, data: supportedChains } = useSupportedChains()
 </script>
 
 
 <template>
-  <div v-if="isConnected == false" class="please-connect-wallet-message">
-    Please connect your wallet
-  </div>
+  <div class="my-websites">
+    <div v-if="isConnected == false" class="please-connect-wallet-message">
+      Please connect your wallet
+    </div>
 
-  <div v-else-if="ocWebsitesLoaded == false">
-    Loading...
-  </div>
+    <div v-else-if="supportedChainsLoaded == false">
+      Loading...
+    </div>
 
-  <div v-else-if="ocWebsites.length == 0" class="not-owing-ocwebsites-message">
-    You don't have any OCWebsite yet. <RouterLink to="/mint">Mint one</RouterLink>!
-  </div>
-
-  <div v-else class="oc-websites">
-    <OCWebsite v-for="ocWebsite in ocWebsites" :key="ocWebsite.tokenId" :tokenId="ocWebsite.tokenId" :contractAddress="ocWebsite.contractAddress" :chainId="31337" />
+    <div v-else class="chains-oc-websites">
+      <div v-for="chain in supportedChains" :key="chain.id" class="chain-oc-websites">
+        <h3>
+          {{ chain.name }}
+        </h3>
+        <ChainOCWebsites :chain="chain" />
+      </div>
+    </div>
   </div>
 </template>
 
 
 <style scoped>
-.please-connect-wallet-message, .not-owing-ocwebsites-message {
+.my-websites {
+  padding: 2em;
+}
+
+.please-connect-wallet-message {
   margin-top: 20vh;
   text-align: center;
 }
 
-.oc-websites {
+.chains-oc-websites {
   display: flex;
-  flex-wrap: wrap;
-  gap: 2em;
-  padding: 2em;
+  flex-direction: column;
+  gap: 1.5em;
 }
+
+.chain-oc-websites h3 {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
 </style>

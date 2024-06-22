@@ -1,9 +1,9 @@
 import { http, createConfig } from '@wagmi/vue'
-import { mainnet, sepolia, hardhat } from '@wagmi/vue/chains'
+import { mainnet, sepolia, holesky, hardhat } from '@wagmi/vue/chains'
 import { injected, coinbaseWallet } from '@wagmi/vue/connectors'
 
 export const config = createConfig({
-  chains: [mainnet, sepolia, hardhat],
+  chains: [mainnet, sepolia, holesky, hardhat],
   connectors: [
     injected(),
     coinbaseWallet({
@@ -15,6 +15,7 @@ export const config = createConfig({
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
+    [holesky.id]: http(),
     [hardhat.id]: http(),
   },
 })
