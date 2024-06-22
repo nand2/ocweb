@@ -47,7 +47,7 @@
 
     // Inject vars
     const addressPart1 = props.contractAddress.toLowerCase().slice(0, 24);
-    const addressPart2 = props.contractAddress.toLowerCase().slice(24);
+    const addressPart2 = props.contractAddress.toLowerCase().slice(24) + ":" + props.chainId;
     const svg = tokenSVGTemplate.value
       .replace(/{addressPart1}/g, addressPart1)
       .replace(/{addressPart2}/g, addressPart2)
