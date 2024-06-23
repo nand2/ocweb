@@ -54,7 +54,7 @@ body {
   margin: 0;
 }
 
-form input, form textarea {
+input, textarea, select {
   padding: 0.5em;
   border-radius: 8px;
   border: 1px solid var(--color-input-border);
@@ -63,7 +63,7 @@ form input, form textarea {
   transition: border-color 0.25s;
 }
 
-form input:focus-visible, orm textarea:focus-visible {
+input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 1px solid var(--color-input-focus-outline);
 }
 

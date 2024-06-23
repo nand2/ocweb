@@ -21,7 +21,7 @@ function formattedBalance() {
         v-for="connector in connectors"
         @click="connect({ connector, chainId })"
       >
-        Connect with {{ connector.name != "Injected" ? connector.name : "Metamask" }}
+        Connect with {{ connector.name }}
       </button>
     </div>
     <div v-else class="connected-dashboard">

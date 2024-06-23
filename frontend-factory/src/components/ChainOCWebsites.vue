@@ -49,7 +49,7 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
   </div>
 
   <div v-else class="oc-websites">
-    <OCWebsite v-for="ocWebsite in ocWebsites" :key="ocWebsite.tokenId" :tokenId="ocWebsite.tokenId" :contractAddress="ocWebsite.contractAddress" :chainId="31337" />
+    <OCWebsite v-for="ocWebsite in ocWebsites" :key="ocWebsite.tokenId" :tokenId="ocWebsite.tokenId" :contractAddress="ocWebsite.contractAddress" :chainId="factoryChainId" />
   </div>
 </template>
 

@@ -1,32 +1,45 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
+import { useQueryClient } from '@tanstack/vue-query'
+
 import { abi as FactoryABI } from '../utils/factoryABI.js';
 import { useContractAddresses } from '../utils/queries.js';
+import { useSupportedChains } from '../utils/ethereum.js';
 
 defineProps({
   msg: String,
 })
 
-const { isConnected, chainId } = useAccount();
-const { chains, switchChain } = useSwitchChain()
+const { isConnected, address } = useAccount();
+const { switchChainAsync, isPending: switchChainIsPending, error: switchChainError } = useSwitchChain()
 const { data: hash, isPending, error, writeContract } = useWriteContract()
+const queryClient = useQueryClient()
 
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
+const { isSuccess: supportedChainsLoaded, data: supportedChains } = useSupportedChains()
 
-function mint() {
-  switchChain({ chainId: 31337 })
+const mintChainId = ref(null);
+const factoryAddress = computed(() => contractAddresses.value?.factories.find(f => f.chainId === mintChainId.value)?.address)
+
+async function mint() {
+  await switchChainAsync({ chainId: mintChainId.value })
 
   writeContract({ 
     abi: FactoryABI,
-    address: contractAddresses.value.factory.address,
+    address: factoryAddress.value,
     functionName: 'mintWebsite',
     args: [],
   })
+
+  // Unable to find how to call that on transaction reception
+  queryClient.invalidateQueries({ queryKey: ['OCWebsiteList', factoryAddress.value, mintChainId.value, address] })
 }
 
 const { isLoading: isConfirming, isSuccess: isConfirmed } = 
-  useWaitForTransactionReceipt({ hash })
+  useWaitForTransactionReceipt({ 
+    hash,
+  })
 </script>
 
 
@@ -46,12 +59,19 @@ const { isLoading: isConfirming, isSuccess: isConfirmed } =
       The whole thing is free except for the blockchain gas fees.
     </p>
 
-    <div>
-      <button type="button" class="mint-button" @click="mint" 
-        v-bind:disabled="contractAddressesLoaded == false || isConnected == false || isPending || isConfirming">
-        {{ contractAddressesLoaded == false ? "Loading..." : isConnected == false ? "Connect your wallet first" : (isPending || isConfirming) ? "Minting in progress..." : "Mint OCWebsite" }}
-      </button>
+    <div class="form">
+      <select v-model="mintChainId" class="chain-selector" v-if="isConnected" v-bind:disabled="isPending || isConfirming">
+        <option :value="null" disabled>Select a chain</option>
+        <option v-for="chain in supportedChains" :value="chain.id">{{ chain.name }}</option>
+      </select>
 
+      <button type="button" class="mint-button" @click="mint" 
+        v-bind:disabled="contractAddressesLoaded == false || supportedChainsLoaded == false || isConnected == false || mintChainId == null || isPending || isConfirming">
+        {{ (contractAddressesLoaded || supportedChainsLoaded) == false ? "Loading..." : isConnected == false ? "Connect your wallet first" : (isPending || isConfirming) ? "Minting in progress..." : "Mint OCWebsite" }}
+      </button>
+    </div>
+
+    <div>
       <div v-if="isConfirming">
         Waiting for confirmation...
       </div>
@@ -59,9 +79,12 @@ const { isLoading: isConfirming, isSuccess: isConfirmed } =
         <strong>🎉 Transaction Confirmed! 🎉</strong><br />
          Your OCWebsite is now in your wallet and ready to be managed on the <RouterLink to="/">My OCWebsites</RouterLink> section.
       </div>
+      <div class="error" v-if="switchChainIsPending == false && switchChainError">
+        Switching chain error: {{ switchChainError.shortMessage || switchChainError.message }}
+      </div>
 
       <div class="error" v-if="isPending == false && error">
-        Error: {{ error.shortMessage || error.message }} {{  error  }}
+        Error: {{ error.shortMessage || error.message }}
       </div>
     </div>
   </div>
@@ -71,6 +94,17 @@ const { isLoading: isConfirming, isSuccess: isConfirmed } =
 <style scoped>
 .mint-area {
   text-align: center;
+}
+
+.form {
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+}
+
+.chain-selector {
+  font-size: 1em;
+  margin-bottom: 1.2em;
 }
 
 .mint-button {
