@@ -75,7 +75,7 @@ contract OCWebsiteFactoryScript is Script {
         vm.startBroadcast();
 
         // Get ENS nameWrapper (will deploy ENS and register domain name if necessary)
-        (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController) = registerDomainAndGetEnsContracts(targetChain, domain);
+        (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController, PublicResolver publicResolver) = registerDomainAndGetEnsContracts(targetChain, domain);
 
         // Get EthStorage
         TestEthStorageContractKZG ethStorage = getEthStorage(targetChain);
@@ -138,6 +138,14 @@ contract OCWebsiteFactoryScript is Script {
                 web3FactoryAddress = string.concat(web3FactoryAddress, ":", vm.toString(block.chainid));
             }
             console.log("web3:// factory: ", web3FactoryAddress);
+
+            // If local, point the domain to the factory website
+            if(targetChain == TargetChain.LOCAL) {
+                bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
+                bytes32 domainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
+                nameWrapper.setRecord(domainNamehash, msg.sender, address(publicResolver), 365 * 24 * 3600);
+                publicResolver.setAddr(domainNamehash, address(factory.website()));
+            }
         }
 
         // Add the SSTORE2 storage backend
@@ -157,15 +165,15 @@ contract OCWebsiteFactoryScript is Script {
      * - sepolia : Register test domain, return the name wrapper
      * - mainnet : Return the name wrapper
      */
-    function registerDomainAndGetEnsContracts(TargetChain targetChain, string memory domain) public returns (NameWrapper, BaseRegistrarImplementation, ETHRegistrarController) {
+    function registerDomainAndGetEnsContracts(TargetChain targetChain, string memory domain) public returns (NameWrapper, BaseRegistrarImplementation, ETHRegistrarController, PublicResolver) {
         NameWrapper nameWrapper;
         BaseRegistrarImplementation registrar;
         ETHRegistrarController registrarController;
+        PublicResolver publicResolver;
 
         // Local chain : deploy ENS
         if(targetChain == TargetChain.LOCAL){
             ENSRegistry registry;
-            PublicResolver publicResolver;
             
             bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
 
@@ -250,22 +258,25 @@ contract OCWebsiteFactoryScript is Script {
             nameWrapper = NameWrapper(0x0635513f179D50A207757E05759CbD106d7dFcE8);
             registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
             registrarController = ETHRegistrarController(0xFED6a969AaA60E4961FCD3EBF1A2e8913ac65B72);
+            publicResolver = PublicResolver(0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63);
         }
         // Sepolia: Get ENS holesky addresses
         else if(targetChain == TargetChain.HOLESKY) {
             nameWrapper = NameWrapper(0xab50971078225D365994dc1Edcb9b7FD72Bb4862);
             registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
             registrarController = ETHRegistrarController(0x179Be112b24Ad4cFC392eF8924DfA08C20Ad8583);
+            publicResolver = PublicResolver(0x9010A27463717360cAD99CEA8bD39b8705CCA238);
         }
         // Mainnet: Get ENS mainnet addresses
         else if(targetChain == TargetChain.MAINNET) {
             nameWrapper = NameWrapper(0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401);
             registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
             registrarController = ETHRegistrarController(0x253553366Da8546fC250F225fe3d25d0C782303b);
+            publicResolver = PublicResolver(0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63);
         }
 
 
-        // Local : Register dblog.eth
+        // Local : Register domain
         if(targetChain == TargetChain.LOCAL) {
             bytes[] memory data = new bytes[](0);
             bytes32 commitment = registrarController.makeCommitment(domain, msg.sender, 365 * 24 * 3600, 0x00, address(0x0), data, false, 0);
@@ -273,7 +284,7 @@ contract OCWebsiteFactoryScript is Script {
             registrarController.register{value: 0.05 ether}(domain, msg.sender, 365 * 24 * 3600, 0x00, address(0x0), data, false, 0);
         }
 
-        return (nameWrapper, registrar, registrarController);
+        return (nameWrapper, registrar, registrarController, publicResolver);
     }
 
     struct Config {

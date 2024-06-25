@@ -19,7 +19,7 @@ if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "
   exit 1
 fi
 # Domain name
-DEFAULT_DOMAIN="ocwebsite"
+DEFAULT_DOMAIN="ocweb"
 DOMAIN=${3:-$DEFAULT_DOMAIN}
 
 
