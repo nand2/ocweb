@@ -1,0 +1,3 @@
+<template>
+  ... steing tabs ...
+</template>

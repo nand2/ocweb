@@ -4,7 +4,7 @@ import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionRece
 import { useQuery } from '@tanstack/vue-query'
 
 import { useContractAddresses } from '../utils/queries.js';
-import OCWebsiteEditor from './OCWebsiteEditor.vue';
+import OCWebsiteEditor from './websiteEditor/Editor.vue';
 import XCircleIcon from '../icons/XCircleIcon.vue';
 import CopyIcon from '../icons/CopyIcon.vue';
 
