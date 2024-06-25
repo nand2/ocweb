@@ -10,13 +10,15 @@ import MagicIcon from './icons/MagicIcon.vue';
     <div class="sidebar">
       
       <div class="brand">
-        <img src="/logo.svg" class="logo vue" alt="Vue logo" />
-        OCWeb.eth
+        <img src="/logo.svg" class="logo" alt="Vue logo" />
+        <span class="logo-text">
+          OCWeb.eth
+        </span>
       </div>
 
       <div class="menu">
-        <RouterLink to="/"><span class="menu-icon"><LayourTextWindowReverseIcon /></span> My OCWebsites</RouterLink>
-        <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span> Mint an OCWebsite</RouterLink>
+        <RouterLink to="/"><span class="menu-icon"><LayourTextWindowReverseIcon /></span><span class="menu-text">My OCWebsites</span></RouterLink>
+        <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span><span class="menu-text">Mint an OCWebsite</span></RouterLink>
       </div>
 
     </div>
@@ -36,7 +38,13 @@ import MagicIcon from './icons/MagicIcon.vue';
 <style scoped>
 .app {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
+}
+
+@media (max-width: 560px) {
+  .app {
+    flex-direction: column;
+  }
 }
 
 .sidebar {
@@ -45,6 +53,15 @@ import MagicIcon from './icons/MagicIcon.vue';
   display: flex;
   flex-direction: column;
   gap: 2em;
+}
+
+@media (max-width: 560px) {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--color-divider);
+    padding: 1em 1.5em;
+    flex-direction: row;
+  }
 }
 
 .brand {
@@ -60,10 +77,22 @@ import MagicIcon from './icons/MagicIcon.vue';
   height: 1.5em;
 }
 
+@media (max-width: 1080px) {
+  .logo-text {
+    display: none;
+  }
+}
+
 .menu {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+}
+
+@media (max-width: 560px) {
+  .menu {
+    flex-direction: row;
+  }
 }
 
 .menu > a {
@@ -73,6 +102,8 @@ import MagicIcon from './icons/MagicIcon.vue';
   color: var(--color-bglink);
   text-decoration: none;
   white-space: nowrap;
+  display: flex;
+  gap: 0.75em;
 }
 .menu > a:hover {
   background-color: var(--color-button-hover-border);
@@ -82,12 +113,14 @@ import MagicIcon from './icons/MagicIcon.vue';
 
 }
 
-.menu > a .menu-icon {
-  margin-right: 0.75em;
-}
-
 .menu > a .menu-icon svg {
   scale: 1.5;
+}
+
+@media (max-width: 1080px) {
+  .menu > a .menu-text {
+    display: none;
+  }
 }
 
 .body-top-menu {
