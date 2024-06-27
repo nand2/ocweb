@@ -6,6 +6,7 @@ import { useSwitchChain, useAccount } from '@wagmi/vue'
 
 import FolderChildren from './FolderChildren.vue';
 import { VersionableStaticWebsiteClient } from '../../../../../src/index.js';
+import { useVersionableStaticWebsiteClient } from '../../../utils/queries.js';
 import { size } from 'viem';
 
 const props = defineProps({
@@ -21,29 +22,23 @@ const props = defineProps({
 
 const { switchChainAsync } = useSwitchChain()
 
-// Prepare the client
-const { address } = useAccount()
-const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
-  account: address,
-  chainId: props.chainId, 
-})
-
+// Fetch the website client
+const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
+(props.contractAddress)
 
 // Fetch the live frontend
-const websiteClient = shallowRef(null)
 const { data: frontendVersion, isLoading: frontendVersionLoading, isError: frontendVersionError, error, isSuccess: frontendVersionLoaded } = useQuery({
   queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId],
   queryFn: async () => {
-    websiteClient.value = new VersionableStaticWebsiteClient(viemClient.value, address.value, props.contractAddress)
-
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
-
+    
     return await websiteClient.value.getLiveFrontendVersion()
   },
   staleTime: 3600 * 1000,
-  enabled: viemClientLoaded,
+  enabled: websiteClientLoaded,
 })
+
 
 // frontendVersion.files is a flat list of files with their folder structure encoded in 
 // their file path

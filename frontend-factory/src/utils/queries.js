@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/vue-query'
-import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
-import { computed } from 'vue'
+import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
+import { computed, shallowRef } from 'vue'
+
+import { VersionableStaticWebsiteClient } from '../../../src/index.js';
 
 // Fetch the contract addresses advertised by the website
 // Group the factories together
@@ -33,6 +35,25 @@ function useContractAddresses() {
   })
 }
 
+function useVersionableStaticWebsiteClient(websiteContractAddress, chainId) {
+  // Fetch the viem connector client
+  const { data: viemClient, isLoading, isSuccess, isError, error } = useConnectorClient()
 
-export { useContractAddresses }
+  return {
+    data: computed(() => {
+      let websiteClient = null;
+      if (isSuccess.value) {
+        websiteClient = new VersionableStaticWebsiteClient(viemClient.value, websiteContractAddress)
+      }
+      return websiteClient
+    }),
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  }
+}
+
+
+export { useContractAddresses, useVersionableStaticWebsiteClient }
 

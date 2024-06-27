@@ -1,19 +1,17 @@
 import { getContract, toHex, walletActions, publicActions } from 'viem'
 
 import { abi as versionableStaticWebsiteABI } from './abi/versionableStaticWebsiteABI.js'
-import { abi as storageBackendABI } from './abi/storageBackendABI.js'
 
 
 class VersionableStaticWebsiteClient {
   #viemClient = null
-  #accountAddress = null
   #websiteContractAddress = null
   #viemWebsiteContract = null
 
-  constructor(viemClient, accountAddress, websiteContractAddress) {
+  constructor(viemClient, websiteContractAddress) {
     this.#viemClient = viemClient.extend(publicActions).extend(walletActions)
-    this.#accountAddress = accountAddress
     this.#websiteContractAddress = websiteContractAddress
+    
     this.#viemWebsiteContract = getContract({
       address: this.#websiteContractAddress,
       abi: versionableStaticWebsiteABI,
@@ -41,13 +39,6 @@ class VersionableStaticWebsiteClient {
       throw new Error('Frontend version is locked')
     }
 
-    // Prepare the storageBackend contract instance
-    // const storageBackendContract = getContract({
-    //   address: frontendVersion.storageBackend,
-    //   abi: storageBackendABI,
-    //   client: this.#viemClient,
-    // })
-
     // Upload the files
     const fileUploadInfos = [];
     for (const fileInfo of fileInfos) {
@@ -62,26 +53,18 @@ class VersionableStaticWebsiteClient {
       })
     }
     console.log([frontendIndex, fileUploadInfos])
-    // const hash = await this.#viemWebsiteContract.write.addFilesToFrontendVersion([frontendIndex, fileUploadInfos])
-console.log(this.#viemClient)
+    
+
     const { request } = await this.#viemClient.simulateContract({
-      account: this.#accountAddress,
       address: this.#websiteContractAddress,
       abi: versionableStaticWebsiteABI,
       functionName: 'addFilesToFrontendVersion',
       args: [frontendIndex, fileUploadInfos],
     })
-console.log(this.#viemClient)
+
     const hash = await this.#viemClient.writeContract(request)
 console.log("boo", hash)
-    // const xxx = await this.#viemClient.sendTransaction({
-    //   account: this.#accountAddress,
-    //   address: this.#websiteContractAddress,
-    //   abi: versionableStaticWebsiteABI,
-    //   functionName: 'addFilesToFrontendVersion',
-    //   args: [frontendIndex, fileUploadInfos],
-    // })
-    // console.log("boo", xxx)
+    
 
     console.log(frontendVersion)
   }
