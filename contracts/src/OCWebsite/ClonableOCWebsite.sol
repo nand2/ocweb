@@ -32,9 +32,6 @@ contract ClonableOCWebsite is OCWebsite {
         require(_owner != address(0), "Invalid new owner");
         owner = _owner;
         ownershipController = _ownershipController;
-
-        // Point the frontendLibrary to ourselves
-        frontendLibrary = this;
     }
 
     /**

@@ -38,9 +38,9 @@ const activeComponent = computed(() => {
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
     
-    <FilesTab :contractAddress :chainId v-if="activeTab == 'files'" />
-    <PreviewTab :contractAddress :chainId v-if="activeTab == 'preview'" />
-    <SettingsTab :contractAddress :chainId v-if="activeTab == 'settings'" />
+    <FilesTab :contractAddress :chainId v-show="activeTab == 'files'" />
+    <PreviewTab :contractAddress :chainId v-show="activeTab == 'preview'" />
+    <SettingsTab :contractAddress :chainId v-show="activeTab == 'settings'" />
   </div>
 </template>
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
-import FrontendLibraryEditor from './FrontendLibraryEditor/FrontendLibraryEditor.vue';
+import VersionableStaticWebsiteEditor from './VersionableStaticWebsiteEditor/VersionableStaticWebsiteEditor.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -15,5 +15,5 @@ const props = defineProps({
 </script>
 
 <template>
-  <FrontendLibraryEditor :contractAddress :chainId />
+  <VersionableStaticWebsiteEditor :contractAddress :chainId />
 </template>

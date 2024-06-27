@@ -11,29 +11,9 @@ import "../interfaces/IFrontendLibrary.sol";
 
 import "./ResourceRequestWebsite.sol";
 
-contract StaticWebsite is ResourceRequestWebsite {
+abstract contract VersionableStaticWebsiteBase is ResourceRequestWebsite {
 
-    IFrontendLibrary public frontendLibrary;
-  
-    constructor(IFrontendLibrary _frontendLibrary) {
-        frontendLibrary = _frontendLibrary;
-    }
-
-    function getFrontendLibrary() public view virtual returns (IFrontendLibrary) {
-        return frontendLibrary;
-    }
-
-    /**
-     * Hook to override
-     * Get the index of the frontend version to use.
-     */
-    function _getLiveFrontendVersionIndex() internal virtual view returns (uint256) {
-        return frontendLibrary.getDefaultFrontendIndex();
-    }
-
-    function getLiveFrontendVersion() public view returns (FrontendFilesSet memory) {
-        return frontendLibrary.getFrontendVersion(_getLiveFrontendVersionIndex());
-    }
+    function getLiveFrontendVersion() public virtual view returns (FrontendFilesSet memory);
 
 
     //

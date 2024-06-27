@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
 import { useReadContract } from '@wagmi/vue'
 
-import { abi } from '../../../utils/IFrontendLibraryABI.js'
+import { abi } from '../../../../../src/versionableStaticWebsiteABI.js'
 import FolderChildren from './FolderChildren.vue';
 
 const props = defineProps({
@@ -49,10 +49,38 @@ const rootFolderChildren = computed(() => {
     }
     currentFolder.children.push({type: 'file', name: filePathParts[filePathParts.length - 1], ...file})
   }
-  console.log(root.children)
 
   return root.children;
 })
+
+// Upload files
+const uploadFiles = async () => {
+  const files = document.getElementById('files').files
+  if(files.length == 0) {
+    return
+  }
+
+  const readFileData = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = (error) => {
+        reject(error);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  for(let i = 0; i < files.length; i++) {
+    console.log(files[i])
+    // Get binary data of the file
+    const fileData = await readFileData(files[i]);
+    console.log(fileData);
+  }
+
+}
 </script>
 
 <template>
@@ -74,6 +102,9 @@ const rootFolderChildren = computed(() => {
         <FolderChildren :folderChildren="rootFolderChildren" />
 
       </div>
+
+      <input type="file" id="files" name="files" multiple>
+      <button type="button" @click="uploadFiles">Upload</button>
     </div>
   </div>
 </template>
