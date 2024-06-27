@@ -75,12 +75,17 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
 
     /**
      * Add a new website
+     * @param firstFrontendVersionStorageBackend The storage backend for the first frontend version. Can be null.
      */
-    function mintWebsite() public payable returns(ClonableOCWebsite) {
+    function mintWebsite(IStorageBackend firstFrontendVersionStorageBackend) public payable returns(ClonableOCWebsite) {
 
         ClonableOCWebsite newWebsite = ClonableOCWebsite(Clones.clone(address(websiteImplementation)));
 
-        newWebsite.initialize(msg.sender, address(this));
+        if(address(firstFrontendVersionStorageBackend) == address(0) && storageBackends.length > 0) {
+            firstFrontendVersionStorageBackend = storageBackends[0];
+        }
+
+        newWebsite.initialize(msg.sender, address(this), firstFrontendVersionStorageBackend);
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
 

@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, defineProps } from 'vue';
+import { ref, shallowRef, computed, defineProps } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
-import { useClient } from '@wagmi/vue'
+import { useConnectorClient } from '@wagmi/vue'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
 import FolderChildren from './FolderChildren.vue';
@@ -22,22 +22,27 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 
 // Prepare the client
-const viemClient = useClient({
+const { address } = useAccount()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
+  account: address,
   chainId: props.chainId, 
 })
-const { address } = useAccount()
-const websiteClient = new VersionableStaticWebsiteClient(viemClient.value, address.value, props.contractAddress)
+
 
 // Fetch the live frontend
+const websiteClient = shallowRef(null)
 const { data: frontendVersion, isLoading: frontendVersionLoading, isError: frontendVersionError, error, isSuccess: frontendVersionLoaded } = useQuery({
   queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId],
   queryFn: async () => {
+    websiteClient.value = new VersionableStaticWebsiteClient(viemClient.value, address.value, props.contractAddress)
+
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    return await websiteClient.getLiveFrontendVersion()
+    return await websiteClient.value.getLiveFrontendVersion()
   },
   staleTime: 3600 * 1000,
+  enabled: viemClientLoaded,
 })
 
 // frontendVersion.files is a flat list of files with their folder structure encoded in 
@@ -105,7 +110,7 @@ const uploadFiles = async () => {
   }
  
   // Upload the files
-  await websiteClient.addFilesToFrontendVersion(0, fileInfos);
+  await websiteClient.value.addFilesToFrontendVersion(0, fileInfos);
 }
 </script>
 

@@ -29,7 +29,7 @@ async function mint() {
     abi: FactoryABI,
     address: factoryAddress.value,
     functionName: 'mintWebsite',
-    args: [],
+    args: ["0x0000000000000000000000000000000000000000"],
   })
 
   // Unable to find how to call that on transaction reception

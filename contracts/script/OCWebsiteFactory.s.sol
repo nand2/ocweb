@@ -25,6 +25,7 @@ import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageCo
 import { StorageContract } from "storage-contracts-v1/StorageContract.sol";
 
 import { IFrontendLibrary } from "../src/interfaces/IFrontendLibrary.sol";
+import { IStorageBackend } from "../src/interfaces/IStorageBackend.sol";
 import { CompressionAlgorithm } from "../src/interfaces/IFileInfos.sol";
 import { KeyValue } from "../src/interfaces/IDecentralizedApp.sol";
 
@@ -102,8 +103,14 @@ contract OCWebsiteFactoryScript is Script {
             // Not strictly necessary, but let's be sure it stays never changed
             websiteImplementation.transferOwnership(address(factory));
 
+            // Add the SSTORE2 storage backend
+            {
+                StorageBackendSSTORE2 storageBackend = new StorageBackendSSTORE2();
+                factory.addStorageBackend(storageBackend);
+            }
+
             // Create a website from the factory, to use as frontend for the factory itself
-            OCWebsite factoryFrontend = factory.mintWebsite();
+            OCWebsite factoryFrontend = factory.mintWebsite(IStorageBackend(address(0)));
             // Add the factory contract address to the frontend
             factoryFrontend.addStaticContractAddress(string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
             // Testing: Add hardcoded factory for sepolia && holesky
@@ -146,12 +153,6 @@ contract OCWebsiteFactoryScript is Script {
                 nameWrapper.setRecord(domainNamehash, msg.sender, address(publicResolver), 365 * 24 * 3600);
                 publicResolver.setAddr(domainNamehash, address(factory.website()));
             }
-        }
-
-        // Add the SSTORE2 storage backend
-        {
-            StorageBackendSSTORE2 storageBackend = new StorageBackendSSTORE2();
-            factory.addStorageBackend(storageBackend);
         }
 
         vm.stopBroadcast();
