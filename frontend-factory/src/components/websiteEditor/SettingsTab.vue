@@ -1,3 +1,3 @@
 <template>
-  ... steing tabs ...
+  <div>... steing tabs ...</div>
 </template>

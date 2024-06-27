@@ -1,9 +1,20 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineProps } from 'vue';
 
 import FilesTab from './FilesTab.vue';
 import PreviewTab from './PreviewTab.vue';
 import SettingsTab from './SettingsTab.vue';
+
+const props = defineProps({
+  contractAddress: {
+    type: String,
+    required: true,
+  },
+  chainId: {
+    type: Number,
+    required: true,
+  },
+})
 
 const activeTab = ref('files');
 
@@ -26,7 +37,10 @@ const activeComponent = computed(() => {
       <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
-    <component :is="activeComponent" />
+    
+    <FilesTab :contractAddress :chainId v-if="activeTab == 'files'" />
+    <PreviewTab :contractAddress :chainId v-if="activeTab == 'preview'" />
+    <SettingsTab :contractAddress :chainId v-if="activeTab == 'settings'" />
   </div>
 </template>
 

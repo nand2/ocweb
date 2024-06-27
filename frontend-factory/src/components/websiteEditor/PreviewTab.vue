@@ -1,3 +1,3 @@
 <template>
-  ... rpeview tab  ;...
+  <div>... rpeview tab  ;...</div>
 </template>

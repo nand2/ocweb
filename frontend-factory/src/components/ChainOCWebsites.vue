@@ -40,16 +40,18 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
 
 
 <template>
-  <div v-if="ocWebsitesLoaded == false">
-    Loading...
-  </div>
+  <div>
+    <div v-if="ocWebsitesLoaded == false">
+      Loading...
+    </div>
 
-  <div v-else-if="ocWebsites.length == 0" class="not-owing-ocwebsites-message">
-    You don't have any OCWebsite yet. <RouterLink to="/mint">Mint one</RouterLink>!
-  </div>
+    <div v-else-if="ocWebsites.length == 0" class="not-owing-ocwebsites-message">
+      You don't have any OCWebsite yet. <RouterLink to="/mint">Mint one</RouterLink>!
+    </div>
 
-  <div v-else class="oc-websites">
-    <OCWebsite v-for="ocWebsite in ocWebsites" :key="ocWebsite.tokenId" :tokenId="ocWebsite.tokenId" :contractAddress="ocWebsite.contractAddress" :chainId="factoryChainId" />
+    <div v-else class="oc-websites">
+      <OCWebsite v-for="ocWebsite in ocWebsites" :key="ocWebsite.tokenId" :tokenId="ocWebsite.tokenId" :contractAddress="ocWebsite.contractAddress" :chainId="factoryChainId" />
+    </div>
   </div>
 </template>
 

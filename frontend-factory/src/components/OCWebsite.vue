@@ -4,7 +4,7 @@ import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionRece
 import { useQuery } from '@tanstack/vue-query'
 
 import { useContractAddresses } from '../utils/queries.js';
-import OCWebsiteEditor from './websiteEditor/Editor.vue';
+import OCWebsiteEditor from './websiteEditor/OCWebsiteEditor.vue';
 import XCircleIcon from '../icons/XCircleIcon.vue';
 import CopyIcon from '../icons/CopyIcon.vue';
 
@@ -79,7 +79,9 @@ function copyWeb3AddressToClipboard() {
       </div>
       <XCircleIcon class="close" @click.stop="isOpened = false" />
     </div>
-    <OCWebsiteEditor class="editor" />
+
+    <OCWebsiteEditor class="editor" :contractAddress :chainId v-if="isOpened" />
+
     <div class="footer">
 
     </div>
