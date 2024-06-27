@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
-import { useReadContract } from '@wagmi/vue'
+import { useClient } from '@wagmi/vue'
+import { useSwitchChain, useAccount } from '@wagmi/vue'
 
-import { abi } from '../../../../../src/versionableStaticWebsiteABI.js'
 import FolderChildren from './FolderChildren.vue';
+import { VersionableStaticWebsiteClient } from '../../../../../src/index.js';
+import { size } from 'viem';
 
 const props = defineProps({
   contractAddress: {
@@ -17,12 +19,25 @@ const props = defineProps({
   },
 })
 
-// Fetch the frontends
-const { data: frontendVersion, isLoading: frontendVersionLoading, isError: frontendVersionError, isSuccess: frontendVersionLoaded } = useReadContract({
-  abi,
-  address: props.contractAddress,
-  chainId: props.chainId,
-  functionName: 'getLiveFrontendVersion',
+const { switchChainAsync } = useSwitchChain()
+
+// Prepare the client
+const viemClient = useClient({
+  chainId: props.chainId, 
+})
+const { address } = useAccount()
+const websiteClient = new VersionableStaticWebsiteClient(viemClient.value, address.value, props.contractAddress)
+
+// Fetch the live frontend
+const { data: frontendVersion, isLoading: frontendVersionLoading, isError: frontendVersionError, error, isSuccess: frontendVersionLoaded } = useQuery({
+  queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId],
+  queryFn: async () => {
+    // Switch chain if necessary
+    await switchChainAsync({ chainId: props.chainId })
+
+    return await websiteClient.getLiveFrontendVersion()
+  },
+  staleTime: 3600 * 1000,
 })
 
 // frontendVersion.files is a flat list of files with their folder structure encoded in 
@@ -60,6 +75,7 @@ const uploadFiles = async () => {
     return
   }
 
+  // Helper function to read the binary data of a file
   const readFileData = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -73,13 +89,23 @@ const uploadFiles = async () => {
     });
   };
 
+  // Prepare the files for upload
+  const fileInfos = []
   for(let i = 0; i < files.length; i++) {
     console.log(files[i])
     // Get binary data of the file
     const fileData = await readFileData(files[i]);
     console.log(fileData);
-  }
 
+    fileInfos.push({
+      filePath: files[i].name,
+      size: files[i].size,
+      data: new Uint8Array(fileData),
+    });
+  }
+ 
+  // Upload the files
+  await websiteClient.addFilesToFrontendVersion(0, fileInfos);
 }
 </script>
 

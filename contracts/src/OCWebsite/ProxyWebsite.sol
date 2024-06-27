@@ -39,7 +39,5 @@ contract ProxyWebsite is ResourceRequestWebsite, SettingsLockable {
         return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
       }
     }
-
-    (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
   }
 }

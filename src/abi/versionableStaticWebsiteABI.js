@@ -2,10 +2,17 @@ export const abi = [
   { 
     inputs: [], 
     name: "getFrontendLibrary", 
-    outputs: [{ internalType: "contract IFrontendLibrary", name: "", type: "address" }], 
+    outputs: [{ internalType: "IFrontendLibrary", name: "", type: "address" }], 
     stateMutability: "view", 
     type: "function" 
-  }, 
+  },
+  { 
+    inputs: [], 
+    name: "getLiveFrontendVersionIndex", 
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }], 
+    stateMutability: "view", 
+    type: "function" 
+  },
   { 
     inputs: [], 
     name: "getLiveFrontendVersion", 
@@ -60,8 +67,14 @@ export const abi = [
 
   {
     inputs: [
-      { internalType: "uint256", name: "frontendIndex", type: "uint256" },
-      { components: [{ internalType: "string", name: "filePath", type: "string" }, { internalType: "uint256", name: "fileSize", type: "uint256" }, { internalType: "string", name: "contentType", type: "string" }, { internalType: "bytes", name: "data", type: "bytes" }], internalType: "struct IFrontendLibrary.FileUploadInfos[]", name: "fileUploadInfos", type: "tuple[]" }], 
+        { internalType: "uint256", name: "frontendIndex", type: "uint256" },
+        { components: [
+            { internalType: "string", name: "filePath", type: "string" }, 
+            { internalType: "uint256", name: "fileSize", type: "uint256" }, 
+            { internalType: "string", name: "contentType", type: "string" }, 
+            { internalType: "CompressionAlgorithm", name: "compressionAlgorithm", type: "uint8" },
+            { internalType: "bytes", name: "data", type: "bytes" }], 
+        internalType: "struct IFrontendLibrary.FileUploadInfos[]", name: "fileUploadInfos", type: "tuple[]" }], 
     name: "addFilesToFrontendVersion", 
     outputs: [], 
     stateMutability: "payable", 

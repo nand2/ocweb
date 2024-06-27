@@ -13,8 +13,11 @@ import "./VersionableStaticWebsiteBase.sol";
 import "./FrontendLibrary.sol";
 
 contract VersionableStaticWebsite is VersionableStaticWebsiteBase, FrontendLibrary {
+    function getFrontendLibrary() public view override returns (IFrontendLibrary) {
+        return this;
+    }
 
-    function getLiveFrontendVersion() public view override returns (FrontendFilesSet memory) {
-        return getFrontendVersion(getDefaultFrontendIndex());
+    function getLiveFrontendVersionIndex() public override view returns (uint256) {
+        return getDefaultFrontendIndex();
     }
 }

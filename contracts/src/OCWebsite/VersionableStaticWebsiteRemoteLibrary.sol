@@ -22,18 +22,14 @@ contract VersionableStaticWebsiteRemoteLibrary is VersionableStaticWebsiteBase {
         frontendLibrary = _frontendLibrary;
     }
 
-    function getFrontendLibrary() public view virtual returns (IFrontendLibrary) {
+    function getFrontendLibrary() public view override returns (IFrontendLibrary) {
         return frontendLibrary;
     }
 
-    function getFrontendVersionIndex() public view returns (uint256) {
+    function getLiveFrontendVersionIndex() public view override returns (uint256) {
         if(useNonDefaultFrontend) {
             return overridenFrontendIndex;
         }
         return frontendLibrary.getDefaultFrontendIndex();
-    }
-
-    function getLiveFrontendVersion() public view override returns (FrontendFilesSet memory) {
-        return frontendLibrary.getFrontendVersion(getFrontendVersionIndex());
     }
 }

@@ -9,101 +9,21 @@ import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 import "../interfaces/IFrontendLibrary.sol";
 
-import "./ResourceRequestWebsite.sol";
+import "./StaticWebsiteBase.sol";
 
-abstract contract VersionableStaticWebsiteBase is ResourceRequestWebsite {
-
-    function getLiveFrontendVersion() public virtual view returns (FrontendFilesSet memory);
-
-
-    //
-    // web3:// protocol
-    //
+abstract contract VersionableStaticWebsiteBase is StaticWebsiteBase {
 
     /**
-     * Hook to override
-     * Static frontend serving: For a given web3:// request, compute the file path of 
-     * the requested static asset to serve
+     * Hook: Get the frontend library to use
      */
-    function _getStaticFrontendAssetFilePathForRequest(string[] memory resource, KeyValue[] memory params) internal virtual view returns (string memory filePath) {
-        if(resource.length == 0) {
-            filePath = "index.html";
-        }
-        else {
-            for(uint i = 0; i < resource.length; i++) {
-                if(i > 0) {
-                    filePath = string.concat(filePath, "/");
-                }
-                filePath = string.concat(filePath, resource[i]);
-            }
-        }
-    }
+    function getFrontendLibrary() public view virtual returns (IFrontendLibrary);
 
     /**
-     * Return an answer to a web3:// request after the static frontend is served
-     * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
-     *                   process the call
+     * Hook: Get the frontend version to use
      */
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
-        FrontendFilesSet memory frontend = getLiveFrontendVersion();
+    function getLiveFrontendVersionIndex() public virtual view returns (uint256);
 
-        // Compute the filePath of the requested resource
-        string memory filePath = _getStaticFrontendAssetFilePathForRequest(resource, params);
-
-        // Search for the requested resource in our static file list
-        for(uint i = 0; i < frontend.files.length; i++) {
-            if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
-                IStorageBackend storageBackend = frontend.storageBackend;
-
-                // Storage backend read chain id check. If not the same, we need to redirect
-                if(storageBackend.getReadChainId() != block.chainid) {
-                    headers = new KeyValue[](1);
-                    headers[0].key = "Location";
-                    headers[0].value = string.concat("web3://", LibStrings.toHexString(address(this)), ":", LibStrings.toString(storageBackend.getReadChainId()), "/", filePath);
-                    statusCode = 302;
-                    return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
-                }
-
-                // web3:// chunk feature : if the file is big, we will send the file
-                // in chunks
-                // Determine the requested chunk
-                uint chunkIndex = 0;
-                for(uint j = 0; j < params.length; j++) {
-                    if(LibStrings.compare(params[j].key, "chunk")) {
-                        chunkIndex = LibStrings.stringToUint(params[j].value);
-                        break;
-                    }
-                }
-
-                (bytes memory data, uint nextChunkId) = storageBackend.read(address(this), frontend.files[i].contentKey, chunkIndex);
-                body = string(data);
-                statusCode = 200;
-
-                uint headersCount = 1;
-                if(frontend.files[i].compressionAlgorithm != CompressionAlgorithm.NONE) {
-                    headersCount++;
-                }
-                if(nextChunkId > 0) {
-                    headersCount++;
-                }
-                headers = new KeyValue[](headersCount);
-                headers[0].key = "Content-type";
-                headers[0].value = frontend.files[i].contentType;
-                if(frontend.files[i].compressionAlgorithm != CompressionAlgorithm.NONE) {
-                    headers[1].key = "Content-Encoding";
-                    // We support brotli or gzip only
-                    headers[1].value = frontend.files[i].compressionAlgorithm == CompressionAlgorithm.BROTLI ? "br" : "gzip";
-                }
-                // If there is more chunk remaining, add a pointer to the next chunk
-                if(nextChunkId > 0) {
-                    headers[headers.length - 1].key = "web3-next-chunk";
-                    headers[headers.length - 1].value = string.concat("/", filePath, "?chunk=", LibStrings.toString(nextChunkId));
-                }
-
-                return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
-            }
-        }
-
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
+    function getLiveFrontendVersion() public view override returns (FrontendFilesSet memory) {
+        return getFrontendLibrary().getFrontendVersion(getLiveFrontendVersionIndex());
     }
 }
