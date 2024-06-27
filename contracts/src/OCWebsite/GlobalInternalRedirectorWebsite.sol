@@ -27,6 +27,8 @@ contract GlobalInternalRedirectorWebsite is ResourceRequestWebsite, SettingsLock
     if(globalInternalRedirectResource.length > 0) {
       return (0, "", new KeyValue[](0), globalInternalRedirectResource, globalInternalRedirectParams);
     }
+
+    (statusCode, body, headers, internalRedirectResource, internalRedirectParams) =  super._processWeb3Request(resource, params);
   }
 
 }

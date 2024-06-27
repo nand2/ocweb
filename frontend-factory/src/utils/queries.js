@@ -35,7 +35,7 @@ function useContractAddresses() {
   })
 }
 
-function useVersionableStaticWebsiteClient(websiteContractAddress, chainId) {
+function useVersionableStaticWebsiteClient(websiteContractAddress) {
   // Fetch the viem connector client
   const { data: viemClient, isLoading, isSuccess, isError, error } = useConnectorClient()
 

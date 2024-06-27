@@ -19,28 +19,8 @@ contract OCWebsite is GlobalInternalRedirectorWebsite, ProxyWebsite, ContractAdd
     constructor() VersionableStaticWebsite() ContractAddressesWebsite() ProxyWebsite() GlobalInternalRedirectorWebsite() {
     }
 
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override(GlobalInternalRedirectorWebsite, ProxyWebsite, ContractAddressesWebsite, StaticWebsiteBase) view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override(GlobalInternalRedirectorWebsite, ProxyWebsite, ContractAddressesWebsite, VersionableStaticWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
 
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = StaticWebsiteBase._processWeb3Request(resource, params);
-        if(statusCode > 0 || internalRedirectResource.length > 0) {
-            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
-        }
-
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = ContractAddressesWebsite._processWeb3Request(resource, params);
-        if(statusCode > 0 || internalRedirectResource.length > 0) {
-            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
-        }
-
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = ProxyWebsite._processWeb3Request(resource, params);
-        if(statusCode > 0 || internalRedirectResource.length > 0) {
-            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
-        }
-
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = GlobalInternalRedirectorWebsite._processWeb3Request(resource, params);
-        if(statusCode > 0 || internalRedirectResource.length > 0) {
-            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
-        }
-
-        return (404, "", new KeyValue[](0), new string[](0), new KeyValue[](0));
+        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
     }
 }

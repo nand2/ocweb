@@ -82,6 +82,8 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
             headers[0].value = "application/json";
             return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
         }
+
+        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
     }
         
 }

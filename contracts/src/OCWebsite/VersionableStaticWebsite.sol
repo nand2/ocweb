@@ -20,4 +20,14 @@ contract VersionableStaticWebsite is VersionableStaticWebsiteBase, FrontendLibra
     function getLiveFrontendVersionIndex() public override view returns (uint256) {
         return getDefaultFrontendIndex();
     }
+
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
+
+        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = StaticWebsiteBase._processWeb3Request(resource, params);
+        if (statusCode != 0 || internalRedirectResource.length > 0) {
+            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
+        }
+
+        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
+    }
 }
