@@ -196,18 +196,25 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     /**
      * Rename a file in a frontend version
      * @param frontendIndex The index of the frontend version
-     * @param oldFilePath The old path of the file
-     * @param newFilePath The new path of the file
+     * @param oldFilePaths The old path of the file
+     * @param newFilePaths The new path of the file
      */
-    function renameFileInFrontendVersion(uint256 frontendIndex, string memory oldFilePath, string memory newFilePath) public onlyOwner frontendLibraryUnlocked {
+    function renameFilesInFrontendVersion(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         require(!frontend.locked, "Frontend version is locked");
 
-        (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, oldFilePath);
-        require(fileFound, "File not found");
+        require(oldFilePaths.length == newFilePaths.length, "Arrays length mismatch");
 
-        frontend.files[fileIndex].filePath = newFilePath;
+        for(uint i = 0; i < oldFilePaths.length; i++) {
+            (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, oldFilePaths[i]);
+            require(fileFound, "File not found");
+            
+            (bool fileFoundAtNewLocation, uint fileIndexAtNewLocation) = _findFileIndexByNameInFrontendVersion(frontend, newFilePaths[i]);
+            require(!fileFoundAtNewLocation, "File already exists at new location");
+            
+            frontend.files[fileIndex].filePath = newFilePaths[i];
+        }
     }
 
     /**
