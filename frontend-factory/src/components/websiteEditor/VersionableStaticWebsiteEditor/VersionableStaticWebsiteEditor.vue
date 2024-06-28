@@ -146,8 +146,6 @@ const uploadFiles = async () => {
 
     // Refresh the frontend version
     queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
-    // queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontendFilesExtraMetadata', props.contractAddress, props.chainId] })
-    // queryClient.invalidateQueries()
   }
 }
 </script>
@@ -168,7 +166,7 @@ const uploadFiles = async () => {
       </div>
       <div v-else class="folder-chidren-root">
 
-        <FolderChildren :folderChildren="rootFolderChildren" :contractAddress :chainId />
+        <FolderChildren :folderChildren="rootFolderChildren" :contractAddress :chainId :websiteClient />
 
       </div>
 

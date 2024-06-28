@@ -22,6 +22,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  websiteClient: {
+    type: Object,
+    required: true,
+  },
 })
 
 const isOpened = ref(false);
@@ -41,6 +45,7 @@ const isOpened = ref(false);
       :folderLevel="folderLevel + 1" 
       :contractAddress
       :chainId
+      :websiteClient
       v-if="isOpened" />
   </div>
 </template>

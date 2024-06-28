@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
+import { useQueryClient } from '@tanstack/vue-query'
 
 import FileEarmarkIcon from '../../../icons/FileEarmarkIcon.vue';
 import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
@@ -23,7 +24,14 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  websiteClient: {
+    type: Object,
+    required: true,
+  },
 })
+
+const queryClient = useQueryClient()
+
 
 const fileUrl = computed(() => {
   return `web3://${props.contractAddress}${props.chainId > 1 ? ":" + props.chainId : ""}/${props.file.filePath}`;
@@ -32,6 +40,22 @@ const fileUrl = computed(() => {
 const paddingLeftForCSS = computed(() => {
   return `${1 + props.folderLevel * 0.6}em`;
 })
+
+
+// Upload files
+const deleteFile = async () => {
+  // Prepare the request to delete the file
+  const request = await props.websiteClient.prepareRemoveFilesFromFrontendVersionRequest(0, [props.file.filePath]);
+
+  const hash = await props.websiteClient.executeRequest(request);
+  console.log(hash);
+
+  // Wait for the transaction to be mined
+  const receipt = await props.websiteClient.waitForTransactionReceipt(hash);
+
+  // Refresh the frontend version
+  queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+}
 </script>
 
 <template>
@@ -76,7 +100,9 @@ const paddingLeftForCSS = computed(() => {
     </div>
     <div class="actions">
       <PencilSquareIcon />
-      <TrashIcon />
+      <a @click.stop.prevent="deleteFile(file)" class="white">
+        <TrashIcon />
+      </a>
     </div>
   </div>
 </template>

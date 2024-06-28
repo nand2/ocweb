@@ -59,7 +59,7 @@ class VersionableStaticWebsiteClient {
   }
 
   /**
-   * 
+   * Prepare the addition of several files to a frontend version
    * fileUploadInfos: An array of objects with the following properties:
    * - filePath: The path of the file, without leading /. E.g. "index.html", "assets/logo.png"
    * - size: The size of the file
@@ -195,6 +195,17 @@ class VersionableStaticWebsiteClient {
     }
 
     return requests
+  }
+
+  /**
+   * Prepare the deletion of a file
+   * filePaths: An array of strings, each string being the path of a file, without leading /. E.g. "index.html", "assets/logo.png"
+   */
+  async prepareRemoveFilesFromFrontendVersionRequest(frontendIndex, filePaths) {
+    return {
+      functionName: 'removeFilesFromFrontendVersion',
+      args: [frontendIndex, filePaths],
+    }
   }
 
   /**

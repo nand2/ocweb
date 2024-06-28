@@ -23,6 +23,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  websiteClient: {
+    type: Object,
+    required: true,
+  },
 })
 
 </script>
@@ -36,12 +40,14 @@ const props = defineProps({
         :folderLevel="folderLevel + 1" 
         :contractAddress
         :chainId
+        :websiteClient
         v-if="child.type == 'folder'" />
       <File 
         :file="child" 
         :folderLevel 
         :contractAddress
         :chainId
+        :websiteClient
         v-else-if="child.type == 'file'" />
 
     </div>
