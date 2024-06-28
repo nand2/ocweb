@@ -29,9 +29,12 @@ const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableSt
 (props.contractAddress)
 
 // Fetch the live frontend
-const { data: frontendVersion, isLoading: frontendVersionLoading, isError: frontendVersionError, error, isSuccess: frontendVersionLoaded } = useQuery({
+const { data: frontendVersion, isLoading: frontendVersionLoading, isFetching: frontendVersionFetching, isError: frontendVersionError, error, isSuccess: frontendVersionLoaded } = useQuery({
   queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId],
   queryFn: async () => {
+    // Invalidate dependent query
+    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontendFilesExtraMetadata', props.contractAddress, props.chainId] })
+
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
     
@@ -41,12 +44,22 @@ const { data: frontendVersion, isLoading: frontendVersionLoading, isError: front
   enabled: websiteClientLoaded,
 })
 
+// Fetch the frontend files extra metadata from the storage backend
+const { data: frontendFilesExtraMetadata, isLoading: frontendFilesExtraMetadataLoading, isError: frontendFilesExtraMetadataError, isSuccess: frontendFilesExtraMetadataLoaded } = useQuery({
+  queryKey: ['OCWebsiteLiveFrontendFilesExtraMetadata', props.contractAddress, props.chainId],
+  queryFn: async () => {
+    return await websiteClient.value.getFrontendFilesExtraMetadataFromStorageBackend(frontendVersion.value)
+  },
+  staleTime: 3600 * 1000,
+  enabled: computed(() => frontendVersionLoaded.value && frontendVersionFetching.value == false),
+})
+
 
 // frontendVersion.files is a flat list of files with their folder structure encoded in 
 // their file path
 // We convert this flat list into a hierarchical structure
 const rootFolderChildren = computed(() => {
-  if(frontendVersionLoaded == false) {
+  if(frontendVersionLoaded.value == false) {
     return [];
   }
 
@@ -54,6 +67,7 @@ const rootFolderChildren = computed(() => {
   for(const file of frontendVersion.value.files) {
     const filePathParts = file.filePath.split('/')
 
+    // Find or create the folder for the file
     let currentFolder = root
     for(let i = 0; i < filePathParts.length - 1; i++) {
       const folderName = filePathParts[i]
@@ -64,7 +78,16 @@ const rootFolderChildren = computed(() => {
       }
       currentFolder = nextFolder
     }
-    currentFolder.children.push({type: 'file', name: filePathParts[filePathParts.length - 1], ...file})
+
+    // Add the file to the folder
+    let folderFile = {type: 'file', name: filePathParts[filePathParts.length - 1], ...file}
+    if(frontendFilesExtraMetadataLoaded.value) {
+      const extraMetadata = frontendFilesExtraMetadata.value.find(extraMetadata => extraMetadata.filePath == file.filePath)
+      if(extraMetadata != null) {
+        folderFile = {...folderFile, ...extraMetadata}
+      }
+    }
+    currentFolder.children.push(folderFile)
   }
 
   return root.children;
@@ -123,6 +146,8 @@ const uploadFiles = async () => {
 
     // Refresh the frontend version
     queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+    // queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontendFilesExtraMetadata', props.contractAddress, props.chainId] })
+    // queryClient.invalidateQueries()
   }
 }
 </script>

@@ -153,6 +153,28 @@ export const abi = [
     type: "function"
   },
 
+  { 
+    inputs: [{internalType:"address", name:"owner", type:"address"}, { internalType: "uint256[]", name: "", type: "uint256[]" }], 
+    name: "areComplete", 
+    outputs: [{ internalType: "bool[]", name: "", type: "bool[]" }], 
+    stateMutability: "view", 
+    type: "function" 
+  },
+  { 
+    inputs: [{internalType:"address", name:"owner", type:"address"}, { internalType: "uint256[]", name: "", type: "uint256[]" }], 
+    name: "uploadedSizes", 
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }], 
+    stateMutability: "view", 
+    type: "function" 
+  },
+  { 
+    inputs: [{internalType:"address", name:"owner", type:"address"}, { internalType: "uint256[]", name: "", type: "uint256[]" }], 
+    name: "sizes", 
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }], 
+    stateMutability: "view", 
+    type: "function" 
+  },
+
   {
     inputs: [],
     name: "getReadChainId",

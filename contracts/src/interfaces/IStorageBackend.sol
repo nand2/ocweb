@@ -20,6 +20,11 @@ interface IStorageBackend {
     // The total size of the file
     function size(address owner, uint index) external view returns (uint);
 
+    // Batch version oof the above functions
+    function areComplete(address owner, uint[] memory indexes) external view returns (bool[] memory);
+    function uploadedSizes(address owner, uint[] memory indexes) external view returns (uint[] memory);
+    function sizes(address owner, uint[] memory indexes) external view returns (uint[] memory);
+
     // Some storage backends (e.g. EthStorage) require a different chain ID to read the data
     // than to store the data. This function returns the chain ID to use to read the data
     function getReadChainId() external view returns (uint);

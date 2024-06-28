@@ -22,8 +22,6 @@ struct PartialFileInfos {
 
     // Compression algorithm used for the file data
     CompressionAlgorithm compressionAlgorithm;
-    // Is the file complete? Has it been uploaded fully?
-    bool complete;
 
     // Pointer to the file contents on a storage backend
     uint contentKey;

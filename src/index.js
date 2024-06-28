@@ -24,6 +24,40 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getLiveFrontendVersion()
   }
 
+  async getFrontendFilesExtraMetadataFromStorageBackend(frontendVersion) {
+    // Gather the filename and content keys
+    const fileInfos = frontendVersion.files.map(file => {
+      return {
+        filePath: file.filePath,
+        contentKey: file.contentKey,
+      }
+    })
+    const contentKeys = fileInfos.map(fileInfo => fileInfo.contentKey)
+
+    // Get the storage backend
+    const storageBackendContract = getContract({
+      address: frontendVersion.storageBackend,
+      abi: storageBackendABI,
+      client: this.#viemClient,
+    })
+
+    // Get the sizes
+    const sizes = await storageBackendContract.read.sizes([this.#websiteContractAddress, contentKeys])
+    // Get the uploaded sizes
+    const uploadedSizes = await storageBackendContract.read.uploadedSizes([this.#websiteContractAddress, contentKeys])
+    // Get the completion status
+    const areComplete = await storageBackendContract.read.areComplete([this.#websiteContractAddress, contentKeys])
+
+    // Fill all this metadata into the fileInfos
+    for (let i = 0; i < fileInfos.length; i++) {
+      fileInfos[i].size = sizes[i]
+      fileInfos[i].uploadedSize = uploadedSizes[i]
+      fileInfos[i].complete = areComplete[i]
+    }
+  
+    return fileInfos;
+  }
+
   /**
    * 
    * fileUploadInfos: An array of objects with the following properties:

@@ -38,14 +38,36 @@ const paddingLeftForCSS = computed(() => {
         <FileEarmarkIcon />
         <span>
           {{ file.name }}
-          <span v-if="file.complete == false" class="danger">
-            Incomplete
-          </span>
         </span>
       </a>
     </div>
     <div>
       {{ file.contentType }}
+    </div>
+    <div>
+      <span v-if="file.size === undefined">
+        ...
+      </span>
+      <span v-else-if="file.complete == true">
+        {{ Math.round(Number(props.file.size) / 1024) }} KB
+      </span>
+      <span v-else-if="file.complete == false">
+        {{ Math.round(Number(props.file.uploadedSize) / 1024) }} / {{ Math.round(Number(props.file.size) / 1024) }} KB
+      </span>
+      <span v-if="file.complete == false" class="danger">
+        Incomplete
+      </span>
+    </div>
+    <div>
+      <span v-if="file.compressionAlgorithm == 0">
+        None
+      </span>
+      <span v-else-if="file.compressionAlgorithm == 1">
+        Gzip
+      </span>
+      <span v-else-if="file.compressionAlgorithm == 2">
+        Brotli
+      </span>
     </div>
     <div></div>
   </div>
@@ -54,7 +76,7 @@ const paddingLeftForCSS = computed(() => {
 <style scoped>
 .file {
   display: grid;
-  grid-template-columns: 1fr 1fr 3em;
+  grid-template-columns: 1fr 1fr 1fr 1fr 3em;
   padding: 0.5em 1em;
 }
 

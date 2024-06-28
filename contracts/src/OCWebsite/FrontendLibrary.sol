@@ -116,7 +116,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             if(fileFound) {
                 frontend.files[fileIndex].contentKey = contentKey;
                 frontend.files[fileIndex].contentType = fileUploadInfos[i].contentType;
-                frontend.files[fileIndex].complete = frontend.storageBackend.isComplete(address(this), contentKey);
             }
             // If not found, add the file
             else {
@@ -124,8 +123,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
                     contentKey: contentKey,
                     filePath: fileUploadInfos[i].filePath,
                     contentType: fileUploadInfos[i].contentType,
-                    compressionAlgorithm: fileUploadInfos[i].compressionAlgorithm,
-                    complete: frontend.storageBackend.isComplete(address(this), contentKey)
+                    compressionAlgorithm: fileUploadInfos[i].compressionAlgorithm
                 });
                 frontend.files.push(fileInfos);
             }
@@ -170,9 +168,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         require(fileFound, "File not found");
 
         uint fundsUsed = frontend.storageBackend.append(frontend.files[fileIndex].contentKey, data);
-
-        // Update the complete flag
-        frontend.files[fileIndex].complete = frontend.storageBackend.isComplete(address(this), frontend.files[fileIndex].contentKey);
 
         // Send back remaining funds sent by the caller
         if(msg.value - fundsUsed > 0) {

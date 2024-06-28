@@ -189,6 +189,30 @@ contract StorageBackendEthStorage is IStorageBackend {
         return files[owner][index].size;
     }
 
+    function areComplete(address owner, uint[] memory indexes) public view returns (bool[] memory) {
+        bool[] memory results = new bool[](indexes.length);
+        for(uint i = 0; i < indexes.length; i++) {
+            results[i] = isComplete(owner, indexes[i]);
+        }
+        return results;
+    }
+
+    function uploadedSizes(address owner, uint[] memory indexes) public view returns (uint[] memory) {
+        uint[] memory results = new uint[](indexes.length);
+        for(uint i = 0; i < indexes.length; i++) {
+            results[i] = uploadedSize(owner, indexes[i]);
+        }
+        return results;
+    }
+
+    function sizes(address owner, uint[] memory indexes) public view returns (uint[] memory) {
+        uint[] memory results = new uint[](indexes.length);
+        for(uint i = 0; i < indexes.length; i++) {
+            results[i] = size(owner, indexes[i]);
+        }
+        return results;
+    }
+
     /**
      * EthStorage has a different chain id for reading the data than for storing the data.
      */
