@@ -102,6 +102,14 @@ export const abi = [
     stateMutability: "view", 
     type: "function" 
   },
+  
+  { 
+    inputs: [{ internalType: "uint256", name: "frontendIndex", type: "uint256" }, { internalType: "string", name: "oldFilePath", type: "string" }, { internalType: "string", name: "newFilePath", type: "string" }], 
+    name: "renameFileInFrontendVersion", 
+    outputs: [], 
+    stateMutability: "view", 
+    type: "function" 
+  },
 
   { 
     inputs: [{ internalType: "uint256", name: "frontendIndex", type: "uint256" }, { internalType: "string[]", name: "filePaths", type: "string[]" }], 

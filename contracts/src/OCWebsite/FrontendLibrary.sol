@@ -171,6 +171,9 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
 
         uint fundsUsed = frontend.storageBackend.append(frontend.files[fileIndex].contentKey, data);
 
+        // Update the complete flag
+        frontend.files[fileIndex].complete = frontend.storageBackend.isComplete(address(this), frontend.files[fileIndex].contentKey);
+
         // Send back remaining funds sent by the caller
         if(msg.value - fundsUsed > 0) {
             payable(msg.sender).transfer(msg.value - fundsUsed);
@@ -193,6 +196,23 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         require(fileFound, "File not found");
 
         (data, nextChunkId) = frontend.storageBackend.read(address(this), frontend.files[fileIndex].contentKey, chunkId);
+    }
+
+    /**
+     * Rename a file in a frontend version
+     * @param frontendIndex The index of the frontend version
+     * @param oldFilePath The old path of the file
+     * @param newFilePath The new path of the file
+     */
+    function renameFileInFrontendVersion(uint256 frontendIndex, string memory oldFilePath, string memory newFilePath) public onlyOwner frontendLibraryUnlocked {
+        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        require(!frontend.locked, "Frontend version is locked");
+
+        (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, oldFilePath);
+        require(fileFound, "File not found");
+
+        frontend.files[fileIndex].filePath = newFilePath;
     }
 
     /**

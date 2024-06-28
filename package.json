@@ -26,6 +26,7 @@
     "@tanstack/vue-query": "^5.45.0",
     "@wagmi/vue": "^0.0.20",
     "@zoltu/ethereum-abi-encoder": "^5.0.4",
+    "mime": "^4.0.3",
     "ttf2woff2": "^5.0.0",
     "viem": "^2.16.0",
     "vue": "^3.4.21",

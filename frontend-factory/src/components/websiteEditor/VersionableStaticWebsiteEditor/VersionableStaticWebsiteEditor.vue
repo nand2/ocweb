@@ -3,6 +3,7 @@ import { ref, shallowRef, computed, defineProps } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
 import { useConnectorClient } from '@wagmi/vue'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
+import { useQueryClient } from '@tanstack/vue-query'
 
 import FolderChildren from './FolderChildren.vue';
 import { VersionableStaticWebsiteClient } from '../../../../../src/index.js';
@@ -21,6 +22,7 @@ const props = defineProps({
 })
 
 const { switchChainAsync } = useSwitchChain()
+const queryClient = useQueryClient()
 
 // Fetch the website client
 const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
@@ -100,6 +102,7 @@ const uploadFiles = async () => {
     fileInfos.push({
       filePath: files[i].name,
       size: files[i].size,
+      contentType: files[i].type,
       data: new Uint8Array(fileData),
     });
   }
@@ -114,10 +117,13 @@ const uploadFiles = async () => {
   for(const request of requests) {
     const hash = await websiteClient.value.executeRequest(request);
     console.log(hash);
-  }
 
-  // Upload the files
-  // await websiteClient.value.addFilesToFrontendVersion(0, fileInfos);
+    // Wait for the transaction to be mined
+    const receipt = await websiteClient.value.waitForTransactionReceipt(hash);
+
+    // Refresh the frontend version
+    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+  }
 }
 </script>
 

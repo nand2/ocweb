@@ -8,7 +8,7 @@
   --color-divider: #8b8b8b;
   --color-text: #fafafa;
   --color-text-muted: #888;
-  --color-text-error: #ff4d4d;
+  --color-text-danger: #ff4d4d;
   --color-link: #e0a43a;
   --color-link-hover: #be8b32;
   --color-bglink: var(--color-text);
@@ -100,5 +100,7 @@ button.secondary {
   background-color: var(--color-button-secondary-bg);
 }
 
-
+.danger {
+  color: var(--color-text-danger);
+}
 

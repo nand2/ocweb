@@ -37,6 +37,9 @@ interface IFrontendLibrary {
     // Read a file
     function readFileFromFrontendVersion(uint256 frontendIndex, string memory filePath, uint256 chunkId) external view returns (bytes memory data, uint256 nextChunkId);
 
+    // Rename a file
+    function renameFileInFrontendVersion(uint256 frontendIndex, string memory oldFilePath, string memory newFilePath) external;
+
     // Remove files
     function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) external;
     function removeAllFilesFromFrontendVersion(uint256 frontendIndex) external;

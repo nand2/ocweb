@@ -29,6 +29,7 @@ class VersionableStaticWebsiteClient {
    * fileUploadInfos: An array of objects with the following properties:
    * - filePath: The path of the file, without leading /. E.g. "index.html", "assets/logo.png"
    * - size: The size of the file
+   * - contentType: The content type of the file. E.g. "text/html", "image/png"
    * - data: Uint8Array of the data of the file
    */
   async prepareAddFilesToFrontendVersionRequests(frontendIndex, fileInfos) {
@@ -48,10 +49,33 @@ class VersionableStaticWebsiteClient {
     })
     const storageBackendName = await storageBackendContract.read.name()
 
+    // Compress the files
+    const compressionAlgorithm = "gzip"
+    const compressedFilesInfos = []
+    for (const fileInfo of fileInfos) {
+      if(compressionAlgorithm == "gzip") {
+        const compressionStream = new CompressionStream('gzip')
+        const readableStream = new Response(new Blob([fileInfo.data])).body;
+        const compressedData = await new Response(readableStream.pipeThrough(compressionStream)).arrayBuffer();
+
+        compressedFilesInfos.push({
+          filePath: fileInfo.filePath,
+          size: compressedData.byteLength,
+          contentType: fileInfo.contentType,
+          compressionAlgorithm: 1, // Solidity enum, 1 is for gzip
+          data: new Uint8Array(compressedData),
+        })
+      }
+      // No compression
+      else {
+        compressedFilesInfos.push(fileInfo)
+      }
+    }
+
     // Prepare the batch of requests 
     const requests = []
     let currentFileUploadInfos = []
-    for (const fileInfo of fileInfos) {
+    for (const fileInfo of compressedFilesInfos) {
       // SSTORE2 handling
       if (storageBackendName.startsWith('SSTORE2')) {
         // Determine how much bytes do we already have in the current addFilesToFrontendVersion batch
@@ -90,8 +114,7 @@ class VersionableStaticWebsiteClient {
           remainingSize -= chunkSize
         }
 
-console.log('chunkSizes', chunkSizes)
-
+        // Send the chunks
         let processedSize = 0
         for(const chunkSize of chunkSizes) {
           const dataStart = processedSize;
@@ -102,8 +125,8 @@ console.log('chunkSizes', chunkSizes)
             currentFileUploadInfos.push({
               filePath: fileInfo.filePath,
               fileSize: fileInfo.size,
-              contentType: "text/plain",
-              compressionAlgorithm: 0,
+              contentType: fileInfo.contentType,
+              compressionAlgorithm: fileInfo.compressionAlgorithm,
               data: toHex(chunk),
             })
 
@@ -140,6 +163,9 @@ console.log('chunkSizes', chunkSizes)
     return requests
   }
 
+  /**
+   * Execute a request prepared by one of the prepare* methods
+   */
   async executeRequest(request) {
     const { request: simulatedRequest } = await this.#viemClient.simulateContract({
       address: this.#websiteContractAddress,
@@ -153,44 +179,12 @@ console.log('chunkSizes', chunkSizes)
     return hash
   }
 
-  async addFilesToFrontendVersion(frontendIndex, fileInfos) {
-    // Fetch the frontend version
-    const frontendVersion = await this.#viemWebsiteContract.read.getFrontendVersion([frontendIndex])
-
-    // Check if the frontend version is locked
-    if (frontendVersion.locked) {
-      throw new Error('Frontend version is locked')
-    }
-
-    // Upload the files
-    const fileUploadInfos = [];
-    for (const fileInfo of fileInfos) {
-      const contentType = "text/plain";
-
-      fileUploadInfos.push({
-        filePath: fileInfo.filePath,
-        fileSize: fileInfo.size,
-        contentType: contentType,
-        compressionAlgorithm: 0,
-        data: toHex(fileInfo.data),
-      })
-    }
-    console.log([frontendIndex, fileUploadInfos])
-    
-
-    const { request } = await this.#viemClient.simulateContract({
-      address: this.#websiteContractAddress,
-      abi: versionableStaticWebsiteABI,
-      functionName: 'addFilesToFrontendVersion',
-      args: [frontendIndex, fileUploadInfos],
+  async waitForTransactionReceipt(hash) {
+    return await this.#viemClient.waitForTransactionReceipt({
+      hash
     })
-
-    const hash = await this.#viemClient.writeContract(request)
-console.log("boo", hash)
-    
-
-    console.log(frontendVersion)
   }
+
 }
 
 export { VersionableStaticWebsiteClient };

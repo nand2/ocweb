@@ -10,7 +10,10 @@ enum CompressionAlgorithm {
 }
 
 // A file : Filename, content type and pointer to the data 
-// What remains unspecified: The storage backend address where the data is stored
+// What remains unspecified: 
+// - The storage backend address where the data is stored
+// - The total file size (to be fetched from the storage backend)
+// - The uploaded size (to be fetched from the storage backend)
 struct PartialFileInfos {
     // The path of the file, without root slash. E.g. "images/logo.png"
     string filePath;

@@ -36,7 +36,12 @@ const paddingLeftForCSS = computed(() => {
     <div class="filename">
       <a :href="fileUrl" class="white" target="_blank">
         <FileEarmarkIcon />
-        {{ file.name }}
+        <span>
+          {{ file.name }}
+          <span v-if="file.complete == false" class="danger">
+            Incomplete
+          </span>
+        </span>
       </a>
     </div>
     <div>

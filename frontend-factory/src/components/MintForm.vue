@@ -79,11 +79,11 @@ const { isLoading: isConfirming, isSuccess: isConfirmed } =
         <strong>🎉 Transaction Confirmed! 🎉</strong><br />
          Your OCWebsite is now in your wallet and ready to be managed on the <RouterLink to="/">My OCWebsites</RouterLink> section.
       </div>
-      <div class="error" v-if="switchChainIsPending == false && switchChainError">
+      <div class="danger" v-if="switchChainIsPending == false && switchChainError">
         Switching chain error: {{ switchChainError.shortMessage || switchChainError.message }}
       </div>
 
-      <div class="error" v-if="isPending == false && error">
+      <div class="danger" v-if="isPending == false && error">
         Error: {{ error.shortMessage || error.message }}
       </div>
     </div>
@@ -116,9 +116,5 @@ const { isLoading: isConfirming, isSuccess: isConfirmed } =
   border: 1px solid var(--color-divider);
   padding: 1em 2em;
   border-radius: 1em;
-}
-
-.error {
-  color: var(--color-text-error);
 }
 </style>
