@@ -15,6 +15,14 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  contractAddress: {
+    type: String,
+    required: true,
+  },
+  chainId: {
+    type: Number,
+    required: true,
+  },
 })
 
 </script>
@@ -23,8 +31,18 @@ const props = defineProps({
   <div class="folder-children">
     <div v-for="child in folderChildren" :key="child.name">
       
-      <Folder :folder="child" :folderLevel="folderLevel + 1" v-if="child.type == 'folder'" />
-      <File :file="child" :folderLevel v-else-if="child.type == 'file'" />
+      <Folder 
+        :folder="child" 
+        :folderLevel="folderLevel + 1" 
+        :contractAddress
+        :chainId
+        v-if="child.type == 'folder'" />
+      <File 
+        :file="child" 
+        :folderLevel 
+        :contractAddress
+        :chainId
+        v-else-if="child.type == 'file'" />
 
     </div>
   </div>

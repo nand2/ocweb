@@ -14,6 +14,14 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  contractAddress: {
+    type: String,
+    required: true,
+  },
+  chainId: {
+    type: Number,
+    required: true,
+  },
 })
 
 const isOpened = ref(false);
@@ -28,19 +36,28 @@ const isOpened = ref(false);
         {{ folder.name }}
       </span>
     </div>
-    <FolderChildren :folderChildren="folder.children" :folderLevel="folderLevel + 1" v-if="isOpened" />
+    <FolderChildren 
+      :folderChildren="folder.children" 
+      :folderLevel="folderLevel + 1" 
+      :contractAddress
+      :chainId
+      v-if="isOpened" />
   </div>
 </template>
 
 <style scoped>
+.folder {
+  padding: 0em 1em;
+}
+
 .folder-name {
-  padding: 0.5em 1em;
+  padding: 0.5em 0em;
+  line-height: 1em;
 }
 
 .folder-name span {
-  cursor: pointer;
   display: flex;
   gap: 0.5em;
-  line-height: 1em;
+  cursor: pointer;
 }
 </style>

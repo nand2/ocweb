@@ -12,18 +12,32 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  contractAddress: {
+    type: String,
+    required: true,
+  },
+  chainId: {
+    type: Number,
+    required: true,
+  },
+})
+
+const fileUrl = computed(() => {
+  return `web3://${props.contractAddress}${props.chainId > 1 ? ":" + props.chainId : ""}/${props.file.filePath}`;
 })
 
 const paddingLeftForCSS = computed(() => {
-  return `${props.folderLevel * 0.75}em`;
+  return `${props.folderLevel * 0.25}em`;
 })
 </script>
 
 <template>
   <div class="file">
     <div class="filename">
-      <FileEarmarkIcon />
-      {{ file.name }}
+      <a :href="fileUrl" class="white" target="_blank">
+        <FileEarmarkIcon />
+        {{ file.name }}
+      </a>
     </div>
     <div>
       {{ file.contentType }}
@@ -39,7 +53,7 @@ const paddingLeftForCSS = computed(() => {
   padding: 0.5em 1em;
 }
 
-.file div {
+.file > div {
   display: flex;
   line-height: 1em;
   gap: 0.5em;
@@ -47,5 +61,11 @@ const paddingLeftForCSS = computed(() => {
 
 .filename {
   padding-left: v-bind('paddingLeftForCSS');
+}
+
+.filename a {
+  display: flex;
+  gap: 0.5em;
+
 }
 </style>

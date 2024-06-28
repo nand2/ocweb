@@ -103,9 +103,21 @@ const uploadFiles = async () => {
       data: new Uint8Array(fileData),
     });
   }
+  // Sort by size, so that the smallest files are uploaded first
+  // Since files are grouped together in transactions, this help optimize the nb of calls
+  fileInfos.sort((a, b) => a.size - b.size);
  
+  // Prepare the request to upload the files
+  const requests = await websiteClient.value.prepareAddFilesToFrontendVersionRequests(0, fileInfos);
+  console.log(requests);
+
+  for(const request of requests) {
+    const hash = await websiteClient.value.executeRequest(request);
+    console.log(hash);
+  }
+
   // Upload the files
-  await websiteClient.value.addFilesToFrontendVersion(0, fileInfos);
+  // await websiteClient.value.addFilesToFrontendVersion(0, fileInfos);
 }
 </script>
 
@@ -125,7 +137,7 @@ const uploadFiles = async () => {
       </div>
       <div v-else class="folder-chidren-root">
 
-        <FolderChildren :folderChildren="rootFolderChildren" />
+        <FolderChildren :folderChildren="rootFolderChildren" :contractAddress :chainId />
 
       </div>
 

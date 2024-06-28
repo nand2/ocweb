@@ -46,9 +46,17 @@
 a {
   color: var(--color-link);
   text-decoration: inherit;
+  cursor: pointer;
 }
 a:hover {
   color: var(--color-link-hover);
+}
+
+a.white {
+  color: var(--color-bglink);
+}
+a.white:hover {
+  color: var(--color-bglink-hover);
 }
 
 body {
