@@ -64,7 +64,6 @@ const activeComponent = computed(() => {
 
 .tabs a {
   color: var(--color-text);
-  cursor: pointer;
   padding-top: 1em;
   padding-bottom: calc(1em - 3px);
 }

@@ -143,8 +143,10 @@ function copyWeb3AddressToClipboard() {
 
 .ocwebsite .editor {
   height: 0px;
-  width: 100%;
+  width: calc(100% - 2px);
   transition: height 0.5s;
+  border-left: 1px solid var(--color-divider);
+  border-right: 1px solid var(--color-divider);
 }
 
 .ocwebsite .footer {

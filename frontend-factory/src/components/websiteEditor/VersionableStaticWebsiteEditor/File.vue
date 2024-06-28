@@ -60,13 +60,13 @@ const paddingLeftForCSS = computed(() => {
     </div>
     <div>
       <span v-if="file.compressionAlgorithm == 0">
-        None
+        none
       </span>
       <span v-else-if="file.compressionAlgorithm == 1">
-        Gzip
+        gzip
       </span>
       <span v-else-if="file.compressionAlgorithm == 2">
-        Brotli
+        brotli
       </span>
     </div>
     <div></div>
