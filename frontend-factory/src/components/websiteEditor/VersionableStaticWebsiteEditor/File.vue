@@ -63,7 +63,8 @@ const deleteFile = async () => {
     <div class="filename">
       <a :href="fileUrl" class="white" target="_blank">
         <span>
-          <FileEarmarkIcon />
+          <ExclamationTriangleIcon v-if="file.complete == false" class="danger" />
+          <FileEarmarkIcon v-else />
         </span>
         <span>
           {{ file.name }}
@@ -110,7 +111,7 @@ const deleteFile = async () => {
 <style scoped>
 .file {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 4em max-content;
+  grid-template-columns: 5fr 2fr 1.5fr 1fr 1fr;
   padding: 0.5em 0em;
 }
 
@@ -119,6 +120,7 @@ const deleteFile = async () => {
   line-height: 1em;
   gap: 0.5em;
   padding: 0em 1em;
+  word-break: break-all;
 }
 
 .file > .filename {

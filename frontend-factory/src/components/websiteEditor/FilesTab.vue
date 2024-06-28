@@ -26,8 +26,10 @@ const props = defineProps({
       <div>
         Size
       </div>
+      <div style="font-size: 80%">
+        Compression
+      </div>
       <div>
-        Internal compression
       </div>
     </div>
 
@@ -38,10 +40,15 @@ const props = defineProps({
 <style scoped>
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 3em;
-  padding: 0.5em 1em;
+  grid-template-columns: 5fr 2fr 1.5fr 1fr 1fr;
+  padding: 0.5em 0em;
   font-weight: bold;
   border-bottom: 1px solid #555;
   background-color: var(--color-root-bg)
+}
+
+.table-header > div {
+  padding: 0em 1em;
+  word-break: break-all;
 }
 </style>
