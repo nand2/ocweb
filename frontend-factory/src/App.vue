@@ -41,7 +41,7 @@ import MagicIcon from './icons/MagicIcon.vue';
   min-height: 100vh;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 700px) {
   .app {
     flex-direction: column;
   }
@@ -55,7 +55,7 @@ import MagicIcon from './icons/MagicIcon.vue';
   gap: 2em;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 700px) {
   .sidebar {
     border-right: none;
     border-bottom: 1px solid var(--color-divider);
@@ -77,7 +77,7 @@ import MagicIcon from './icons/MagicIcon.vue';
   height: 1.5em;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1150px) {
   .logo-text {
     display: none;
   }
@@ -89,7 +89,7 @@ import MagicIcon from './icons/MagicIcon.vue';
   gap: 0.5em;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 700px) {
   .menu {
     flex-direction: row;
   }
@@ -117,7 +117,7 @@ import MagicIcon from './icons/MagicIcon.vue';
   scale: 1.5;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1150px) {
   .menu > a .menu-text {
     display: none;
   }

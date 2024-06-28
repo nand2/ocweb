@@ -47,11 +47,12 @@ const isOpened = ref(false);
 
 <style scoped>
 .folder {
-  padding: 0em 1em;
+  padding: 0em 0em;
 }
 
 .folder-name {
-  padding: 0.5em 0em;
+  display: flex;
+  padding: 0.5em 1em;
   line-height: 1em;
 }
 
@@ -59,5 +60,6 @@ const isOpened = ref(false);
   display: flex;
   gap: 0.5em;
   cursor: pointer;
+  justify-content: flex-start;
 }
 </style>

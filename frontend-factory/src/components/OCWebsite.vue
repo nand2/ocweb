@@ -157,12 +157,12 @@ function copyWeb3AddressToClipboard() {
 
 
 .ocwebsite.isOpened {
-  width: 700px;
+  width: 800px;
   cursor: default;
   transition: width 0.5s;
 }
 
-@media (max-width: 870px) {
+@media (max-width: 970px) {
   .ocwebsite.isOpened {
     width: 100%;
   }
@@ -187,7 +187,7 @@ function copyWeb3AddressToClipboard() {
 }
 
 .ocwebsite.isOpened .editor {
-  height: 600px;
+  height: 700px;
   transition: height 0.5s;
 }
 
