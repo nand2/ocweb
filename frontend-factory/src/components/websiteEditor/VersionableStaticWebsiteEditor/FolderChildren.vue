@@ -88,59 +88,27 @@ const prepareAddFilesTransactions = async () => {
   prepareAddFilesMutate()
 }
 
-// Upload files
-const uploadFiles = async () => {
-  const files = document.getElementById('files').files
-  if(files.length == 0) {
-    return
-  }
-
-  // Helper function to read the binary data of a file
-  const readFileData = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => {
-        reject(error);
-      };
-      reader.readAsArrayBuffer(file);
-    });
-  };
-
-  // Prepare the files for upload
-  const fileInfos = []
-  for(let i = 0; i < files.length; i++) {
-    console.log(files[i])
-    // Get binary data of the file
-    const fileData = await readFileData(files[i]);
-    console.log(fileData);
-
-    fileInfos.push({
-      filePath: props.folderParents.map(parent => parent + "/").join() + files[i].name,
-      size: files[i].size,
-      contentType: files[i].type,
-      data: new Uint8Array(fileData),
-    });
-  }
-  // Sort by size, so that the smallest files are uploaded first
-  // Since files are grouped together in transactions, this help optimize the nb of calls
-  fileInfos.sort((a, b) => a.size - b.size);
- 
-  // Prepare the transaction to upload the files
-  const transactions = await props.websiteClient.prepareAddFilesToFrontendVersionTransactions(0, fileInfos);
-  console.log(transactions);
-
-  for(const transaction of transactions) {
+// Execute an upload transaction
+const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesError, isSuccess: addFilesIsSuccess, mutate: addFilesMutate } = useMutation({
+  mutationFn: async (transaction) => {
     const hash = await props.websiteClient.executeTransaction(transaction);
     console.log(hash);
 
     // Wait for the transaction to be mined
-    const receipt = await props.websiteClient.waitForTransactionReceipt(hash);
-
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  scope: {
+    // This scope will make the mutations run serially
+    id: 'addFilesToFrontendVersion'
+  },
+  onSuccess: (data) => {
     // Refresh the frontend version
     queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+  }
+})
+const executePreparedAddFilesTransactions = async () => {
+  for(const transaction of filesAdditionTransactions.value) {
+    addFilesMutate(transaction)
   }
 }
 </script>
@@ -202,7 +170,7 @@ const uploadFiles = async () => {
                 </div>
               </div>
             </div>
-            <button type="button" @click="uploadFiles">Upload</button>
+            <button type="button" @click="executePreparedAddFilesTransactions">Upload</button>
           </div>
         </div>
       </div>
