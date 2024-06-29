@@ -33,7 +33,7 @@ const props = defineProps({
 const queryClient = useQueryClient()
 
 // Prepare the addition of files
-const filesAdditionRequests = ref([])
+const filesAdditionTransactions = ref([])
 const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, error: prepareAddFilesError, isSuccess: prepareAddFilesIsSuccess, mutate: prepareAddFilesMutate } = useMutation({
   mutationFn: async () => {
     const files = document.getElementById('files').files
@@ -74,17 +74,17 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     // Since files are grouped together in transactions, this help optimize the nb of calls
     fileInfos.sort((a, b) => a.size - b.size);
   
-    // Prepare the request to upload the files
-    const requests = await props.websiteClient.prepareAddFilesToFrontendVersionRequests(0, fileInfos);
-    console.log(requests);
+    // Prepare the transaction to upload the files
+    const transactions = await props.websiteClient.prepareAddFilesToFrontendVersionTransactions(0, fileInfos);
+    console.log(transactions);
 
-    return requests;
+    return transactions;
   },
   onSuccess: (data) => {
-    filesAdditionRequests.value = data
+    filesAdditionTransactions.value = data
   }
 })
-const prepareAddFilesRequests = async () => {
+const prepareAddFilesTransactions = async () => {
   prepareAddFilesMutate()
 }
 
@@ -128,12 +128,12 @@ const uploadFiles = async () => {
   // Since files are grouped together in transactions, this help optimize the nb of calls
   fileInfos.sort((a, b) => a.size - b.size);
  
-  // Prepare the request to upload the files
-  const requests = await props.websiteClient.prepareAddFilesToFrontendVersionRequests(0, fileInfos);
-  console.log(requests);
+  // Prepare the transaction to upload the files
+  const transactions = await props.websiteClient.prepareAddFilesToFrontendVersionTransactions(0, fileInfos);
+  console.log(transactions);
 
-  for(const request of requests) {
-    const hash = await props.websiteClient.executeRequest(request);
+  for(const transaction of transactions) {
+    const hash = await props.websiteClient.executeTransaction(transaction);
     console.log(hash);
 
     // Wait for the transaction to be mined
@@ -171,7 +171,7 @@ const uploadFiles = async () => {
       <div class="op-upload">
         <div class="button-area">
           Upload files
-          <input type="file" id="files" name="files" multiple @change="prepareAddFilesRequests">
+          <input type="file" id="files" name="files" multiple @change="prepareAddFilesTransactions">
         </div>
         <div class="form-area">
           <div v-if="prepareAddFilesIsPending">
@@ -182,21 +182,21 @@ const uploadFiles = async () => {
           </div>
           <div v-else-if="prepareAddFilesIsSuccess">
             <div>
-              {{ filesAdditionRequests.length }} transaction{{ filesAdditionRequests.length > 1 ? "s" : "" }} will be needed :
+              {{ filesAdditionTransactions.length }} transaction{{ filesAdditionTransactions.length > 1 ? "s" : "" }} will be needed :
             </div>
-            <div v-for="(request, index) in filesAdditionRequests" :key="request.id">
+            <div v-for="(transaction, index) in filesAdditionTransactions" :key="transaction.id">
               <div>
                 <div>
                   Transaction #{{ index + 1 }}: 
-                  <span v-if="request.functionName == 'addFilesToFrontendVersion'">
+                  <span v-if="transaction.functionName == 'addFilesToFrontendVersion'">
                     Uploading files
                   </span>
-                  <span v-else-if="request.functionName == 'appendToFileInFrontendVersion'">
-                    Add data to file {{ request.args[1] }}
+                  <span v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'">
+                    Add data to file {{ transaction.args[1] }}
                   </span>
                 </div>
-                <div v-if="request.functionName == 'addFilesToFrontendVersion'">
-                  <div v-for="(file, index) in request.args[1]" :key="index">
+                <div v-if="transaction.functionName == 'addFilesToFrontendVersion'">
+                  <div v-for="(file, index) in transaction.args[1]" :key="index">
                     {{ file.filePath }} ({{ Math.round(file.fileSize / 1024) }} KB<span v-if="file.compressionAlgorithm == 1"> gziped</span>)
                   </div>
                 </div>

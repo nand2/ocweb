@@ -66,7 +66,7 @@ class VersionableStaticWebsiteClient {
    * - contentType: The content type of the file. E.g. "text/html", "image/png"
    * - data: Uint8Array of the data of the file
    */
-  async prepareAddFilesToFrontendVersionRequests(frontendIndex, fileInfos) {
+  async prepareAddFilesToFrontendVersionTransactions(frontendIndex, fileInfos) {
     // Fetch the frontend version
     const frontendVersion = await this.#viemWebsiteContract.read.getFrontendVersion([frontendIndex])
 
@@ -106,8 +106,8 @@ class VersionableStaticWebsiteClient {
       }
     }
 
-    // Prepare the batch of requests 
-    const requests = []
+    // Prepare the batch of transactions 
+    const transactions = []
     let currentFileUploadInfos = []
     for (const fileInfo of compressedFilesInfos) {
       // SSTORE2 handling
@@ -131,7 +131,7 @@ class VersionableStaticWebsiteClient {
         let initialChunkSize = Math.min(fileInfo.size, maxInitialChunkSize)
         // If no more room in the current batch, start a new one
         if (initialChunkSize == 0) {
-          requests.push({
+          transactions.push({
             functionName: 'addFilesToFrontendVersion',
             args: [frontendIndex, currentFileUploadInfos],
           })
@@ -166,7 +166,7 @@ class VersionableStaticWebsiteClient {
 
             // More than 1 chunk? We finalize the addFilesToFrontendVersion batch
             if(chunkSizes.length > 1) {
-              requests.push({
+              transactions.push({
                 functionName: 'addFilesToFrontendVersion',
                 args: [frontendIndex, currentFileUploadInfos],
               })
@@ -174,7 +174,7 @@ class VersionableStaticWebsiteClient {
             }
           }
           else {
-            requests.push({
+            transactions.push({
               functionName: 'appendToFileInFrontendVersion',
               args: [frontendIndex, fileInfo.filePath, toHex(chunk)],
             })
@@ -186,22 +186,22 @@ class VersionableStaticWebsiteClient {
       }
     }
 
-    // If the current currentFileUploadInfos batch is not empty, add it to the requests
+    // If the current currentFileUploadInfos batch is not empty, add it to the transactions
     if (currentFileUploadInfos.length > 0) {
-      requests.push({
+      transactions.push({
         functionName: 'addFilesToFrontendVersion',
         args: [frontendIndex, currentFileUploadInfos],
       })
     }
 
-    return requests
+    return transactions
   }
 
   /**
    * Prepare the deletion of a file
    * filePaths: An array of strings, each string being the path of a file, without leading /. E.g. "index.html", "assets/logo.png"
    */
-  async prepareRemoveFilesFromFrontendVersionRequest(frontendIndex, filePaths) {
+  async prepareRemoveFilesFromFrontendVersionTransaction(frontendIndex, filePaths) {
     return {
       functionName: 'removeFilesFromFrontendVersion',
       args: [frontendIndex, filePaths],
@@ -209,17 +209,17 @@ class VersionableStaticWebsiteClient {
   }
 
   /**
-   * Execute a request prepared by one of the prepare* methods
+   * Execute a transaction prepared by one of the prepare* methods
    */
-  async executeRequest(request) {
-    const { request: simulatedRequest } = await this.#viemClient.simulateContract({
+  async executeTransaction(transaction) {
+    const { request } = await this.#viemClient.simulateContract({
       address: this.#websiteContractAddress,
       abi: versionableStaticWebsiteABI,
-      functionName: request.functionName,
-      args: request.args,
+      functionName: transaction.functionName,
+      args: transaction.args,
     })
 
-    const hash = await this.#viemClient.writeContract(simulatedRequest)
+    const hash = await this.#viemClient.writeContract(request)
 
     return hash
   }
