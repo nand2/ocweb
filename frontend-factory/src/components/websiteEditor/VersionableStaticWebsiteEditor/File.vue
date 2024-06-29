@@ -60,9 +60,6 @@ const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, 
   }
 })
 const deleteFile = async () => {
-  if(deleteIsPending.value) {
-    return
-  }
   deleteMutate()
 }
 
@@ -75,7 +72,8 @@ const deleteFile = async () => {
       <div class="filename">
         <a :href="fileUrl" class="white" target="_blank">
           <span>
-            <ExclamationTriangleIcon v-if="file.complete == false" class="danger" />
+            <TrashIcon v-if="deleteIsPending == true" class="pulse-icon" />
+            <ExclamationTriangleIcon v-else-if="file.complete == false" class="danger" />
             <FileEarmarkIcon v-else />
           </span>
           <span>
@@ -112,8 +110,10 @@ const deleteFile = async () => {
         </span>
       </div>
       <div class="actions">
-        <PencilSquareIcon />
-        <a @click.stop.prevent="deleteFile(file)" class="white">
+        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="deleteIsPending == false">
+          <PencilSquareIcon />
+        </a>
+        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="deleteIsPending == false">
           <TrashIcon />
         </a>
       </div>
@@ -147,6 +147,22 @@ const deleteFile = async () => {
 .file > .filename a {
   display: flex;
   gap: 0.5em;
+}
+
+.file > .filename .pulse-icon {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 700px) {
