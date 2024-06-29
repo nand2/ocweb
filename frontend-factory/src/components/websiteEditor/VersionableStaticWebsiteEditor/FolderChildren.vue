@@ -32,6 +32,61 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 
+// Prepare the addition of files
+const filesAdditionRequests = ref([])
+const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, error: prepareAddFilesError, isSuccess: prepareAddFilesIsSuccess, mutate: prepareAddFilesMutate } = useMutation({
+  mutationFn: async () => {
+    const files = document.getElementById('files').files
+    if(files.length == 0) {
+      return
+    }
+
+    // Helper function to read the binary data of a file
+    const readFileData = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve(reader.result);
+        };
+        reader.onerror = (error) => {
+          reject(error);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    };
+
+    // Prepare the files for upload
+    const fileInfos = []
+    for(let i = 0; i < files.length; i++) {
+      console.log(files[i])
+      // Get binary data of the file
+      const fileData = await readFileData(files[i]);
+      console.log(fileData);
+
+      fileInfos.push({
+        filePath: props.folderParents.map(parent => parent + "/").join() + files[i].name,
+        size: files[i].size,
+        contentType: files[i].type,
+        data: new Uint8Array(fileData),
+      });
+    }
+    // Sort by size, so that the smallest files are uploaded first
+    // Since files are grouped together in transactions, this help optimize the nb of calls
+    fileInfos.sort((a, b) => a.size - b.size);
+  
+    // Prepare the request to upload the files
+    const requests = await props.websiteClient.prepareAddFilesToFrontendVersionRequests(0, fileInfos);
+    console.log(requests);
+
+    return requests;
+  },
+  onSuccess: (data) => {
+    filesAdditionRequests.value = data
+  }
+})
+const prepareAddFilesRequests = async () => {
+  prepareAddFilesMutate()
+}
 
 // Upload files
 const uploadFiles = async () => {
@@ -116,10 +171,39 @@ const uploadFiles = async () => {
       <div class="op-upload">
         <div class="button-area">
           Upload files
-          <input type="file" id="files" name="files" multiple>
+          <input type="file" id="files" name="files" multiple @change="prepareAddFilesRequests">
         </div>
         <div class="form-area">
-          <button type="button" @click="uploadFiles">Upload</button>
+          <div v-if="prepareAddFilesIsPending">
+            Preparing files...
+          </div>
+          <div v-else-if="prepareAddFilesIsError">
+            Error preparing the files: {{ prepareAddFilesError.shortMessage || prepareAddFilesError.message }}
+          </div>
+          <div v-else-if="prepareAddFilesIsSuccess">
+            <div>
+              {{ filesAdditionRequests.length }} transaction{{ filesAdditionRequests.length > 1 ? "s" : "" }} will be needed :
+            </div>
+            <div v-for="(request, index) in filesAdditionRequests" :key="request.id">
+              <div>
+                <div>
+                  Transaction #{{ index + 1 }}: 
+                  <span v-if="request.functionName == 'addFilesToFrontendVersion'">
+                    Uploading files
+                  </span>
+                  <span v-else-if="request.functionName == 'appendToFileInFrontendVersion'">
+                    Add data to file {{ request.args[1] }}
+                  </span>
+                </div>
+                <div v-if="request.functionName == 'addFilesToFrontendVersion'">
+                  <div v-for="(file, index) in request.args[1]" :key="index">
+                    {{ file.filePath }} ({{ Math.round(file.fileSize / 1024) }} KB<span v-if="file.compressionAlgorithm == 1"> gziped</span>)
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" @click="uploadFiles">Upload</button>
+          </div>
         </div>
       </div>
       <div class="op-new-folder">
@@ -143,7 +227,7 @@ const uploadFiles = async () => {
 }
 
 .operations > div {
-  text-align: center;
+
 }
 
 .operations > div > div {
@@ -151,6 +235,7 @@ const uploadFiles = async () => {
 }
 
 .operations .button-area {
+  text-align: center;
   position: relative;
   background-color: var(--color-input-bg);
   border: 1px solid #555;
