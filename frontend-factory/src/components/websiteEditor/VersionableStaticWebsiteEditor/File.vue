@@ -12,9 +12,9 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  folderLevel: {
-    type: Number,
-    default: 0,
+  folderParents: {
+    type: Array,
+    default: [],
   },
   contractAddress: {
     type: String,
@@ -38,7 +38,7 @@ const fileUrl = computed(() => {
 })
 
 const paddingLeftForCSS = computed(() => {
-  return `${1 + props.folderLevel * 0.6}em`;
+  return `${1 + props.folderParents.length * 1.5}em`;
 })
 
 

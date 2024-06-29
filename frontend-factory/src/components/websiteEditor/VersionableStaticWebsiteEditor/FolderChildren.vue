@@ -12,9 +12,9 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  folderLevel: {
-    type: Number,
-    default: 0,
+  folderParents: {
+    type: Array,
+    default: [],
   },
   contractAddress: {
     type: String,
@@ -63,7 +63,7 @@ const uploadFiles = async () => {
     console.log(fileData);
 
     fileInfos.push({
-      filePath: files[i].name,
+      filePath: props.folderParents.map(parent => parent + "/").join() + files[i].name,
       size: files[i].size,
       contentType: files[i].type,
       data: new Uint8Array(fileData),
@@ -97,14 +97,14 @@ const uploadFiles = async () => {
         
         <Folder 
           :folder="child" 
-          :folderLevel="folderLevel + 1" 
+          :folderParents="folderParents.concat([child.name])" 
           :contractAddress
           :chainId
           :websiteClient
           v-if="child.type == 'folder'" />
         <File 
           :file="child" 
-          :folderLevel 
+          :folderParents 
           :contractAddress
           :chainId
           :websiteClient

@@ -10,9 +10,9 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  folderLevel: {
-    type: Number,
-    default: 0,
+  folderParents: {
+    type: Array,
+    default: [],
   },
   contractAddress: {
     type: String,
@@ -42,7 +42,7 @@ const isOpened = ref(false);
     </div>
     <FolderChildren 
       :folderChildren="folder.children" 
-      :folderLevel="folderLevel + 1" 
+      :folderParents 
       :contractAddress
       :chainId
       :websiteClient
