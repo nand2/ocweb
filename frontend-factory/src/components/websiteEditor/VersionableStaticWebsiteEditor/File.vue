@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
-import { useQueryClient } from '@tanstack/vue-query'
+import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
 import FileEarmarkIcon from '../../../icons/FileEarmarkIcon.vue';
 import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
@@ -42,68 +42,85 @@ const paddingLeftForCSS = computed(() => {
 })
 
 
-// Upload files
+// Delete file
+const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, isSuccess: deleteIsSuccess, mutate: deleteMutate } = useMutation({
+  mutationFn: async () => {
+    // Prepare the request to delete the file
+    const request = await props.websiteClient.prepareRemoveFilesFromFrontendVersionRequest(0, [props.file.filePath]);
+
+    const hash = await props.websiteClient.executeRequest(request);
+    console.log(hash);
+
+    // Wait for the transaction to be mined
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: (data, variables, context) => {
+    // Refresh the frontend version
+    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+  }
+})
 const deleteFile = async () => {
-  // Prepare the request to delete the file
-  const request = await props.websiteClient.prepareRemoveFilesFromFrontendVersionRequest(0, [props.file.filePath]);
-
-  const hash = await props.websiteClient.executeRequest(request);
-  console.log(hash);
-
-  // Wait for the transaction to be mined
-  const receipt = await props.websiteClient.waitForTransactionReceipt(hash);
-
-  // Refresh the frontend version
-  queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+  if(deleteIsPending.value) {
+    return
+  }
+  deleteMutate()
 }
+
+
 </script>
 
 <template>
-  <div class="file">
-    <div class="filename">
-      <a :href="fileUrl" class="white" target="_blank">
-        <span>
-          <ExclamationTriangleIcon v-if="file.complete == false" class="danger" />
-          <FileEarmarkIcon v-else />
+  <div>
+    <div :class="{file: true, 'delete-pending': deleteIsPending}">
+      <div class="filename">
+        <a :href="fileUrl" class="white" target="_blank">
+          <span>
+            <ExclamationTriangleIcon v-if="file.complete == false" class="danger" />
+            <FileEarmarkIcon v-else />
+          </span>
+          <span>
+            {{ file.name }}
+          </span>
+        </a>
+      </div>
+      <div class="content-type">
+        {{ file.contentType }}
+      </div>
+      <div class="size">
+        <span v-if="file.size === undefined">
+          ...
         </span>
-        <span>
-          {{ file.name }}
+        <span v-else-if="file.complete == true">
+          {{ Math.round(Number(props.file.size) / 1024) }} KB
         </span>
-      </a>
-    </div>
-    <div class="content-type">
-      {{ file.contentType }}
-    </div>
-    <div class="size">
-      <span v-if="file.size === undefined">
-        ...
-      </span>
-      <span v-else-if="file.complete == true">
-        {{ Math.round(Number(props.file.size) / 1024) }} KB
-      </span>
-      <div v-else-if="file.complete == false">
-        {{ Math.round(Number(props.file.uploadedSize) / 1024) }} / {{ Math.round(Number(props.file.size) / 1024) }} KB
-        <div class="danger" style="font-size: 80%">
-          <ExclamationTriangleIcon style="height: 0.8em" />Incomplete
+        <div v-else-if="file.complete == false">
+          {{ Math.round(Number(props.file.uploadedSize) / 1024) }} / {{ Math.round(Number(props.file.size) / 1024) }} KB
+          <div class="danger" style="font-size: 80%">
+            <ExclamationTriangleIcon style="height: 0.8em" />Incomplete
+          </div>
         </div>
       </div>
+      <div class="compression">
+        <span v-if="file.compressionAlgorithm == 0">
+          none
+        </span>
+        <span v-else-if="file.compressionAlgorithm == 1">
+          gzip
+        </span>
+        <span v-else-if="file.compressionAlgorithm == 2">
+          brotli
+        </span>
+      </div>
+      <div class="actions">
+        <PencilSquareIcon />
+        <a @click.stop.prevent="deleteFile(file)" class="white">
+          <TrashIcon />
+        </a>
+      </div>
     </div>
-    <div class="compression">
-      <span v-if="file.compressionAlgorithm == 0">
-        none
-      </span>
-      <span v-else-if="file.compressionAlgorithm == 1">
-        gzip
-      </span>
-      <span v-else-if="file.compressionAlgorithm == 2">
-        brotli
-      </span>
-    </div>
-    <div class="actions">
-      <PencilSquareIcon />
-      <a @click.stop.prevent="deleteFile(file)" class="white">
-        <TrashIcon />
-      </a>
+
+    <div v-if="deleteIsError" class="mutation-error">
+      Error deleting the file: {{ deleteError.shortMessage || deleteError.message }}
     </div>
   </div>
 </template>
@@ -142,5 +159,16 @@ const deleteFile = async () => {
   .file > .size {
     display: none;
   }
+}
+
+.file.delete-pending {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.mutation-error {
+  padding: 0em 1em 0.5em 1em;
+  color: var(--color-text-danger);
+  font-size: 80%;
 }
 </style>
