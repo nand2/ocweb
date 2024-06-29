@@ -104,62 +104,6 @@ const rootFolderChildren = computed(() => {
 
   return root.children;
 })
-
-// Upload files
-const uploadFiles = async () => {
-  const files = document.getElementById('files').files
-  if(files.length == 0) {
-    return
-  }
-
-  // Helper function to read the binary data of a file
-  const readFileData = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => {
-        reject(error);
-      };
-      reader.readAsArrayBuffer(file);
-    });
-  };
-
-  // Prepare the files for upload
-  const fileInfos = []
-  for(let i = 0; i < files.length; i++) {
-    console.log(files[i])
-    // Get binary data of the file
-    const fileData = await readFileData(files[i]);
-    console.log(fileData);
-
-    fileInfos.push({
-      filePath: files[i].name,
-      size: files[i].size,
-      contentType: files[i].type,
-      data: new Uint8Array(fileData),
-    });
-  }
-  // Sort by size, so that the smallest files are uploaded first
-  // Since files are grouped together in transactions, this help optimize the nb of calls
-  fileInfos.sort((a, b) => a.size - b.size);
- 
-  // Prepare the request to upload the files
-  const requests = await websiteClient.value.prepareAddFilesToFrontendVersionRequests(0, fileInfos);
-  console.log(requests);
-
-  for(const request of requests) {
-    const hash = await websiteClient.value.executeRequest(request);
-    console.log(hash);
-
-    // Wait for the transaction to be mined
-    const receipt = await websiteClient.value.waitForTransactionReceipt(hash);
-
-    // Refresh the frontend version
-    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
-  }
-}
 </script>
 
 <template>
@@ -181,9 +125,6 @@ const uploadFiles = async () => {
         <FolderChildren :folderChildren="rootFolderChildren" :contractAddress :chainId :websiteClient />
 
       </div>
-
-      <input type="file" id="files" name="files" multiple>
-      <button type="button" @click="uploadFiles">Upload</button>
     </div>
   </div>
 </template>

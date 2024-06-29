@@ -63,7 +63,7 @@ body {
   margin: 0;
 }
 
-input, textarea, select {
+input:not([type="file"]), textarea, select {
   padding: 0.5em;
   border-radius: 8px;
   border: 1px solid var(--color-input-border);
@@ -72,7 +72,7 @@ input, textarea, select {
   transition: border-color 0.25s;
 }
 
-input:focus-visible, textarea:focus-visible, select:focus-visible {
+input:not([type="file"]):focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 1px solid var(--color-input-focus-outline);
 }
 
