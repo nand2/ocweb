@@ -65,6 +65,10 @@ class VersionableStaticWebsiteClient {
    * - size: The size of the file
    * - contentType: The content type of the file. E.g. "text/html", "image/png"
    * - data: Uint8Array of the data of the file
+   * @returns An array of transactions to execute
+   *          Each transaction is an object with the necessary fields to execute it
+   *          Exception: "metadata", which is data meant to be displayed to the user to review
+   *          the transactions before executing them
    */
   async prepareAddFilesToFrontendVersionTransactions(frontendIndex, fileInfos) {
     // Fetch the frontend version
@@ -94,6 +98,7 @@ class VersionableStaticWebsiteClient {
 
         compressedFilesInfos.push({
           filePath: fileInfo.filePath,
+          originalSize: fileInfo.data.byteLength,
           size: compressedData.byteLength,
           contentType: fileInfo.contentType,
           compressionAlgorithm: 1, // Solidity enum, 1 is for gzip
@@ -102,13 +107,21 @@ class VersionableStaticWebsiteClient {
       }
       // No compression
       else {
-        compressedFilesInfos.push(fileInfo)
+        compressedFilesInfos.push({
+          filePath: fileInfo.filePath,
+          originalSize: fileInfo.data.byteLength,
+          size: fileInfo.data.byteLength,
+          contentType: fileInfo.contentType,
+          compressionAlgorithm: 0, // Solidity enum, 0 is for none
+          data: fileInfo.data,
+        })
       }
     }
 
     // Prepare the batch of transactions 
     const transactions = []
     let currentFileUploadInfos = []
+    let currentFileUploadInfosMetadata = []
     for (const fileInfo of compressedFilesInfos) {
       // SSTORE2 handling
       if (storageBackendName.startsWith('SSTORE2')) {
@@ -134,8 +147,10 @@ class VersionableStaticWebsiteClient {
           transactions.push({
             functionName: 'addFilesToFrontendVersion',
             args: [frontendIndex, currentFileUploadInfos],
+            metadata: { files: currentFileUploadInfosMetadata },
           })
           currentFileUploadInfos = []
+          currentFileUploadInfosMetadata = []
           initialChunkSize = Math.min(fileInfo.size, maxChunkSize)
         }
 
@@ -150,7 +165,7 @@ class VersionableStaticWebsiteClient {
 
         // Send the chunks
         let processedSize = 0
-        for(const chunkSize of chunkSizes) {
+        for(const [chunkId, chunkSize] of chunkSizes.entries()) {
           const dataStart = processedSize;
           const dataEnd = processedSize + chunkSize;
           const chunk = fileInfo.data.slice(dataStart, dataEnd);
@@ -163,20 +178,33 @@ class VersionableStaticWebsiteClient {
               compressionAlgorithm: fileInfo.compressionAlgorithm,
               data: toHex(chunk),
             })
+            currentFileUploadInfosMetadata.push({
+              originalSize: fileInfo.originalSize,
+              sizeSent: chunkSize,
+              chunkId,
+              chunksCount: chunkSizes.length,
+            })
 
             // More than 1 chunk? We finalize the addFilesToFrontendVersion batch
             if(chunkSizes.length > 1) {
               transactions.push({
                 functionName: 'addFilesToFrontendVersion',
                 args: [frontendIndex, currentFileUploadInfos],
+                metadata: { files: currentFileUploadInfosMetadata },
               })
               currentFileUploadInfos = []
+              currentFileUploadInfosMetadata = []
             }
           }
           else {
             transactions.push({
               functionName: 'appendToFileInFrontendVersion',
               args: [frontendIndex, fileInfo.filePath, toHex(chunk)],
+              metadata: {
+                sizeSent: chunkSize,
+                chunkId,
+                chunksCount: chunkSizes.length,
+              },
             })
           }
           
@@ -191,6 +219,7 @@ class VersionableStaticWebsiteClient {
       transactions.push({
         functionName: 'addFilesToFrontendVersion',
         args: [frontendIndex, currentFileUploadInfos],
+        metadata: { files: currentFileUploadInfosMetadata },
       })
     }
 

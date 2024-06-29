@@ -161,11 +161,24 @@ const executePreparedAddFilesTransactions = async () => {
                   </span>
                   <span v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'">
                     Add data to file {{ transaction.args[1] }}
+                    {{ Math.round(transaction.metadata.sizeSent / 1024) }} KB
+                    Chunk {{ transaction.metadata.chunkId + 1 }} / {{ transaction.metadata.chunksCount }}
                   </span>
                 </div>
                 <div v-if="transaction.functionName == 'addFilesToFrontendVersion'">
                   <div v-for="(file, index) in transaction.args[1]" :key="index">
-                    {{ file.filePath }} ({{ Math.round(file.fileSize / 1024) }} KB<span v-if="file.compressionAlgorithm == 1"> gziped</span>)
+                    {{ file.filePath }} : 
+                    <span v-if="transaction.metadata.files[index].chunksCount > 1">
+                      {{ Math.round(transaction.metadata.files[index].sizeSent / 1024) }} /
+                    </span>
+                    {{ Math.round(file.fileSize / 1024) }} KB
+                    <span v-if="transaction.metadata.files[index].chunksCount > 1">
+                      Chunk 1 / {{ transaction.metadata.files[index].chunksCount }}
+                    </span>
+                    <span v-if="file.compressionAlgorithm > 0">
+                      <span v-if="file.compressionAlgorithm == 1">gziped</span>
+                      Original size : {{ Math.round(transaction.metadata.files[index].originalSize / 1024) }} KB
+                    </span>
                   </div>
                 </div>
               </div>
