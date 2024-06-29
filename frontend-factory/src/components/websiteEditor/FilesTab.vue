@@ -20,13 +20,13 @@ const props = defineProps({
       <div>
         Name
       </div>
-      <div>
+      <div class="content-type">
         Type
       </div>
-      <div>
+      <div class="size">
         Size
       </div>
-      <div style="font-size: 80%">
+      <div class="compression" style="font-size: 80%">
         Compression
       </div>
       <div>
@@ -45,6 +45,18 @@ const props = defineProps({
   font-weight: bold;
   border-bottom: 1px solid #555;
   background-color: var(--color-root-bg)
+}
+
+@media (max-width: 700px) {
+  .table-header {
+    grid-template-columns: 2fr max-content;
+  }
+
+  .table-header > .content-type,
+  .table-header > .compression,
+  .table-header > .size {
+    display: none;
+  }
 }
 
 .table-header > div {

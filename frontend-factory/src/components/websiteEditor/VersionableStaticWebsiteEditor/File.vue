@@ -54,9 +54,9 @@ const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, 
     // Wait for the transaction to be mined
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
-  onSuccess: (data, variables, context) => {
+  onSuccess: async (data, variables, context) => {
     // Refresh the frontend version
-    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
   }
 })
 const deleteFile = async () => {

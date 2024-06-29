@@ -81,6 +81,7 @@ const rootFolderChildren = computed(() => {
 
     // Add the file to the folder
     let folderFile = {type: 'file', name: filePathParts[filePathParts.length - 1], ...file}
+    // If loaded, add the extra metadata to the file
     if(frontendFilesExtraMetadataLoaded.value) {
       const extraMetadata = frontendFilesExtraMetadata.value.find(extraMetadata => extraMetadata.filePath == file.filePath)
       if(extraMetadata != null) {
@@ -88,6 +89,17 @@ const rootFolderChildren = computed(() => {
       }
     }
     currentFolder.children.push(folderFile)
+
+    // Sort the children: First folders in alphabetical order, then files in alphabetical order
+    currentFolder.children.sort((a, b) => {
+      if(a.type == 'folder' && b.type == 'file') {
+        return -1
+      }
+      if(a.type == 'file' && b.type == 'folder') {
+        return 1
+      }
+      return a.name.localeCompare(b.name)
+    })
   }
 
   return root.children;
