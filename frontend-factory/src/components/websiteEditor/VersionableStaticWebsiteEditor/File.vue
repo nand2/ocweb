@@ -45,10 +45,10 @@ const paddingLeftForCSS = computed(() => {
 // Delete file
 const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, isSuccess: deleteIsSuccess, mutate: deleteMutate } = useMutation({
   mutationFn: async () => {
-    // Prepare the request to delete the file
-    const request = await props.websiteClient.prepareRemoveFilesFromFrontendVersionRequest(0, [props.file.filePath]);
+    // Prepare the transaction to delete the file
+    const transaction = await props.websiteClient.prepareRemoveFilesFromFrontendVersionTransaction(0, [props.file.filePath]);
 
-    const hash = await props.websiteClient.executeRequest(request);
+    const hash = await props.websiteClient.executeTransaction(transaction);
     console.log(hash);
 
     // Wait for the transaction to be mined
