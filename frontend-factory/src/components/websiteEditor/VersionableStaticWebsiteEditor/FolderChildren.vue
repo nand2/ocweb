@@ -7,7 +7,9 @@ import Folder from './Folder.vue';
 import UploadIcon from '../../../icons/UploadIcon.vue';
 import FolderPlusIcon from '../../../icons/FolderPlusIcon.vue';
 import SendIcon from '../../../icons/SendIcon.vue';
-import CheckIconLg from '../../../icons/CheckIconLg.vue';
+import CheckLgIcon from '../../../icons/ChecLgkIcon.vue';
+import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
+import XCircleIcon from '../../../icons/XCircleIcon.vue';
 
 const props = defineProps({
   folderChildren: {
@@ -38,9 +40,12 @@ const queryClient = useQueryClient()
 const filesAdditionTransactions = ref([])
 const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, error: prepareAddFilesError, isSuccess: prepareAddFilesIsSuccess, mutate: prepareAddFilesMutate } = useMutation({
   mutationFn: async () => {
+    // Reset any previous upload
+    clearAddFilesExecutedTransactions()
+
     const files = document.getElementById('files').files
     if(files.length == 0) {
-      return
+      return [];
     }
 
     // Helper function to read the binary data of a file
@@ -95,7 +100,8 @@ const addFileTransactionBeingExecutedIndex = ref(-1)
 const addFileTransactionResults = ref([])
 const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesError, isSuccess: addFilesIsSuccess, mutate: addFilesMutate } = useMutation({
   mutationFn: async ({index, transaction}) => {
-    // Store the index of the transaction being executed
+    // Store infos about the state of the transaction
+    addFileTransactionResults.value.push({status: 'pending'})
     addFileTransactionBeingExecutedIndex.value = index
 
     const hash = await props.websiteClient.executeTransaction(transaction);
@@ -110,20 +116,33 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
   },
   onSuccess: (data) => {
     // Mark the transaction as successful
-    addFileTransactionResults.value.push({status: 'success'})
+    addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'success'}
 
     // Refresh the frontend version
     queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
   },
   onError: (error) => {
     // Mark the transaction as failed
-    addFileTransactionResults.value.push({status: 'error', error})
+    addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'error', error}
   }
 })
 const executePreparedAddFilesTransactions = async () => {
   for(const [index, transaction] of filesAdditionTransactions.value.entries()) {
     addFilesMutate({index, transaction})
   }
+}
+
+// Clear the addFiles form completely, including the executed transactions
+const clearAddFilesForm = () => {
+  document.getElementById('files').value = ''
+  clearAddFilesExecutedTransactions()
+}
+
+// Clear the addFiles executed transactions
+const clearAddFilesExecutedTransactions = () => {
+  filesAdditionTransactions.value = []
+  addFileTransactionBeingExecutedIndex.value = -1
+  addFileTransactionResults.value = []
 }
 </script>
 
@@ -168,13 +187,26 @@ const executePreparedAddFilesTransactions = async () => {
 
           <div v-else-if="prepareAddFilesIsSuccess">
             <div class="transactions-count">
-              {{ filesAdditionTransactions.length }} transaction{{ filesAdditionTransactions.length > 1 ? "s" : "" }} will be needed
+              <div>
+                {{ filesAdditionTransactions.length }} transaction{{ filesAdditionTransactions.length > 1 ? "s" : "" }} will be needed
+                <span class="text-muted" style="font-weight: normal; font-size: 0.9em;">
+                  Uploading {{ Math.round(filesAdditionTransactions.reduce((acc, tx) => acc + (tx.metadata.sizeSent || tx.metadata.files.reduce((acc, file) => acc + file.sizeSent, 0)), 0) / 1024) }} KB
+                </span>
+              </div>
+              <div style="line-height: 1em;">
+                <a @click.stop.prevent="clearAddFilesForm" class="white">
+                  <XCircleIcon />
+                </a>
+              </div>
             </div>
             <div v-for="(transaction, txIndex) in filesAdditionTransactions" :key="transaction.id" class="transaction">
+
               <div class="icon">
-                <CheckIconLg v-if="txIndex < addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'success'" />
+                <CheckLgIcon v-if="txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'success'" class="text-success" />
+                <ExclamationTriangleIcon v-else-if="txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'error'" class="text-danger" />
                 <SendIcon v-else :class="{'anim-pulse': addFilesIsPending && txIndex == addFileTransactionBeingExecutedIndex}" />
               </div>
+
               <div class="transaction-inner">
                 <div class="transaction-title">
                   Transaction #{{ txIndex + 1 }}: 
@@ -184,6 +216,9 @@ const executePreparedAddFilesTransactions = async () => {
                   <span v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'">
                     Add data to file
                   </span>
+                </div>
+                <div v-if="txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'error' && addFileTransactionResults[txIndex].error" class="transaction-error text-danger">
+                  {{ addFileTransactionResults[txIndex].error.shortMessage || addFileTransactionResults[txIndex].error.message }}
                 </div>
                 <div v-if="transaction.functionName == 'addFilesToFrontendVersion'" class="transaction-details">
                   <div v-for="(file, index) in transaction.args[1]" :key="index">
@@ -214,7 +249,7 @@ const executePreparedAddFilesTransactions = async () => {
                 </div>
               </div>
             </div>
-            <button type="button" @click="executePreparedAddFilesTransactions" style="width: 100%">Upload files</button>
+            <button type="button" v-if="addFileTransactionResults.length == 0 || addFileTransactionResults.length > 0 && addFilesIsPending" @click="executePreparedAddFilesTransactions" style="width: 100%" :disabled="addFilesIsPending">Upload files</button>
           </div>
         </div>
       </div>
@@ -302,6 +337,9 @@ const executePreparedAddFilesTransactions = async () => {
 .transactions-count {
   font-weight: bold;
   margin-bottom: 0.4em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .transaction {
@@ -332,5 +370,11 @@ const executePreparedAddFilesTransactions = async () => {
   .transaction-details .zip-infos {
     display: none;
   }
+}
+
+.transaction-error {
+  line-height: 1.2em;
+  font-size: 0.9em;
+  margin-bottom: 0.3em;
 }
 </style>

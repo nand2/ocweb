@@ -73,7 +73,7 @@ const deleteFile = async () => {
         <a :href="fileUrl" class="white" target="_blank">
           <span>
             <TrashIcon v-if="deleteIsPending == true" class="anim-pulse" />
-            <ExclamationTriangleIcon v-else-if="file.complete == false" class="danger" />
+            <ExclamationTriangleIcon v-else-if="file.complete == false" class="text-danger" />
             <FileEarmarkIcon v-else />
           </span>
           <span>
@@ -93,7 +93,7 @@ const deleteFile = async () => {
         </span>
         <div v-else-if="file.complete == false">
           {{ Math.round(Number(props.file.uploadedSize) / 1024) }} / {{ Math.round(Number(props.file.size) / 1024) }} KB
-          <div class="danger" style="font-size: 80%">
+          <div class="text-danger" style="font-size: 80%">
             <ExclamationTriangleIcon style="height: 0.8em" />Incomplete
           </div>
         </div>
