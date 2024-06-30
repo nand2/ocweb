@@ -7,7 +7,7 @@ import Folder from './Folder.vue';
 import UploadIcon from '../../../icons/UploadIcon.vue';
 import FolderPlusIcon from '../../../icons/FolderPlusIcon.vue';
 import SendIcon from '../../../icons/SendIcon.vue';
-import FileZipIcon from '../../../icons/FileZipIcon.vue';
+import CheckIconLg from '../../../icons/CheckIconLg.vue';
 
 const props = defineProps({
   folderChildren: {
@@ -91,8 +91,13 @@ const prepareAddFilesTransactions = async () => {
 }
 
 // Execute an upload transaction
+const addFileTransactionBeingExecutedIndex = ref(-1)
+const addFileTransactionResults = ref([])
 const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesError, isSuccess: addFilesIsSuccess, mutate: addFilesMutate } = useMutation({
-  mutationFn: async (transaction) => {
+  mutationFn: async ({index, transaction}) => {
+    // Store the index of the transaction being executed
+    addFileTransactionBeingExecutedIndex.value = index
+
     const hash = await props.websiteClient.executeTransaction(transaction);
     console.log(hash);
 
@@ -104,13 +109,20 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     id: 'addFilesToFrontendVersion'
   },
   onSuccess: (data) => {
+    // Mark the transaction as successful
+    addFileTransactionResults.value.push({status: 'success'})
+
     // Refresh the frontend version
     queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+  },
+  onError: (error) => {
+    // Mark the transaction as failed
+    addFileTransactionResults.value.push({status: 'error', error})
   }
 })
 const executePreparedAddFilesTransactions = async () => {
-  for(const transaction of filesAdditionTransactions.value) {
-    addFilesMutate(transaction)
+  for(const [index, transaction] of filesAdditionTransactions.value.entries()) {
+    addFilesMutate({index, transaction})
   }
 }
 </script>
@@ -146,23 +158,26 @@ const executePreparedAddFilesTransactions = async () => {
           <input type="file" id="files" name="files" multiple @change="prepareAddFilesTransactions">
         </div>
         <div class="form-area" v-if="filesAdditionTransactions.length > 0">
+
           <div v-if="prepareAddFilesIsPending">
             Preparing files...
           </div>
           <div v-else-if="prepareAddFilesIsError">
             Error preparing the files: {{ prepareAddFilesError.shortMessage || prepareAddFilesError.message }}
           </div>
+
           <div v-else-if="prepareAddFilesIsSuccess">
             <div class="transactions-count">
               {{ filesAdditionTransactions.length }} transaction{{ filesAdditionTransactions.length > 1 ? "s" : "" }} will be needed
             </div>
-            <div v-for="(transaction, index) in filesAdditionTransactions" :key="transaction.id" class="transaction">
+            <div v-for="(transaction, txIndex) in filesAdditionTransactions" :key="transaction.id" class="transaction">
               <div class="icon">
-                <SendIcon />
+                <CheckIconLg v-if="txIndex < addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'success'" />
+                <SendIcon v-else :class="{'anim-pulse': addFilesIsPending && txIndex == addFileTransactionBeingExecutedIndex}" />
               </div>
               <div class="transaction-inner">
                 <div class="transaction-title">
-                  Transaction #{{ index + 1 }}: 
+                  Transaction #{{ txIndex + 1 }}: 
                   <span v-if="transaction.functionName == 'addFilesToFrontendVersion'">
                     Uploading files
                   </span>
@@ -173,7 +188,7 @@ const executePreparedAddFilesTransactions = async () => {
                 <div v-if="transaction.functionName == 'addFilesToFrontendVersion'" class="transaction-details">
                   <div v-for="(file, index) in transaction.args[1]" :key="index">
                     <code class="filename">{{ file.filePath }}</code>
-                    <span class="text-muted" style="font-size: 0.9em">
+                    <span class="text-muted filename-details">
                       <span v-if="transaction.metadata.files[index].chunksCount > 1">
                         {{ Math.round(transaction.metadata.files[index].sizeSent / 1024) }} /
                       </span>
@@ -191,7 +206,7 @@ const executePreparedAddFilesTransactions = async () => {
                 <div v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'" class="transaction-details">
                   <div>
                     <code class="filename">{{ transaction.args[1] }}</code>
-                    <span class="text-muted" style="font-size: 0.9em">
+                    <span class="text-muted  filename-details">
                       +{{ Math.round(transaction.metadata.sizeSent / 1024) }} KB
                       (chunk {{ transaction.metadata.chunkId + 1 }} / {{ transaction.metadata.chunksCount }})
                     </span>
@@ -307,6 +322,10 @@ const executePreparedAddFilesTransactions = async () => {
 
 .transaction-details .filename {
   margin-right: 0.4em;
+}
+
+.transaction-details .filename-details {
+  font-size: 0.9em;
 }
 
 @media (max-width: 700px) {

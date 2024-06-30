@@ -72,7 +72,7 @@ const deleteFile = async () => {
       <div class="filename">
         <a :href="fileUrl" class="white" target="_blank">
           <span>
-            <TrashIcon v-if="deleteIsPending == true" class="pulse-icon" />
+            <TrashIcon v-if="deleteIsPending == true" class="anim-pulse" />
             <ExclamationTriangleIcon v-else-if="file.complete == false" class="danger" />
             <FileEarmarkIcon v-else />
           </span>
@@ -149,22 +149,6 @@ const deleteFile = async () => {
   gap: 0.5em;
 }
 
-.file > .filename .pulse-icon {
-  animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
 @media (max-width: 700px) {
   .file {
     grid-template-columns: 2fr max-content;
@@ -175,6 +159,13 @@ const deleteFile = async () => {
   .file > .size {
     display: none;
   }
+}
+
+.file > .content-type,
+.file > .compression,
+.file > .size {
+  font-size: 0.9em;
+  color: #bbb;
 }
 
 .file.delete-pending {
