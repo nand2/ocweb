@@ -26,9 +26,17 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  globalEmptyFolders: {
+    type: Array,
+    required: true,
+  },
 })
 
 const isOpened = ref(false);
+
+const paddingLeftForCSS = computed(() => {
+  return `${1 + (props.folderParents.length - 1) * 1.5}em`;
+})
 </script>
 
 <template>
@@ -46,6 +54,7 @@ const isOpened = ref(false);
       :contractAddress
       :chainId
       :websiteClient
+      :globalEmptyFolders
       v-if="isOpened" />
   </div>
 </template>
@@ -57,8 +66,9 @@ const isOpened = ref(false);
 
 .folder-name {
   display: flex;
-  padding: 0.5em 1em;
   line-height: 1em;
+  padding: 0.5em 1em;
+  padding-left: v-bind('paddingLeftForCSS');
 }
 
 .folder-name span {

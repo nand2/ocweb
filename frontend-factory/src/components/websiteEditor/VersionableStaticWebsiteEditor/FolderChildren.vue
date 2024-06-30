@@ -32,16 +32,30 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  globalEmptyFolders: {
+    type: Array,
+    required: true,
+  },
 })
 
 const queryClient = useQueryClient()
 
+const operationsPaddingLeftForCSS = computed(() => {
+  return `${1 + props.folderParents.length * 1.5}em`;
+})
+
+
+//
+// Addition of files
+//
+
 // Prepare the addition of files
 const filesAdditionTransactions = ref([])
-const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, error: prepareAddFilesError, isSuccess: prepareAddFilesIsSuccess, mutate: prepareAddFilesMutate } = useMutation({
+const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, error: prepareAddFilesError, isSuccess: prepareAddFilesIsSuccess, mutate: prepareAddFilesMutate, reset: prepareAddFilesReset } = useMutation({
   mutationFn: async () => {
     // Reset any previous upload
-    clearAddFilesExecutedTransactions()
+    addFileTransactionBeingExecutedIndex.value = -1
+    addFileTransactionResults.value = []
 
     const files = document.getElementById('files').files
     if(files.length == 0) {
@@ -71,7 +85,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
       console.log(fileData);
 
       fileInfos.push({
-        filePath: props.folderParents.map(parent => parent + "/").join() + files[i].name,
+        filePath: props.folderParents.map(parent => parent + "/").join("") + files[i].name,
         size: files[i].size,
         contentType: files[i].type,
         data: new Uint8Array(fileData),
@@ -134,15 +148,35 @@ const executePreparedAddFilesTransactions = async () => {
 
 // Clear the addFiles form completely, including the executed transactions
 const clearAddFilesForm = () => {
+  prepareAddFilesReset()
   document.getElementById('files').value = ''
-  clearAddFilesExecutedTransactions()
 }
 
-// Clear the addFiles executed transactions
-const clearAddFilesExecutedTransactions = () => {
-  filesAdditionTransactions.value = []
-  addFileTransactionBeingExecutedIndex.value = -1
-  addFileTransactionResults.value = []
+
+//
+// New folder
+//
+
+const showNewFolderForm = ref(false)
+const newFolderName = ref('')
+const newFolderErrorLabel = ref('')
+const addNewFolder = async () => {
+  newFolderErrorLabel.value = ''
+
+  if(newFolderName.value == '') {
+    return;
+  }
+
+  // Check if the name is already used
+  if(props.folderChildren.find(child => child.name == newFolderName.value)) {
+    newFolderErrorLabel.value = 'Already exists'
+    return;
+  }
+
+  props.globalEmptyFolders.push(props.folderParents.concat([newFolderName.value]).join('/'))
+  
+  newFolderName.value = ''
+  showNewFolderForm.value = false
 }
 </script>
 
@@ -157,6 +191,7 @@ const clearAddFilesExecutedTransactions = () => {
           :contractAddress
           :chainId
           :websiteClient
+          :globalEmptyFolders
           v-if="child.type == 'folder'" />
         <File 
           :file="child" 
@@ -176,12 +211,12 @@ const clearAddFilesExecutedTransactions = () => {
           </span>
           <input type="file" id="files" name="files" multiple @change="prepareAddFilesTransactions">
         </div>
-        <div class="form-area" v-if="filesAdditionTransactions.length > 0">
+        <div class="form-area" v-if="prepareAddFilesIsPending || prepareAddFilesIsError || prepareAddFilesIsSuccess">
 
           <div v-if="prepareAddFilesIsPending">
-            Preparing files...
+            Preparing files for upload ...
           </div>
-          <div v-else-if="prepareAddFilesIsError">
+          <div v-else-if="prepareAddFilesIsError" class="text-danger">
             Error preparing the files: {{ prepareAddFilesError.shortMessage || prepareAddFilesError.message }}
           </div>
 
@@ -254,14 +289,22 @@ const clearAddFilesExecutedTransactions = () => {
         </div>
       </div>
       <div class="op-new-folder">
-        <div class="button-area">
+        <div class="button-area" @click="showNewFolderForm = !showNewFolderForm; newFolderErrorLabel = ''">
           <span class="button-text">
             <FolderPlusIcon />
             New folder
           </span>
         </div>
-        <div class="form-area">
-
+        <div class="form-area" v-if="showNewFolderForm">
+          <div>
+            <input type="text" class="form-control" placeholder="Folder name" v-model="newFolderName" />
+          </div>
+          <div class="text-danger" style="font-size: 0.9em">
+            {{ newFolderErrorLabel }}
+          </div>
+          <div>
+            <button type="button" style="width: 100%" @click="addNewFolder">Create folder</button>
+          </div>
         </div>
       </div>
     </div>
@@ -271,7 +314,10 @@ const clearAddFilesExecutedTransactions = () => {
 <style scoped>
 .operations {
   display: flex;
-  margin: 0em 1em;
+  margin-top: 0em;
+  margin-right: 1em;
+  margin-left: v-bind('operationsPaddingLeftForCSS');
+  margin-bottom: 0.5em;
   gap: 0.5em;
   align-items:flex-start;
 }
@@ -285,15 +331,13 @@ const clearAddFilesExecutedTransactions = () => {
 
 }
 
-.operations > div > div {
-  padding: 0.5em 1em;
-}
-
 .operations .button-area {
   text-align: center;
   position: relative;
   background-color: var(--color-input-bg);
   border: 1px solid #555;
+  padding: 0.5em 1em;
+  cursor: pointer;
 }
 
 .operations .button-area .button-text {
@@ -309,6 +353,7 @@ const clearAddFilesExecutedTransactions = () => {
   border-bottom: 1px solid #555;
   background-color: var(--color-popup-bg);
   font-size: 0.9em;
+  padding: 0.75em 1em;
 }
 
 .op-upload {
@@ -376,5 +421,14 @@ const clearAddFilesExecutedTransactions = () => {
   line-height: 1.2em;
   font-size: 0.9em;
   margin-bottom: 0.3em;
+}
+
+/**
+ * op-new-folder form
+ */
+.op-new-folder .form-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
 }
 </style>

@@ -49,7 +49,6 @@ const activeComponent = computed(() => {
   display: flex;
   flex-direction: column;
   background-color: #eee;
-  overflow-y:hidden;
   width: 100%;
   background-color: #303030;
 }
@@ -81,9 +80,5 @@ const activeComponent = computed(() => {
 
 .tabSettings {
   margin-left: auto;
-}
-
-.tab {
-  overflow-y: auto;
 }
 </style>

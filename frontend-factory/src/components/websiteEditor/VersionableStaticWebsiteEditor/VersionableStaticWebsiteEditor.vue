@@ -24,6 +24,10 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
 
+// Folders are not stored in the backend, like git
+// We keep track of the empty folders to display them
+const globalEmptyFolders = ref([])
+
 // Fetch the website client
 const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
 (props.contractAddress)
@@ -64,8 +68,35 @@ const rootFolderChildren = computed(() => {
   }
 
   const root = { type: 'folder', name: '', children: [] }
+  // Inject the empty folders
+  for(const emptyFolder of globalEmptyFolders.value) {
+    const emptyFolderParts = emptyFolder.split('/')
+    let currentFolder = root
+    for(const folderPart of emptyFolderParts) {
+      let nextFolder = currentFolder.children.find(child => child.type == 'folder' && child.name == folderPart)
+      if(nextFolder == null) {
+        nextFolder = { type: 'folder', name: folderPart, children: [] }
+        currentFolder.children.push(nextFolder)
+        currentFolder.children.sort((a, b) => a.name.localeCompare(b.name))
+      }
+      currentFolder = nextFolder
+    }
+  }
+
+  // Inject the files
   for(const file of frontendVersion.value.files) {
     const filePathParts = file.filePath.split('/')
+
+    // Function to sort the children: First folders in alphabetical order, then files in alphabetical order
+    const sortChildren = (a, b) => {
+      if(a.type == 'folder' && b.type == 'file') {
+        return -1
+      }
+      if(a.type == 'file' && b.type == 'folder') {
+        return 1
+      }
+      return a.name.localeCompare(b.name)
+    }
 
     // Find or create the folder for the file
     let currentFolder = root
@@ -75,6 +106,7 @@ const rootFolderChildren = computed(() => {
       if(nextFolder == null) {
         nextFolder = { type: 'folder', name: folderName, children: [] }
         currentFolder.children.push(nextFolder)
+        currentFolder.children.sort(sortChildren)
       }
       currentFolder = nextFolder
     }
@@ -89,17 +121,7 @@ const rootFolderChildren = computed(() => {
       }
     }
     currentFolder.children.push(folderFile)
-
-    // Sort the children: First folders in alphabetical order, then files in alphabetical order
-    currentFolder.children.sort((a, b) => {
-      if(a.type == 'folder' && b.type == 'file') {
-        return -1
-      }
-      if(a.type == 'file' && b.type == 'folder') {
-        return 1
-      }
-      return a.name.localeCompare(b.name)
-    })
+    currentFolder.children.sort(sortChildren)
   }
 
   return root.children;
@@ -139,7 +161,9 @@ const rootFolderChildren = computed(() => {
       </div>
       <div v-else class="folder-chidren-root">
 
-        <FolderChildren :folderChildren="rootFolderChildren" :contractAddress :chainId :websiteClient />
+        <FolderChildren 
+          :folderChildren="rootFolderChildren" 
+          :contractAddress :chainId :websiteClient :globalEmptyFolders />
 
       </div>
     </div>
