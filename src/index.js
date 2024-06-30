@@ -227,6 +227,16 @@ class VersionableStaticWebsiteClient {
   }
 
   /**
+   * Prepare the renaming of a files
+   */
+  async prepareRenameFilesInFrontendVersionTransaction(frontendIndex, oldFilePaths, newFilePaths) {
+    return {
+      functionName: 'renameFilesInFrontendVersion',
+      args: [frontendIndex, oldFilePaths, newFilePaths],
+    }
+  }
+
+  /**
    * Prepare the deletion of a file
    * filePaths: An array of strings, each string being the path of a file, without leading /. E.g. "index.html", "assets/logo.png"
    */

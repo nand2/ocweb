@@ -199,6 +199,7 @@ const addNewFolder = async () => {
           :contractAddress
           :chainId
           :websiteClient
+          :folderParentChildren="folderChildren"
           v-else-if="child.type == 'file'" />
 
       </div>

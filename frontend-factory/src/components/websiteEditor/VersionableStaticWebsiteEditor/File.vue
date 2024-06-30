@@ -6,6 +6,7 @@ import FileEarmarkIcon from '../../../icons/FileEarmarkIcon.vue';
 import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
+import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
 
 const props = defineProps({
   file: {
@@ -28,6 +29,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  folderParentChildren: {
+    type: Array,
+    required: true,
+  },
 })
 
 const queryClient = useQueryClient()
@@ -42,16 +47,55 @@ const paddingLeftForCSS = computed(() => {
 })
 
 
+// Rename file
+const showRenameForm = ref(false)
+const newFileName = ref(props.file.name)
+const preRenameError = ref('')
+const { isPending: renameIsPending, isError: renameIsError, error: renameError, isSuccess: renameIsSuccess, mutate: renameMutate, reset: renameReset } = useMutation({
+  mutationFn: async () => {
+    // Prepare the transaction to rename the file
+    const transaction = await props.websiteClient.prepareRenameFilesInFrontendVersionTransaction(0, [props.file.filePath], [newFileName.value]);
+
+    const hash = await props.websiteClient.executeTransaction(transaction);
+
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    // Refresh the frontend version
+    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+  }
+})
+const renameFile = async () => {
+  preRenameError.value = ''
+
+  if(newFileName.value.trim() === '') {
+    return
+  }
+
+  if(newFileName.value.trim() === props.file.name) {
+    showRenameForm.value = false
+    return
+  }
+
+  // Check that the name is not already taken
+  if(props.folderParentChildren.find(child => child.name === newFileName.value)) {
+    preRenameError.value = 'A file with this name already exists in this folder'
+    return
+  }
+
+  showRenameForm.value = false
+
+  renameMutate()
+}
+
 // Delete file
-const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, isSuccess: deleteIsSuccess, mutate: deleteMutate } = useMutation({
+const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, isSuccess: deleteIsSuccess, mutate: deleteMutate, reset: deleteReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction to delete the file
     const transaction = await props.websiteClient.prepareRemoveFilesFromFrontendVersionTransaction(0, [props.file.filePath]);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
-    console.log(hash);
 
-    // Wait for the transaction to be mined
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
@@ -60,6 +104,7 @@ const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, 
   }
 })
 const deleteFile = async () => {
+  showRenameForm.value = false
   deleteMutate()
 }
 
@@ -70,14 +115,26 @@ const deleteFile = async () => {
   <div>
     <div :class="{file: true, 'delete-pending': deleteIsPending}">
       <div class="filename">
-        <a :href="fileUrl" class="white" target="_blank">
+        <span v-if="showRenameForm" class="rename-form">
+          <PencilSquareIcon />
+          <input v-model="newFileName" type="text" />
+          <button @click="renameFile()" :disabled="renameIsPending">Rename</button>
+        </span>
+        <a v-else :href="fileUrl" class="white" target="_blank">
           <span>
-            <TrashIcon v-if="deleteIsPending == true" class="anim-pulse" />
+            <PencilSquareIcon v-if="renameIsPending == true" class="anim-pulse" />
+            <TrashIcon v-else-if="deleteIsPending == true" class="anim-pulse" />
             <ExclamationTriangleIcon v-else-if="file.complete == false" class="text-danger" />
             <FileEarmarkIcon v-else />
           </span>
-          <span>
+          <span :class="{'text-muted': renameIsPending}">
             {{ file.name }}
+          </span>
+          <span v-if="renameIsPending">
+            <ArrowRightIcon />
+          </span>
+          <span v-if="renameIsPending">
+            {{ newFileName }}
           </span>
         </a>
       </div>
@@ -110,17 +167,31 @@ const deleteFile = async () => {
         </span>
       </div>
       <div class="actions">
-        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="deleteIsPending == false">
+        <a @click.stop.prevent="showRenameForm = !showRenameForm; preRenameError = ''; newFileName = file.name" class="white" v-if="renameIsPending == false && deleteIsPending == false">
           <PencilSquareIcon />
         </a>
-        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="deleteIsPending == false">
+        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="renameIsPending == false && deleteIsPending == false">
           <TrashIcon />
         </a>
       </div>
     </div>
 
+    <div v-if="preRenameError" class="mutation-error">
+      <span>
+        {{ preRenameError }}
+      </span>
+    </div>
+
+    <div v-if="renameIsError" class="mutation-error">
+      <span>
+        Error renaming the file: {{ renameError.shortMessage || renameError.message }} <a @click.stop.prevent="renameReset()">Hide</a>
+      </span>
+    </div>
+
     <div v-if="deleteIsError" class="mutation-error">
-      Error deleting the file: {{ deleteError.shortMessage || deleteError.message }}
+      <span>
+        Error deleting the file: {{ deleteError.shortMessage || deleteError.message }} <a @click.stop.prevent="deleteReset()">Hide</a>
+      </span>
     </div>
   </div>
 </template>
@@ -130,6 +201,7 @@ const deleteFile = async () => {
   display: grid;
   grid-template-columns: 5fr 2fr 1.5fr 1fr 1fr;
   padding: 0.5em 0em;
+  align-items: center;
 }
 
 .file > div {
@@ -147,6 +219,21 @@ const deleteFile = async () => {
 .file > .filename a {
   display: flex;
   gap: 0.5em;
+}
+
+.file .rename-form {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+}
+
+.file .rename-form input {
+  padding: 0.2em 0.5em;
+}
+
+.file .rename-form button {
+  font-size: 0.8em;
+  padding: 0.3em 0.75em;
 }
 
 @media (max-width: 700px) {
@@ -174,8 +261,17 @@ const deleteFile = async () => {
 }
 
 .mutation-error {
-  padding: 0em 1em 0.5em 1em;
+  padding: 0em 1em 0.5em v-bind('paddingLeftForCSS');
   color: var(--color-text-danger);
-  font-size: 80%;
+  line-height: 1em;
+}
+
+.mutation-error span {
+  font-size: 0.8em;
+}
+
+.mutation-error a {
+  color: var(--color-text-danger);
+  text-decoration: underline;
 }
 </style>
