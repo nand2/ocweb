@@ -107,7 +107,7 @@ const rootFolderChildren = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="versionable-static-website-editor">
     <div class="table-header">
       <div>
         Name
@@ -147,6 +147,10 @@ const rootFolderChildren = computed(() => {
 </template>
 
 <style scoped>
+.versionable-static-website-editor {
+  margin-bottom: 1em;
+}
+
 .table-header {
   display: grid;
   grid-template-columns: 5fr 2fr 1.5fr 1fr 1fr;

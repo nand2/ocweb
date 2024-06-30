@@ -4,8 +4,10 @@ import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
 import File from './File.vue';
 import Folder from './Folder.vue';
-import ChevronRightIcon from '../../../icons/ChevronRightIcon.vue';
-import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
+import UploadIcon from '../../../icons/UploadIcon.vue';
+import FolderPlusIcon from '../../../icons/FolderPlusIcon.vue';
+import SendIcon from '../../../icons/SendIcon.vue';
+import FileZipIcon from '../../../icons/FileZipIcon.vue';
 
 const props = defineProps({
   folderChildren: {
@@ -138,10 +140,12 @@ const executePreparedAddFilesTransactions = async () => {
     <div class="operations">
       <div class="op-upload">
         <div class="button-area">
-          Upload files
+          <span class="button-text">
+            <UploadIcon /> Pick a file or drag and drop
+          </span>
           <input type="file" id="files" name="files" multiple @change="prepareAddFilesTransactions">
         </div>
-        <div class="form-area">
+        <div class="form-area" v-if="filesAdditionTransactions.length > 0">
           <div v-if="prepareAddFilesIsPending">
             Preparing files...
           </div>
@@ -149,47 +153,62 @@ const executePreparedAddFilesTransactions = async () => {
             Error preparing the files: {{ prepareAddFilesError.shortMessage || prepareAddFilesError.message }}
           </div>
           <div v-else-if="prepareAddFilesIsSuccess">
-            <div>
-              {{ filesAdditionTransactions.length }} transaction{{ filesAdditionTransactions.length > 1 ? "s" : "" }} will be needed :
+            <div class="transactions-count">
+              {{ filesAdditionTransactions.length }} transaction{{ filesAdditionTransactions.length > 1 ? "s" : "" }} will be needed
             </div>
-            <div v-for="(transaction, index) in filesAdditionTransactions" :key="transaction.id">
-              <div>
-                <div>
+            <div v-for="(transaction, index) in filesAdditionTransactions" :key="transaction.id" class="transaction">
+              <div class="icon">
+                <SendIcon />
+              </div>
+              <div class="transaction-inner">
+                <div class="transaction-title">
                   Transaction #{{ index + 1 }}: 
                   <span v-if="transaction.functionName == 'addFilesToFrontendVersion'">
                     Uploading files
                   </span>
                   <span v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'">
-                    Add data to file {{ transaction.args[1] }}
-                    {{ Math.round(transaction.metadata.sizeSent / 1024) }} KB
-                    Chunk {{ transaction.metadata.chunkId + 1 }} / {{ transaction.metadata.chunksCount }}
+                    Add data to file
                   </span>
                 </div>
-                <div v-if="transaction.functionName == 'addFilesToFrontendVersion'">
+                <div v-if="transaction.functionName == 'addFilesToFrontendVersion'" class="transaction-details">
                   <div v-for="(file, index) in transaction.args[1]" :key="index">
-                    {{ file.filePath }} : 
-                    <span v-if="transaction.metadata.files[index].chunksCount > 1">
-                      {{ Math.round(transaction.metadata.files[index].sizeSent / 1024) }} /
+                    <code class="filename">{{ file.filePath }}</code>
+                    <span class="text-muted" style="font-size: 0.9em">
+                      <span v-if="transaction.metadata.files[index].chunksCount > 1">
+                        {{ Math.round(transaction.metadata.files[index].sizeSent / 1024) }} /
+                      </span>
+                      {{ Math.round(file.fileSize / 1024) }} KB
+                      <span v-if="file.compressionAlgorithm > 0" class="zip-infos">
+                        (zipped
+                        from {{ Math.round(transaction.metadata.files[index].originalSize / 1024) }} KB)
+                      </span>
+                      <span v-if="transaction.metadata.files[index].chunksCount > 1">
+                        (chunk 1 / {{ transaction.metadata.files[index].chunksCount }})
+                      </span>
                     </span>
-                    {{ Math.round(file.fileSize / 1024) }} KB
-                    <span v-if="transaction.metadata.files[index].chunksCount > 1">
-                      Chunk 1 / {{ transaction.metadata.files[index].chunksCount }}
-                    </span>
-                    <span v-if="file.compressionAlgorithm > 0">
-                      <span v-if="file.compressionAlgorithm == 1">gziped</span>
-                      Original size : {{ Math.round(transaction.metadata.files[index].originalSize / 1024) }} KB
+                  </div>
+                </div>
+                <div v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'" class="transaction-details">
+                  <div>
+                    <code class="filename">{{ transaction.args[1] }}</code>
+                    <span class="text-muted" style="font-size: 0.9em">
+                      +{{ Math.round(transaction.metadata.sizeSent / 1024) }} KB
+                      (chunk {{ transaction.metadata.chunkId + 1 }} / {{ transaction.metadata.chunksCount }})
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-            <button type="button" @click="executePreparedAddFilesTransactions">Upload</button>
+            <button type="button" @click="executePreparedAddFilesTransactions" style="width: 100%">Upload files</button>
           </div>
         </div>
       </div>
       <div class="op-new-folder">
         <div class="button-area">
-          New folder
+          <span class="button-text">
+            <FolderPlusIcon />
+            New folder
+          </span>
         </div>
         <div class="form-area">
 
@@ -205,6 +224,11 @@ const executePreparedAddFilesTransactions = async () => {
   margin: 0em 1em;
   gap: 0.5em;
   align-items:flex-start;
+}
+@media (max-width: 700px) {
+  .operations {
+    flex-direction: column;
+  }
 }
 
 .operations > div {
@@ -222,8 +246,23 @@ const executePreparedAddFilesTransactions = async () => {
   border: 1px solid #555;
 }
 
+.operations .button-area .button-text {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  justify-content: center;
+}
+
+.operations .form-area {
+  border-left: 1px solid #555;
+  border-right: 1px solid #555;
+  border-bottom: 1px solid #555;
+  background-color: var(--color-popup-bg);
+  font-size: 0.9em;
+}
+
 .op-upload {
-  flex: 1 0 auto;
+  flex: 1 0;
 }
 
 .op-upload input {
@@ -239,5 +278,40 @@ const executePreparedAddFilesTransactions = async () => {
 
 .op-new-folder {
   flex: 0 0 20%;
+}
+
+
+/**
+ * op-upload form
+ */
+.transactions-count {
+  font-weight: bold;
+  margin-bottom: 0.4em;
+}
+
+.transaction {
+  padding: 0.5em 0em;
+  border-top: 1px solid #555;
+  display: flex;
+  gap: 0.75em;
+}
+
+.transaction .icon {
+  padding-top: 0.25em;
+}
+
+.transaction-title {
+  font-weight: bold;
+  margin-bottom: 0.3em;
+}
+
+.transaction-details .filename {
+  margin-right: 0.4em;
+}
+
+@media (max-width: 700px) {
+  .transaction-details .zip-infos {
+    display: none;
+  }
 }
 </style>

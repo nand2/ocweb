@@ -38,14 +38,16 @@ const activeComponent = computed(() => {
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
     
-    <FilesTab :contractAddress :chainId v-show="activeTab == 'files'" />
-    <PreviewTab :contractAddress :chainId v-show="activeTab == 'preview'" />
-    <SettingsTab :contractAddress :chainId v-show="activeTab == 'settings'" />
+    <FilesTab :contractAddress :chainId class="tab" v-show="activeTab == 'files'" />
+    <PreviewTab :contractAddress :chainId class="tab" v-show="activeTab == 'preview'" />
+    <SettingsTab :contractAddress :chainId class="tab" v-show="activeTab == 'settings'" />
   </div>
 </template>
 
 <style scoped>
 .oc-website-editor {
+  display: flex;
+  flex-direction: column;
   background-color: #eee;
   overflow-y:hidden;
   width: 100%;
@@ -79,5 +81,9 @@ const activeComponent = computed(() => {
 
 .tabSettings {
   margin-left: auto;
+}
+
+.tab {
+  overflow-y: auto;
 }
 </style>
