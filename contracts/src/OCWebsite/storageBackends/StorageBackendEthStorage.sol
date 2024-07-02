@@ -155,19 +155,13 @@ contract StorageBackendEthStorage is IStorageBackend {
             reusableEthStorageKeys[msg.sender].push(file.chunkIds[i]);
         }
     }
-
-    function isComplete(address owner, uint index) public view returns (bool) {
-        require(index < files[owner].length, "File not found");
-        
-        File memory file = files[owner][index];
-        return file.chunkIds[file.chunkIds.length - 1] != 0;
-    }
     
-    function uploadedSize(address owner, uint index) public view returns (uint) {
+    function _uploadedSize(address owner, uint index) internal view returns (uint) {
         require(index < files[owner].length, "File not found");
         File memory file = files[owner][index];
 
-        if(isComplete(owner, index) == false) {
+        // If the file is not complete yet
+        if(file.chunkIds[file.chunkIds.length - 1] == 0) {
             // Count the number of chunks that are not empty
             uint count = 0;
             for(uint i = 0; i < file.chunkIds.length; i++) {
@@ -184,31 +178,12 @@ contract StorageBackendEthStorage is IStorageBackend {
         return file.size;
     }
 
-    function size(address owner, uint index) public view returns (uint) {
-        require(index < files[owner].length, "File not found");
-        return files[owner][index].size;
-    }
-
-    function areComplete(address owner, uint[] memory indexes) public view returns (bool[] memory) {
-        bool[] memory results = new bool[](indexes.length);
+    function sizeAndUploadSizes(address owner, uint[] memory indexes) public view returns (Sizes[] memory) {
+        Sizes[] memory results = new Sizes[](indexes.length);
         for(uint i = 0; i < indexes.length; i++) {
-            results[i] = isComplete(owner, indexes[i]);
-        }
-        return results;
-    }
-
-    function uploadedSizes(address owner, uint[] memory indexes) public view returns (uint[] memory) {
-        uint[] memory results = new uint[](indexes.length);
-        for(uint i = 0; i < indexes.length; i++) {
-            results[i] = uploadedSize(owner, indexes[i]);
-        }
-        return results;
-    }
-
-    function sizes(address owner, uint[] memory indexes) public view returns (uint[] memory) {
-        uint[] memory results = new uint[](indexes.length);
-        for(uint i = 0; i < indexes.length; i++) {
-            results[i] = size(owner, indexes[i]);
+            require(indexes[i] < files[owner].length, "File not found");
+            results[i].size = files[owner][indexes[i]].size;
+            results[i].uploadedSize = _uploadedSize(owner, indexes[i]);
         }
         return results;
     }

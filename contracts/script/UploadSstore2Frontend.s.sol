@@ -31,9 +31,10 @@ contract UploadSstore2Frontend is Script {
         }
 
         // If there is already a frontend version which is unlocked, we wipe it and replace it
-        if(frontendLibrary.getFrontendVersions().length > 0 && frontendLibrary.getFrontendVersion(frontendLibrary.getFrontendVersions().length - 1).locked == false) {
+        (,uint256 frontendVersionCount) = frontendLibrary.getFrontendVersions(0, 0);
+        if(frontendVersionCount > 0 && frontendLibrary.getFrontendVersion(frontendVersionCount - 1).locked == false) {
             console.log("Resetting and replacing latest frontend version");
-            frontendLibrary.removeAllFilesFromFrontendVersion(frontendLibrary.getFrontendVersions().length - 1);
+            frontendLibrary.removeAllFilesFromFrontendVersion(frontendVersionCount - 1);
         }
         // Otherwise we add a new version
         else {
@@ -61,6 +62,7 @@ contract UploadSstore2Frontend is Script {
                 chunksCount++;
             }
 
+            (,uint256 frontendVersionCount) = frontendLibrary.getFrontendVersions(0, 0);
             for(uint256 j = 0; j < chunksCount; j++) {
                 uint256 start = j * chunkSize;
                 uint256 end = start + chunkSize;
@@ -78,10 +80,10 @@ contract UploadSstore2Frontend is Script {
                         compressionAlgorithm: CompressionAlgorithm.GZIP,
                         data: chunk
                     });
-                    frontendLibrary.addFilesToFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, fileUploadInfos);
+                    frontendLibrary.addFilesToFrontendVersion(frontendVersionCount - 1, fileUploadInfos);
                 }
                 else {
-                    frontendLibrary.appendToFileInFrontendVersion(frontendLibrary.getFrontendVersions().length - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
+                    frontendLibrary.appendToFileInFrontendVersion(frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
                 }
             }
         }

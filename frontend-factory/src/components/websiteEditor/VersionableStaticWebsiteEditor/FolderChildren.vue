@@ -208,7 +208,7 @@ const addNewFolder = async () => {
       <div class="op-upload">
         <div class="button-area">
           <span class="button-text">
-            <UploadIcon /> Pick a file or drag and drop
+            <UploadIcon /> Pick files or drag and drop
           </span>
           <input type="file" id="files" name="files" multiple @change="prepareAddFilesTransactions">
         </div>

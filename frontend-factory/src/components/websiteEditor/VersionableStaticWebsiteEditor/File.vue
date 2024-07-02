@@ -145,10 +145,10 @@ const deleteFile = async () => {
         <span v-if="file.size === undefined">
           ...
         </span>
-        <span v-else-if="file.complete == true">
+        <span v-else-if="file.size == file.uploadedSize">
           {{ Math.round(Number(props.file.size) / 1024) }} KB
         </span>
-        <div v-else-if="file.complete == false">
+        <div v-else>
           {{ Math.round(Number(props.file.uploadedSize) / 1024) }} / {{ Math.round(Number(props.file.size) / 1024) }} KB
           <div class="text-danger" style="font-size: 80%">
             <ExclamationTriangleIcon style="height: 0.8em" />Incomplete

@@ -7,9 +7,9 @@ import "./IStorageBackend.sol";
 interface IFrontendLibrary {
     // Add/get/remove frontend versions
     function addFrontendVersion(IStorageBackend storageBackend, string memory description) external;
-    function getFrontendVersions() external view returns (FrontendFilesSet[] memory);
+    function getFrontendVersions(uint startIndex, uint count) external view returns (FrontendFilesSet[] memory, uint totalCount);
     function getFrontendVersion(uint256 frontendIndex) external view returns (FrontendFilesSet memory);
-    function removeFrontendVersion(uint256 frontendIndex) external;
+    function renameFrontendVersion(uint256 frontendIndex, string memory newDescription) external;
 
     // Get/set the default frontend version used in the website
     function getDefaultFrontendIndex() external view returns (uint256 frontendIndex);
@@ -31,13 +31,12 @@ interface IFrontendLibrary {
         bytes data;
     }
     function addFilesToFrontendVersion(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) external payable;
-    function getFileUploadedSizeInFrontendVersion(uint256 frontendIndex, string memory filePath) external view returns (uint256);
     function appendToFileInFrontendVersion(uint256 frontendIndex, string memory filePath, bytes memory data) external payable;
 
     // Read a file
     function readFileFromFrontendVersion(uint256 frontendIndex, string memory filePath, uint256 chunkId) external view returns (bytes memory data, uint256 nextChunkId);
 
-    // Rename a file
+    // Rename files
     function renameFilesInFrontendVersion(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) external;
 
     // Remove files

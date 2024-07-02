@@ -37,7 +37,7 @@ const { data: frontendVersion, isLoading: frontendVersionLoading, isFetching: fr
   queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId],
   queryFn: async () => {
     // Invalidate dependent query
-    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontendFilesExtraMetadata', props.contractAddress, props.chainId] })
+    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontendFilesSizes', props.contractAddress, props.chainId] })
 
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
@@ -49,10 +49,10 @@ const { data: frontendVersion, isLoading: frontendVersionLoading, isFetching: fr
 })
 
 // Fetch the frontend files extra metadata from the storage backend
-const { data: frontendFilesExtraMetadata, isLoading: frontendFilesExtraMetadataLoading, isError: frontendFilesExtraMetadataError, isSuccess: frontendFilesExtraMetadataLoaded } = useQuery({
-  queryKey: ['OCWebsiteLiveFrontendFilesExtraMetadata', props.contractAddress, props.chainId],
+const { data: frontendFilesSizes, isLoading: frontendFilesSizesLoading, isError: frontendFilesSizesError, isSuccess: frontendFilesSizesLoaded } = useQuery({
+  queryKey: ['OCWebsiteLiveFrontendFilesSizes', props.contractAddress, props.chainId],
   queryFn: async () => {
-    return await websiteClient.value.getFrontendFilesExtraMetadataFromStorageBackend(frontendVersion.value)
+    return await websiteClient.value.getFrontendFilesSizesFromStorageBackend(frontendVersion.value)
   },
   staleTime: 3600 * 1000,
   enabled: computed(() => frontendVersionLoaded.value && frontendVersionFetching.value == false),
@@ -114,8 +114,8 @@ const rootFolderChildren = computed(() => {
     // Add the file to the folder
     let folderFile = {type: 'file', name: filePathParts[filePathParts.length - 1], ...file}
     // If loaded, add the extra metadata to the file
-    if(frontendFilesExtraMetadataLoaded.value) {
-      const extraMetadata = frontendFilesExtraMetadata.value.find(extraMetadata => extraMetadata.filePath == file.filePath)
+    if(frontendFilesSizesLoaded.value) {
+      const extraMetadata = frontendFilesSizes.value.find(extraMetadata => extraMetadata.filePath == file.filePath)
       if(extraMetadata != null) {
         folderFile = {...folderFile, ...extraMetadata}
       }

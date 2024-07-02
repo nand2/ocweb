@@ -24,7 +24,7 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getLiveFrontendVersion()
   }
 
-  async getFrontendFilesExtraMetadataFromStorageBackend(frontendVersion) {
+  async getFrontendFilesSizesFromStorageBackend(frontendVersion) {
     // Gather the filename and content keys
     const fileInfos = frontendVersion.files.map(file => {
       return {
@@ -42,17 +42,12 @@ class VersionableStaticWebsiteClient {
     })
 
     // Get the sizes
-    const sizes = await storageBackendContract.read.sizes([this.#websiteContractAddress, contentKeys])
-    // Get the uploaded sizes
-    const uploadedSizes = await storageBackendContract.read.uploadedSizes([this.#websiteContractAddress, contentKeys])
-    // Get the completion status
-    const areComplete = await storageBackendContract.read.areComplete([this.#websiteContractAddress, contentKeys])
+    const sizeAndUploadedSizes = await storageBackendContract.read.sizeAndUploadSizes([this.#websiteContractAddress, contentKeys])
 
     // Fill all this metadata into the fileInfos
     for (let i = 0; i < fileInfos.length; i++) {
-      fileInfos[i].size = sizes[i]
-      fileInfos[i].uploadedSize = uploadedSizes[i]
-      fileInfos[i].complete = areComplete[i]
+      fileInfos[i].size = sizeAndUploadedSizes[i].size
+      fileInfos[i].uploadedSize = sizeAndUploadedSizes[i].uploadedSize
     }
   
     return fileInfos;

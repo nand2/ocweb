@@ -45,10 +45,24 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     }
 
     /**
-     * Get all frontend versions
+     * Get frontend versions
+     * @param startIndex The index of the first frontend version to get
+     * @param count The number of frontend versions to get. If 0, get all versions
      */
-    function getFrontendVersions() public view returns (FrontendFilesSet[] memory) {
-        return frontendVersions;
+    function getFrontendVersions(uint startIndex, uint count) public view returns (FrontendFilesSet[] memory, uint totalCount) {
+        require(startIndex < frontendVersions.length, "Index out of bounds");
+        
+        if(count == 0) {
+            count = frontendVersions.length - startIndex;
+        }
+        else if(startIndex + count > frontendVersions.length) {
+            count = frontendVersions.length - startIndex;
+        }
+        FrontendFilesSet[] memory result = new FrontendFilesSet[](count);
+        for(uint i = 0; i < count; i++) {
+            result[i] = frontendVersions[startIndex + i];
+        }
+        return (result, frontendVersions.length);
     }
 
     /**
@@ -61,14 +75,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     }
 
     /**
-     * Remove a frontend version
-     * @param frontendIndex The index of the frontend version
+     * Rename a frontend version
      */
-    function removeFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
+    function renameFrontendVersion(uint256 frontendIndex, string memory newDescription) public onlyOwner frontendLibraryUnlocked {
         require(frontendIndex < frontendVersions.length, "Index out of bounds");
         require(!frontendVersions[frontendIndex].locked, "Frontend version is locked");
-        frontendVersions[frontendIndex] = frontendVersions[frontendVersions.length - 1];
-        frontendVersions.pop();
+
+        frontendVersions[frontendIndex].description = newDescription;
     }
 
     /**
@@ -133,24 +146,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         if(msg.value - totalFundsUsed > 0) {
             payable(msg.sender).transfer(msg.value - totalFundsUsed);
         }
-    }
-
-    /**
-     * Get the uploaded size of a file in a frontend version.
-     * @param frontendIndex The index of the frontend version
-     * @param filePath The path of the file to read
-     */
-    function getFileUploadedSizeInFrontendVersion(uint256 frontendIndex, string memory filePath) public view returns (uint256) {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-
-        for(uint i = 0; i < frontend.files.length; i++) {
-            if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
-                return frontend.storageBackend.uploadedSize(address(this), frontend.files[i].contentKey);
-            }
-        }
-
-        return 0;
     }
 
     /**

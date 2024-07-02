@@ -80,97 +80,14 @@ export const abi = [
     type: "function"
   },
 
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address"
-      },
-      {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256"
-      }
-    ],
-    name: "isComplete",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address"
-      },
-      {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256"
-      }
-    ],
-    name: "uploadedSize",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address"
-      },
-      {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256"
-      }
-    ],
-    name: "size",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-
   { 
     inputs: [{internalType:"address", name:"owner", type:"address"}, { internalType: "uint256[]", name: "", type: "uint256[]" }], 
-    name: "areComplete", 
-    outputs: [{ internalType: "bool[]", name: "", type: "bool[]" }], 
-    stateMutability: "view", 
-    type: "function" 
-  },
-  { 
-    inputs: [{internalType:"address", name:"owner", type:"address"}, { internalType: "uint256[]", name: "", type: "uint256[]" }], 
-    name: "uploadedSizes", 
-    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }], 
-    stateMutability: "view", 
-    type: "function" 
-  },
-  { 
-    inputs: [{internalType:"address", name:"owner", type:"address"}, { internalType: "uint256[]", name: "", type: "uint256[]" }], 
-    name: "sizes", 
-    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }], 
+    name: "sizeAndUploadSizes", 
+    outputs: [{ components: [
+        { internalType: "uint256", name: "size", type: "uint256" }, 
+        { internalType: "uint256", name: "uploadedSize", type: "uint256" }, 
+      ], 
+      internalType: "struct IStorageBackend.Sizes[]", name: "sizes", type: "tuple[]"}], 
     stateMutability: "view", 
     type: "function" 
   },
