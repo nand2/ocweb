@@ -44,7 +44,7 @@ const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, is
     const result = await websiteClient.value.getLiveFrontendVersion()
 
     // Set the index of the frontend version being edited
-    frontendVersionBeingEditedIndex.value = Number(result[1])
+    frontendVersionBeingEditedIndex.value = result.frontendIndex
 
     return result
   },
@@ -64,7 +64,7 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
     // Skip that and reuse liveFrontendVersionData directly
     if(initialLiveFrontendValueUsed == false) {
       initialLiveFrontendValueUsed = true;
-      return liveFrontendVersionData.value[0]
+      return liveFrontendVersionData.value.frontendVersion
     }
 
     // Switch chain if necessary
@@ -118,7 +118,7 @@ const showConfigPanel = ref(false)
             <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="bg entry" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
               Version #{{ index }}: 
               {{ frontendVersion.description }}
-              <span class="badge" v-if="index == liveFrontendVersionData[1]">
+              <span class="badge" v-if="index == liveFrontendVersionData.frontendIndex">
                 Live
               </span>
             </a>
@@ -137,7 +137,7 @@ const showConfigPanel = ref(false)
           <span>
             Version #{{ frontendVersionBeingEditedIndex }}: 
             {{ frontendVersionBeingEdited.description }} 
-            <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData[1]">
+            <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData.frontendIndex">
               Live
             </span>
           </span>
