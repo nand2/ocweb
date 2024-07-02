@@ -58,7 +58,7 @@ const preRenameError = ref('')
 const { isPending: renameIsPending, isError: renameIsError, error: renameError, isSuccess: renameIsSuccess, mutate: renameMutate, reset: renameReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction to rename the file
-    const transaction = await props.websiteClient.prepareRenameFilesInFrontendVersionTransaction(0, [props.file.filePath], [newFileName.value]);
+    const transaction = await props.websiteClient.prepareRenameFilesInFrontendVersionTransaction(props.frontendVersionIndex, [props.file.filePath], [newFileName.value]);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
@@ -96,7 +96,7 @@ const renameFile = async () => {
 const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, isSuccess: deleteIsSuccess, mutate: deleteMutate, reset: deleteReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction to delete the file
-    const transaction = await props.websiteClient.prepareRemoveFilesFromFrontendVersionTransaction(0, [props.file.filePath]);
+    const transaction = await props.websiteClient.prepareRemoveFilesFromFrontendVersionTransaction(props.frontendVersionIndex, [props.file.filePath]);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 

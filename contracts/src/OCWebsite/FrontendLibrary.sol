@@ -224,11 +224,11 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
 
         for(uint i = 0; i < filePaths.length; i++) {
             (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, filePaths[i]);
-            if(fileFound) {
-                frontend.storageBackend.remove(frontend.files[fileIndex].contentKey);
-                frontend.files[fileIndex] = frontend.files[frontend.files.length - 1];
-                frontend.files.pop();
-            }
+            require(fileFound, "File not found");
+            
+            frontend.storageBackend.remove(frontend.files[fileIndex].contentKey);
+            frontend.files[fileIndex] = frontend.files[frontend.files.length - 1];
+            frontend.files.pop();
         }
     }
 

@@ -151,16 +151,14 @@ const rootFolderChildren = computed(() => {
     </div> -->
 
     <div v-else>
-      <div v-if="frontendVersion.files.length == 0">
+      <div v-if="frontendVersion.files.length == 0" class="no-files">
         No files
       </div>
-      <div v-else class="folder-chidren-root">
 
-        <FolderChildren 
-          :folderChildren="rootFolderChildren" 
-          :contractAddress :chainId :frontendVersionIndex :websiteClient :globalEmptyFolders />
+      <FolderChildren 
+        :folderChildren="rootFolderChildren" 
+        :contractAddress :chainId :frontendVersionIndex :websiteClient :globalEmptyFolders />
 
-      </div>
     </div>
   </div>
 </template>
@@ -194,6 +192,12 @@ const rootFolderChildren = computed(() => {
 .table-header > div {
   padding: 0em 1em;
   word-break: break-all;
+}
+
+.no-files {
+  text-align: center;
+  padding: 2em 0em;
+  color: var(--color-text-muted);
 }
 
 .folder-chidren-root {
