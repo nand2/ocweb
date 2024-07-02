@@ -24,7 +24,9 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     //
 
     modifier frontendLibraryUnlocked() {
-        require(frontendLibraryLocked == false, "Frontend library is locked");
+        if(frontendLibraryLocked) {
+            revert FrontendLibraryLocked();
+        }
         _;
     }
 
@@ -50,7 +52,9 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param count The number of frontend versions to get. If 0, get all versions
      */
     function getFrontendVersions(uint startIndex, uint count) public view returns (FrontendFilesSet[] memory, uint totalCount) {
-        require(startIndex < frontendVersions.length, "Index out of bounds");
+        if(startIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         
         if(count == 0) {
             count = frontendVersions.length - startIndex;
@@ -70,7 +74,9 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function getFrontendVersion(uint256 frontendIndex) public view returns (FrontendFilesSet memory) {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         return frontendVersions[frontendIndex];
     }
 
@@ -78,8 +84,12 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Rename a frontend version
      */
     function renameFrontendVersion(uint256 frontendIndex, string memory newDescription) public onlyOwner frontendLibraryUnlocked {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
-        require(!frontendVersions[frontendIndex].locked, "Frontend version is locked");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
+        if(frontendVersions[frontendIndex].locked) {
+            revert FrontendVersionLocked();
+        }
 
         frontendVersions[frontendIndex].description = newDescription;
     }
@@ -96,7 +106,9 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function setDefaultFrontendIndex(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         defaultFrontendIndex = frontendIndex;
     }
 
@@ -106,9 +118,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param fileUploadInfos The files to add
      */
     function addFilesToFrontendVersion(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) public payable onlyOwner frontendLibraryUnlocked {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        require(!frontend.locked, "Frontend version is locked");
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
 
         uint totalFundsUsed = 0;
         for(uint i = 0; i < fileUploadInfos.length; i++) {
@@ -155,12 +171,18 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param data The data to give to the storage backend
      */
     function appendToFileInFrontendVersion(uint256 frontendIndex, string memory filePath, bytes memory data) public payable onlyOwner frontendLibraryUnlocked {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        require(!frontend.locked, "Frontend version is locked");
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
 
         (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, filePath);
-        require(fileFound, "File not found");
+        if(fileFound == false) {
+            revert FileNotFound();
+        }
 
         uint fundsUsed = frontend.storageBackend.append(frontend.files[fileIndex].contentKey, data);
 
@@ -179,11 +201,15 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @return nextChunkId The next chunk ID to read. 0 if none.
      */
     function readFileFromFrontendVersion(uint256 frontendIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         
         (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, filePath);
-        require(fileFound, "File not found");
+        if(fileFound == false) {
+            revert FileNotFound();
+        }
 
         (data, nextChunkId) = frontend.storageBackend.read(address(this), frontend.files[fileIndex].contentKey, chunkId);
     }
@@ -195,18 +221,28 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param newFilePaths The new path of the file
      */
     function renameFilesInFrontendVersion(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public onlyOwner frontendLibraryUnlocked {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        require(!frontend.locked, "Frontend version is locked");
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
 
-        require(oldFilePaths.length == newFilePaths.length, "Arrays length mismatch");
+        if(oldFilePaths.length != newFilePaths.length) {
+            revert ArraysLengthMismatch();
+        }
 
         for(uint i = 0; i < oldFilePaths.length; i++) {
             (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, oldFilePaths[i]);
-            require(fileFound, "File not found");
+            if(fileFound == false) {
+                revert FileNotFound();
+            }
             
-            (bool fileFoundAtNewLocation, uint fileIndexAtNewLocation) = _findFileIndexByNameInFrontendVersion(frontend, newFilePaths[i]);
-            require(!fileFoundAtNewLocation, "File already exists at new location");
+            (bool fileFoundAtNewLocation,) = _findFileIndexByNameInFrontendVersion(frontend, newFilePaths[i]);
+            if(fileFoundAtNewLocation) {
+                revert FileAlreadyExistsAtNewLocation();
+            }
             
             frontend.files[fileIndex].filePath = newFilePaths[i];
         }
@@ -218,14 +254,20 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param filePaths The paths of the files to remove
      */
     function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) public onlyOwner frontendLibraryUnlocked {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        require(!frontend.locked, "Frontend version is locked");
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
 
         for(uint i = 0; i < filePaths.length; i++) {
             (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, filePaths[i]);
-            require(fileFound, "File not found");
-            
+            if(fileFound == false) {
+                revert FileNotFound();
+            }
+
             frontend.storageBackend.remove(frontend.files[fileIndex].contentKey);
             frontend.files[fileIndex] = frontend.files[frontend.files.length - 1];
             frontend.files.pop();
@@ -237,9 +279,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function removeAllFilesFromFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked  {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        require(!frontend.locked, "Frontend version is locked");
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
 
         for(uint i = 0; i < frontend.files.length; i++) {
             frontend.storageBackend.remove(frontend.files[i].contentKey);
@@ -252,9 +298,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function lockFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
-        require(frontendIndex < frontendVersions.length, "Index out of bounds");
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        require(!frontend.locked, "Frontend version is already locked");
+        if(frontend.locked) {
+            revert FrontendVersionIsAlreadyLocked();
+        }
         frontend.locked = true;
     }
 

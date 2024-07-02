@@ -6,13 +6,16 @@ import { Ownable } from "./Ownable.sol";
 contract SettingsLockable is Ownable {
     bool public settingsLocked = false;
 
+    error SettingsLocked();
+
     modifier settingsUnlocked() {
-        require(settingsLocked == false, "Settings locked");
+        if(settingsLocked == true) {
+            revert SettingsLocked();
+        }
         _;
     }
 
-    function lockSettings() public onlyOwner {
-        require(settingsLocked == false, "Settings locked");
+    function lockSettings() public onlyOwner settingsUnlocked {
         settingsLocked = true;
     }
 }

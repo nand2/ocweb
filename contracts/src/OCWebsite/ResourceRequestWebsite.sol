@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import "../interfaces/IDecentralizedApp.sol";
 
 contract ResourceRequestWebsite is IDecentralizedApp {
+    
+    error IndexOutOfBounds();
 
     // Indicate we are serving a website with the resource request mode
     function resolveMode() external pure returns (bytes32) {

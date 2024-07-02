@@ -19,14 +19,21 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
     }
     AddressAndChainId[] public staticContractAddresses;
 
+    error NameReserved();
+    error NameAlreadyUsed();
+
     constructor() {}
 
     function addStaticContractAddress(string memory name, address addr, uint chainId) public onlyOwner settingsUnlocked {
         // Reserved names
-        require(LibStrings.compare(name, "self") == false, "Name reserved");
+        if(LibStrings.compare(name, "self")) {
+            revert NameReserved();
+        }
         // Ensure the name was not used yet
         for(uint i = 0; i < staticContractAddresses.length; i++) {
-            require(!LibStrings.compare(staticContractAddresses[i].name, name), "Name already used");
+            if(LibStrings.compare(staticContractAddresses[i].name, name)) {
+                revert NameAlreadyUsed();
+            }
         }
 
         staticContractAddresses.push(AddressAndChainId(name, addr, chainId));
@@ -37,7 +44,9 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
     }
 
     function removeStaticContractAddress(uint index) public onlyOwner settingsUnlocked {
-        require(index < staticContractAddresses.length, "Index out of bounds");
+        if(index >= staticContractAddresses.length) {
+            revert IndexOutOfBounds();
+        }
 
         staticContractAddresses[index] = staticContractAddresses[staticContractAddresses.length - 1];
         staticContractAddresses.pop();

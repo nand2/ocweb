@@ -5,6 +5,14 @@ import "./IFileInfos.sol";
 import "./IStorageBackend.sol";
 
 interface IFrontendLibrary {
+    error FrontendLibraryLocked();
+    error FrontendIndexOutOfBounds();
+    error FrontendVersionLocked();
+    error FrontendVersionIsAlreadyLocked();
+    error FileNotFound();
+    error FileAlreadyExistsAtNewLocation();
+    error ArraysLengthMismatch();
+
     // Add/get/remove frontend versions
     function addFrontendVersion(IStorageBackend storageBackend, string memory description) external;
     function getFrontendVersions(uint startIndex, uint count) external view returns (FrontendFilesSet[] memory, uint totalCount);

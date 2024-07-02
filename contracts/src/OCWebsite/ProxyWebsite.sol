@@ -19,7 +19,9 @@ contract ProxyWebsite is ResourceRequestWebsite, SettingsLockable {
   }
 
   function removeProxiedWebsite(uint index) public onlyOwner settingsUnlocked {
-    require(index < proxiedWebsites.length, "Index out of bounds");
+    if(index >= proxiedWebsites.length) {
+      revert IndexOutOfBounds();
+    }
 
     proxiedWebsites[index] = proxiedWebsites[proxiedWebsites.length - 1];
     proxiedWebsites.pop();

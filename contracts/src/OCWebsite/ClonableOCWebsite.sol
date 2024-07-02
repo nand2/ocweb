@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "./OCWebsite.sol";
 
 contract ClonableOCWebsite is OCWebsite {
+    error AlreadyInitialized();
 
     constructor() OCWebsite() {
     }
@@ -16,9 +17,10 @@ contract ClonableOCWebsite is OCWebsite {
     address public ownershipController;
 
     modifier onlyOwnershipControllerOrOwnerIfNotSet() {
-        require(
-            (ownershipController != address(0) && msg.sender == ownershipController) || 
-            (ownershipController == address(0) && msg.sender == owner), "Not authorized");
+        if((ownershipController != address(0) && msg.sender != ownershipController) || 
+            (ownershipController == address(0) && msg.sender != owner)) {
+            revert Unauthorized();
+        }
         _;
     }
 
@@ -28,8 +30,12 @@ contract ClonableOCWebsite is OCWebsite {
      * @param _ownershipController The controller of the ownership. Can be null.
      */
     function initialize(address _owner, address _ownershipController, IStorageBackend firstFrontendVersionStorageBackend) public {
-        require(owner == address(0), "Already initialized");
-        require(_owner != address(0), "Invalid new owner");
+        if(owner != address(0)) {
+            revert AlreadyInitialized();
+        }
+        if(_owner == address(0)) {
+            revert InvalidNewOwner();
+        }
         owner = _owner;
         ownershipController = _ownershipController;
 
@@ -46,7 +52,9 @@ contract ClonableOCWebsite is OCWebsite {
      * @param _newOwner The new owner of the website
      */
     function transferOwnership(address _newOwner) public override onlyOwnershipControllerOrOwnerIfNotSet {
-        require(_newOwner != address(0), "Invalid new owner");
+        if(_newOwner == address(0)) {
+            revert InvalidNewOwner();
+        }
         owner = _newOwner;
     }
 }
