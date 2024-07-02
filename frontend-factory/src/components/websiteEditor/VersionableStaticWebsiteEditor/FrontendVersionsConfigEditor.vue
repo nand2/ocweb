@@ -21,6 +21,8 @@ const props = defineProps({
   },
 })
 
+const queryClient = useQueryClient()
+
 // Create frontendVersion
 const newFrontendVersionDescription = ref("")
 const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
@@ -34,7 +36,7 @@ const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsErr
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend version
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId] })
   }
 })
 const newfrontendversionFile = async () => {
