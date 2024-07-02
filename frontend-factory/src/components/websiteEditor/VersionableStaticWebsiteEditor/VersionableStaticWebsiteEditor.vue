@@ -8,6 +8,7 @@ import FrontendVersionEditor from './FrontendVersionEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
 import { useVersionableStaticWebsiteClient } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
+import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -104,9 +105,9 @@ const showConfigPanel = ref(false)
         />
     </div>
 
-    <div class="footer-selected-version">
-      <div class="edited-frontend-version-selector" v-if="showEditedFrontendVersionSelector">
-        <div class="edited-frontend-version-selector-inner"  style="max-width: 50%">
+    <div class="footer">
+      <div class="form-select-frontend-version-popup" v-if="showEditedFrontendVersionSelector">
+        <div class="form-select-frontend-version-popup-inner"  style="max-width: 50%">
           <span v-if="frontendVersionsLoading" class="text-muted text-90">
             Loading frontend versions...
           </span>
@@ -114,9 +115,12 @@ const showConfigPanel = ref(false)
             Error loading frontend versions: {{ frontendVersionsError.message }}
           </span>
           <div v-else-if="frontendVersionsLoaded" class="entries">
-            <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="white entry" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
-              Version #{{ index}}: 
+            <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="bg entry" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
+              Version #{{ index }}: 
               {{ frontendVersion.description }}
+              <span class="badge" v-if="index == liveFrontendVersionData[1]">
+                Live
+              </span>
             </a>
           </div>
         </div>
@@ -129,22 +133,28 @@ const showConfigPanel = ref(false)
         <span v-else-if="frontendVersionBeingEditedIsError">
           Error loading live version: {{ error.shortMessage || error.message }}
         </span>
-        <a v-else-if="frontendVersionBeingEditedLoaded" class="white" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
-          Version #{{ frontendVersionBeingEditedIndex }}: 
-          {{ frontendVersionBeingEdited.description }}
+        <a v-else-if="frontendVersionBeingEditedLoaded" class="bg selected-version-label" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
+          <span>
+            Version #{{ frontendVersionBeingEditedIndex }}: 
+            {{ frontendVersionBeingEdited.description }} 
+            <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData[1]">
+              Live
+            </span>
+          </span>
+          <ChevronUpIcon />
         </a>
-        <a class="white" style="line-height: 1em" @click.prevent.stop="showConfigPanel = !showConfigPanel">
+        <a class="white" style="line-height: 1em; padding: 0.5em 1em;" @click.prevent.stop="showConfigPanel = !showConfigPanel">
           <GearIcon />
         </a>
       </div>
-    </div>
 
-    <div class="versions-config-panel" v-if="showConfigPanel">
-      <FrontendVersionsConfigEditor
-        :contractAddress
-        :chainId
-        :websiteClient="websiteClient"
-        />
+      <div class="versions-config-panel" v-if="showConfigPanel">
+        <FrontendVersionsConfigEditor
+          :contractAddress
+          :chainId
+          :websiteClient="websiteClient"
+          />
+      </div>
     </div>
   </div>
 </template>
@@ -157,25 +167,26 @@ const showConfigPanel = ref(false)
   justify-content: space-between;
 }
 
-.footer-selected-version .footer-inner {
+.footer .footer-inner {
   border-top: 1px solid var(--color-divider);
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: var(--color-root-bg);
+  user-select: none;
 }
 
-.footer-selected-version a, 
-.footer-selected-version span {
+.selected-version-label {
   padding: 0.5em 1em;
-  display: block;
+  display: flex;
+  gap: 1em;
 }
 
-.edited-frontend-version-selector {
+.form-select-frontend-version-popup {
   position: relative;
 }
 
-.edited-frontend-version-selector-inner {
+.form-select-frontend-version-popup-inner {
   position: absolute;
   bottom: 0;
   background-color: var(--color-root-bg);
@@ -183,12 +194,22 @@ const showConfigPanel = ref(false)
   border-right: 1px solid var(--color-divider);
 }
 
-.edited-frontend-version-selector-inner .entries {
+.form-select-frontend-version-popup-inner > span {
+  padding: 0.5em 1em;
+  display: block;
+}
+
+.form-select-frontend-version-popup-inner .entries {
   display: flex;
   flex-direction: column;
 }
 
-.edited-frontend-version-selector-inner .entries .entry {
+.form-select-frontend-version-popup-inner .entry {
+  padding: 0.5em 1em;
+  display: block;
+}
+
+.form-select-frontend-version-popup-inner .entries .entry {
 
 }
 

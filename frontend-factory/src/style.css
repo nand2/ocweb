@@ -1,5 +1,6 @@
 :root {
   --color-root-bg: #242424;
+  --color-primary: #e0a43a;
 
   --color-popup-bg: var(--color-root-bg);
   --color-panel-bg: #1a1a1a;
@@ -11,7 +12,7 @@
   --color-text-muted: #888;
   --color-text-danger: #ff4d4d;
   --color-text-success: #0dbe0d;
-  --color-link: #e0a43a;
+  --color-link: var(--color-primary);
   --color-link-hover: #be8b32;
   --color-bglink: var(--color-text);
   --color-bglink-hover: #ccc;
@@ -58,6 +59,15 @@ a.white {
   color: var(--color-bglink);
 }
 a.white:hover {
+  color: var(--color-bglink-hover);
+}
+
+a.bg {
+  background-color: var(--color-bglink-bg);
+  color: var(--color-bglink);
+}
+a.bg:hover {
+  background-color: var(--color-bglink-hover-bg);
   color: var(--color-bglink-hover);
 }
 
@@ -136,4 +146,13 @@ button.secondary {
   100% {
     transform: scale(0.9);
   }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.10em 0.5em;
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  color: var(--color-text);
+  font-size: 0.8em;
 }
