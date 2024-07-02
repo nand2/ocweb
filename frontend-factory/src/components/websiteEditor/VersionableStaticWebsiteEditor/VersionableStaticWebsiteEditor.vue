@@ -52,6 +52,7 @@ const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, is
 })
 
 // Get a frontend version
+let initialLiveFrontendValueUsed = false
 const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedLoading, isFetching: frontendVersionBeingEditedFetching, isError: frontendVersionBeingEditedIsError, error: frontendVersionBeingEditedError, isSuccess: frontendVersionBeingEditedLoaded } = useQuery({
   queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex],
   queryFn: async () => {
@@ -60,13 +61,14 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
 
     // If this is the first time we are called, we are called to fetch again the live version
     // Skip that and reuse liveFrontendVersionData directly
-    if(frontendVersionBeingEditedLoaded.value == false) {
+    if(initialLiveFrontendValueUsed == false) {
+      initialLiveFrontendValueUsed = true;
       return liveFrontendVersionData.value[0]
     }
 
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
-    
+
     return await websiteClient.value.getFrontendVersion(frontendVersionBeingEditedIndex.value)
   },
   staleTime: 3600 * 1000,
@@ -113,22 +115,25 @@ const showConfigPanel = ref(false)
           </div>
           <div v-else-if="frontendVersionsLoaded">
             <div v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index">
-              #{{ index}} - {{ frontendVersion.description }}
+              <a class="white" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
+                Version #{{ index}}: 
+                {{ frontendVersion.description }}
+              </a>
             </div>
           </div>
         </div>
       </div>
 
       <div class="footer-inner">
-        <span v-if="liveFrontendVersionLoading">
+        <span v-if="frontendVersionBeingEditedLoading">
           Loading live version...
         </span>
-        <span v-else-if="liveFrontendVersionIsError">
+        <span v-else-if="frontendVersionBeingEditedIsError">
           Error loading live version: {{ error.shortMessage || error.message }}
         </span>
-        <a v-else-if="liveFrontendVersionLoaded" class="white" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
-          Version #{{ liveFrontendVersionData[1] }}: 
-          {{ liveFrontendVersionData[0].description }}
+        <a v-else-if="frontendVersionBeingEditedLoaded" class="white" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
+          Version #{{ frontendVersionBeingEditedIndex }}: 
+          {{ frontendVersionBeingEdited.description }}
         </a>
         <a class="white" style="line-height: 1em" @click.prevent.stop="showConfigPanel = !showConfigPanel">
           <GearIcon />
