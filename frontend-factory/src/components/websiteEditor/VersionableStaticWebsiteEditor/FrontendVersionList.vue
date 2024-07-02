@@ -25,7 +25,6 @@ const props = defineProps({
 const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useQuery({
   queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId],
   queryFn: async () => {
-console.log(await props.websiteClient.getFrontendVersions(0, 0))
     return await props.websiteClient.getFrontendVersions(0, 0)
   },
   staleTime: 3600 * 1000,

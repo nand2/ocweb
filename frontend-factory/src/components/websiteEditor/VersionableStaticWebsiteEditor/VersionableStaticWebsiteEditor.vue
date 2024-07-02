@@ -5,7 +5,7 @@ import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
 
 import FrontendVersionEditor from './FrontendVersionEditor.vue';
-import FrontendVersionList from './FrontendVersionList.vue';
+import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
 import { useVersionableStaticWebsiteClient } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 
@@ -31,7 +31,6 @@ const globalEmptyFolders = ref([])
 const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
 (props.contractAddress)
 
-const showVersionPanel = ref(false)
 
 // Fetch the live frontend
 const frontendVersionBeingEditedIndex = ref(-1)
@@ -74,33 +73,19 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
   enabled: computed(() => websiteClientLoaded.value && liveFrontendVersionLoaded.value),
 })
 
+const showEditedFrontendVersionSelector = ref(false)
 
-// Create frontendVersion
-const newFrontendVersionDescription = ref("")
-const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
-  mutationFn: async () => {
-    // Prepare the transaction
-    const transaction = await websiteClient.value.prepareAddFrontendVersionTransaction("0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB", newFrontendVersionDescription.value);
-
-    const hash = await websiteClient.value.executeTransaction(transaction);
-
-    return await websiteClient.value.waitForTransactionReceipt(hash);
+// Get frontend versions
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useQuery({
+  queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId],
+  queryFn: async () => {
+    return await websiteClient.value.getFrontendVersions(0, 0)
   },
-  onSuccess: async (data, variables, context) => {
-    // Refresh the frontend version
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
-  }
+  staleTime: 3600 * 1000,
+  enabled: computed(() => websiteClientLoaded.value && showEditedFrontendVersionSelector.value),
 })
-const newfrontendversionFile = async () => {
-  // // Check that the name is not already taken
-  // if(props.folderParentChildren.find(child => child.name === newFileName.value)) {
-  //   preNewFrontendVersionError.value = 'A file with this name already exists in this folder'
-  //   return
-  // }
 
-  newfrontendversionMutate()
-}
-
+const showConfigPanel = ref(false)
 </script>
 
 <template>
@@ -117,50 +102,46 @@ const newfrontendversionFile = async () => {
         />
     </div>
 
-    <div class="versions-panel">
-      <div class="versions-body" v-if="showVersionPanel">
-        
-        <div class="versions-list">
-          <FrontendVersionList 
-            :contractAddress
-            :chainId
-            :websiteClient="websiteClient"
-            />
-        </div>
-
-        <div class="versions-actions">
-          <div class="versions-add-new-form">
-            <div>
-              <input type="text" v-model="newFrontendVersionDescription" placeholder="Version description" />
-              <br />
-              <button @click="newfrontendversionFile">Add new version</button>
+    <div class="footer-selected-version">
+      <div class="edited-frontend-version-selector" v-if="showEditedFrontendVersionSelector">
+        <div class="edited-frontend-version-selector-inner">
+          <div v-if="frontendVersionsLoading">
+            Loading frontend versions...
+          </div>
+          <div v-else-if="frontendVersionsIsError" class="text-danger">
+            Error loading frontend versions: {{ frontendVersionsError.message }}
+          </div>
+          <div v-else-if="frontendVersionsLoaded">
+            <div v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index">
+              #{{ index}} - {{ frontendVersion.description }}
             </div>
-            <span v-if="newfrontendversionIsError">
-              Error adding new version: {{ newfrontendversionError.shortMessage || newfrontendversionError.message }}
-            </span>
-          </div>
-          <div class="versions-global-lock-form">
-            <button>Lock all versions</button>
           </div>
         </div>
-
       </div>
 
-      <div class="versions-header">
+      <div class="footer-inner">
         <span v-if="liveFrontendVersionLoading">
           Loading live version...
         </span>
         <span v-else-if="liveFrontendVersionIsError">
           Error loading live version: {{ error.shortMessage || error.message }}
         </span>
-        <span v-else-if="liveFrontendVersionLoaded">
+        <a v-else-if="liveFrontendVersionLoaded" class="white" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
           Version #{{ liveFrontendVersionData[1] }}: 
           {{ liveFrontendVersionData[0].description }}
-        </span>
-        <a class="white" style="line-height: 1em" @click.prevent.stop="showVersionPanel = !showVersionPanel">
+        </a>
+        <a class="white" style="line-height: 1em" @click.prevent.stop="showConfigPanel = !showConfigPanel">
           <GearIcon />
         </a>
       </div>
+    </div>
+
+    <div class="versions-config-panel" v-if="showConfigPanel">
+      <FrontendVersionsConfigEditor
+        :contractAddress
+        :chainId
+        :websiteClient="websiteClient"
+        />
     </div>
   </div>
 </template>
@@ -173,34 +154,29 @@ const newfrontendversionFile = async () => {
   justify-content: space-between;
 }
 
-.versions-panel {
+.footer-selected-version .footer-inner {
   border-top: 1px solid var(--color-divider);
-}
-
-.versions-header {
-  padding: 0.5em 1em;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: var(--color-root-bg);
 }
 
-.versions-body {
-  display: flex;
-  border-bottom: 1px solid var(--color-divider-secondary);
-  gap: 1em;
+.footer-selected-version a, 
+.footer-selected-version span {
+  padding: 0.5em 1em;
 }
 
-.versions-list {
-  flex: 1;
+.edited-frontend-version-selector {
+  position: relative;
 }
 
-.versions-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  border-left: 1px solid var(--color-divider);
+.edited-frontend-version-selector-inner {
+  position: absolute;
+  bottom: 0;
 }
+
+
 
 
 </style>
