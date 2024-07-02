@@ -28,6 +28,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  frontendVersionIndex: {
+    type: Number,
+    required: true,
+  },
   websiteClient: {
     type: Object,
     required: true,
@@ -133,7 +137,7 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'success'}
 
     // Refresh the frontend version
-    queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+    queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   },
   onError: (error) => {
     // Mark the transaction as failed
@@ -190,6 +194,7 @@ const addNewFolder = async () => {
           :folderParents="folderParents.concat([child.name])" 
           :contractAddress
           :chainId
+          :frontendVersionIndex
           :websiteClient
           :globalEmptyFolders
           v-if="child.type == 'folder'" />
@@ -198,6 +203,7 @@ const addNewFolder = async () => {
           :folderParents 
           :contractAddress
           :chainId
+          :frontendVersionIndex
           :websiteClient
           :folderParentChildren="folderChildren"
           v-else-if="child.type == 'file'" />

@@ -23,7 +23,8 @@ abstract contract VersionableStaticWebsiteBase is StaticWebsiteBase {
      */
     function getLiveFrontendVersionIndex() public virtual view returns (uint256);
 
-    function getLiveFrontendVersion() public view override returns (FrontendFilesSet memory) {
-        return getFrontendLibrary().getFrontendVersion(getLiveFrontendVersionIndex());
+    function getLiveFrontendVersion() public view override returns (FrontendFilesSet memory frontendVersion, uint256 frontendIndex) {
+        frontendIndex = getLiveFrontendVersionIndex();
+        frontendVersion = getFrontendLibrary().getFrontendVersion(frontendIndex);
     }
 }

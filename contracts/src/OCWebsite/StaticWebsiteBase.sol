@@ -15,8 +15,10 @@ abstract contract StaticWebsiteBase is ResourceRequestWebsite {
 
     /**
      * Hook: Get the frontend to use
+     * @return frontendVersion The frontend version to use
+     * @return frontendIndex The index of the frontend version to use. 0 for mono-frontend websites
      */
-    function getLiveFrontendVersion() public virtual view returns (FrontendFilesSet memory);
+    function getLiveFrontendVersion() public virtual view returns (FrontendFilesSet memory, uint256 frontendIndex);
 
 
     //
@@ -48,7 +50,7 @@ abstract contract StaticWebsiteBase is ResourceRequestWebsite {
      *                   process the call
      */
     function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
-        FrontendFilesSet memory frontend = getLiveFrontendVersion();
+        (FrontendFilesSet memory frontend, ) = getLiveFrontendVersion();
 
         // Compute the filePath of the requested resource
         string memory filePath = _getStaticFrontendAssetFilePathForRequest(resource, params);

@@ -16,7 +16,7 @@ export const abi = [
   { 
     inputs: [], 
     name: "getLiveFrontendVersion", 
-    outputs: [{ components: [{ components: [{ internalType: "string", name: "filePath", type: "string" }, { internalType: "string", name: "contentType", type: "string" }, { internalType: "Enum CompressionAlgorithm", name: "compressionAlgorithm", type: "uint8" }, { internalType: "uint256", name: "contentKey", type: "uint256" }], internalType: "struct FileInfos[]", name: "files", type: "tuple[]" }, { internalType: "contract IStorageBackend", name: "storageBackend", type: "address" }, { internalType: "string", name: "description", type: "string" }, { internalType: "bool", name: "locked", type: "bool" }], internalType: "struct FrontendFilesSet", name: "", type: "tuple" }], 
+    outputs: [{ components: [{ components: [{ internalType: "string", name: "filePath", type: "string" }, { internalType: "string", name: "contentType", type: "string" }, { internalType: "Enum CompressionAlgorithm", name: "compressionAlgorithm", type: "uint8" }, { internalType: "uint256", name: "contentKey", type: "uint256" }], internalType: "struct FileInfos[]", name: "files", type: "tuple[]" }, { internalType: "contract IStorageBackend", name: "storageBackend", type: "address" }, { internalType: "string", name: "description", type: "string" }, { internalType: "bool", name: "locked", type: "bool" }], internalType: "struct FrontendFilesSet", name: "frontendVersion", type: "tuple" }, { internalType: "uint256", name: "frontendIndex", type: "uint256" }], 
     stateMutability: "view", 
     type: "function" 
   }, 

@@ -25,6 +25,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  frontendVersionIndex: {
+    type: Number,
+    required: true,
+  },
   websiteClient: {
     type: Object,
     required: true,
@@ -62,7 +66,7 @@ const { isPending: renameIsPending, isError: renameIsError, error: renameError, 
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend version
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const renameFile = async () => {
@@ -100,7 +104,7 @@ const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, 
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend version
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId] })
+    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const deleteFile = async () => {
@@ -124,7 +128,7 @@ const deleteFile = async () => {
           <span>
             <PencilSquareIcon v-if="renameIsPending == true" class="anim-pulse" />
             <TrashIcon v-else-if="deleteIsPending == true" class="anim-pulse" />
-            <ExclamationTriangleIcon v-else-if="file.complete == false" class="text-danger" />
+            <ExclamationTriangleIcon v-else-if="file.size != file.uploadedSize" class="text-danger" />
             <FileEarmarkIcon v-else />
           </span>
           <span :class="{'text-muted': renameIsPending}">

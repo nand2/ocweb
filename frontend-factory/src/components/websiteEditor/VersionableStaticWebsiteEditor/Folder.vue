@@ -22,6 +22,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  frontendVersionIndex: {
+    type: Number,
+    required: true,
+  },
   websiteClient: {
     type: Object,
     required: true,
@@ -53,6 +57,7 @@ const paddingLeftForCSS = computed(() => {
       :folderParents 
       :contractAddress
       :chainId
+      :frontendVersionIndex
       :websiteClient
       :globalEmptyFolders
       v-if="isOpened" />

@@ -187,7 +187,6 @@ function copyWeb3AddressToClipboard() {
 }
 
 .ocwebsite.isOpened .editor {
-  min-height: 700px;
   height: auto;
   transition: height 0.5s;
 }
