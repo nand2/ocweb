@@ -1,11 +1,11 @@
 <script setup>
 import { ref, shallowRef, computed, defineProps } from 'vue';
-import { useQuery } from '@tanstack/vue-query'
-import { useConnectorClient } from '@wagmi/vue'
+import { useQuery, useMutation } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
 
 import FrontendVersionEditor from './FrontendVersionEditor.vue';
+import FrontendVersionList from './FrontendVersionList.vue';
 import { useVersionableStaticWebsiteClient } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 
@@ -68,18 +68,44 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
     
-    const result = await websiteClient.value.getFrontendVersion(frontendVersionBeingEditedIndex.value)
-    
-    return result
+    return await websiteClient.value.getFrontendVersion(frontendVersionBeingEditedIndex.value)
   },
   staleTime: 3600 * 1000,
   enabled: computed(() => websiteClientLoaded.value && liveFrontendVersionLoaded.value),
 })
 
+
+// Create frontendVersion
+const newFrontendVersionDescription = ref("")
+const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
+  mutationFn: async () => {
+    // Prepare the transaction
+    const transaction = await websiteClient.value.prepareAddFrontendVersionTransaction("0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB", newFrontendVersionDescription.value);
+
+    const hash = await websiteClient.value.executeTransaction(transaction);
+
+    return await websiteClient.value.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    // Refresh the frontend version
+    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+  }
+})
+const newfrontendversionFile = async () => {
+  // // Check that the name is not already taken
+  // if(props.folderParentChildren.find(child => child.name === newFileName.value)) {
+  //   preNewFrontendVersionError.value = 'A file with this name already exists in this folder'
+  //   return
+  // }
+
+  newfrontendversionMutate()
+}
+
 </script>
 
 <template>
   <div class="versionable-static-website-editor">
+    
     <div>
       <FrontendVersionEditor 
         :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
@@ -90,21 +116,36 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
         :websiteClient="websiteClient"
         />
     </div>
+
     <div class="versions-panel">
-      <div class="versions-body" v-show="showVersionPanel">
+      <div class="versions-body" v-if="showVersionPanel">
+        
         <div class="versions-list">
-          XX
+          <FrontendVersionList 
+            :contractAddress
+            :chainId
+            :websiteClient="websiteClient"
+            />
         </div>
+
         <div class="versions-actions">
           <div class="versions-add-new-form">
-            <input type="text" placeholder="Enter a new version name" />
-            <button>Add new version</button>
+            <div>
+              <input type="text" v-model="newFrontendVersionDescription" placeholder="Version description" />
+              <br />
+              <button @click="newfrontendversionFile">Add new version</button>
+            </div>
+            <span v-if="newfrontendversionIsError">
+              Error adding new version: {{ newfrontendversionError.shortMessage || newfrontendversionError.message }}
+            </span>
           </div>
           <div class="versions-global-lock-form">
             <button>Lock all versions</button>
           </div>
         </div>
+
       </div>
+
       <div class="versions-header">
         <span v-if="liveFrontendVersionLoading">
           Loading live version...

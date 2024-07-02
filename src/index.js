@@ -20,6 +20,20 @@ class VersionableStaticWebsiteClient {
     })
   }
 
+  /**
+   * Prepare the addition of a frontend version
+   */
+  async prepareAddFrontendVersionTransaction(storageBackend, description) {
+    return {
+      functionName: 'addFrontendVersion',
+      args: [storageBackend, description],
+    }
+  }
+
+  async getFrontendVersions(startIndex, count) {
+    return await this.#viemWebsiteContract.read.getFrontendVersions([startIndex, count])
+  }
+
   async getLiveFrontendVersion() {
     return await this.#viemWebsiteContract.read.getLiveFrontendVersion()
   }
