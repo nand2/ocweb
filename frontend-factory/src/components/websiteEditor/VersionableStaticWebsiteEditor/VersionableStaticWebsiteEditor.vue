@@ -106,26 +106,6 @@ const showConfigPanel = ref(false)
     </div>
 
     <div class="footer">
-      <div class="form-select-frontend-version-popup" v-if="showEditedFrontendVersionSelector">
-        <div class="form-select-frontend-version-popup-inner"  style="max-width: 50%">
-          <span v-if="frontendVersionsLoading" class="text-muted text-90">
-            Loading frontend versions...
-          </span>
-          <span v-else-if="frontendVersionsIsError" class="text-danger text-90">
-            Error loading frontend versions: {{ frontendVersionsError.message }}
-          </span>
-          <div v-else-if="frontendVersionsLoaded" class="entries">
-            <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="bg entry" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
-              Version #{{ index }}: 
-              {{ frontendVersion.description }}
-              <span class="badge" v-if="index == liveFrontendVersionData.frontendIndex">
-                Live
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-
       <div class="footer-inner">
         <span v-if="frontendVersionBeingEditedLoading">
           Loading live version...
@@ -133,17 +113,41 @@ const showConfigPanel = ref(false)
         <span v-else-if="frontendVersionBeingEditedIsError">
           Error loading live version: {{ error.shortMessage || error.message }}
         </span>
-        <a v-else-if="frontendVersionBeingEditedLoaded" class="bg selected-version-label" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
-          <span>
-            Version #{{ frontendVersionBeingEditedIndex }}: 
-            {{ frontendVersionBeingEdited.description }} 
-            <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData.frontendIndex">
-              Live
+        <a v-else-if="frontendVersionBeingEditedLoaded" class="bg" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
+            
+          <div class="form-select-frontend-version-popup" v-if="showEditedFrontendVersionSelector">
+            <div class="form-select-frontend-version-popup-inner">
+              <span v-if="frontendVersionsLoading" class="text-muted text-90">
+                Loading frontend versions...
+              </span>
+              <span v-else-if="frontendVersionsIsError" class="text-danger text-90">
+                Error loading frontend versions: {{ frontendVersionsError.message }}
+              </span>
+              <div v-else-if="frontendVersionsLoaded" class="entries">
+                <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="bg entry" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
+                  Version #{{ index }}: 
+                  {{ frontendVersion.description }}
+                  <span class="badge" v-if="index == liveFrontendVersionData.frontendIndex">
+                    Live
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <span class="selected-version-label">
+            <span>
+              Version #{{ frontendVersionBeingEditedIndex }}: 
+              {{ frontendVersionBeingEdited.description }} 
+              <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData.frontendIndex">
+                Live
+              </span>
             </span>
+            <ChevronUpIcon />
           </span>
-          <ChevronUpIcon />
+
         </a>
-        <a class="white" style="line-height: 1em; padding: 0.5em 1em;" @click.prevent.stop="showConfigPanel = !showConfigPanel">
+        <a class="bg" style="display: flex; align-items: center; padding: 0.5em 1em;" @click.prevent.stop="showConfigPanel = !showConfigPanel">
           <GearIcon />
         </a>
       </div>
@@ -170,7 +174,7 @@ const showConfigPanel = ref(false)
 .footer .footer-inner {
   border-top: 1px solid var(--color-divider);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   background-color: var(--color-root-bg);
   user-select: none;
@@ -192,6 +196,8 @@ const showConfigPanel = ref(false)
   background-color: var(--color-root-bg);
   border-top: 1px solid var(--color-divider);
   border-right: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--color-divider-secondary);
+  width: 100%;
 }
 
 .form-select-frontend-version-popup-inner > span {
