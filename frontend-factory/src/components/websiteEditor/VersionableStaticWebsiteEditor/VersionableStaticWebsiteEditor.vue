@@ -106,20 +106,18 @@ const showConfigPanel = ref(false)
 
     <div class="footer-selected-version">
       <div class="edited-frontend-version-selector" v-if="showEditedFrontendVersionSelector">
-        <div class="edited-frontend-version-selector-inner">
-          <div v-if="frontendVersionsLoading">
+        <div class="edited-frontend-version-selector-inner"  style="max-width: 50%">
+          <span v-if="frontendVersionsLoading" class="text-muted text-90">
             Loading frontend versions...
-          </div>
-          <div v-else-if="frontendVersionsIsError" class="text-danger">
+          </span>
+          <span v-else-if="frontendVersionsIsError" class="text-danger text-90">
             Error loading frontend versions: {{ frontendVersionsError.message }}
-          </div>
-          <div v-else-if="frontendVersionsLoaded">
-            <div v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index">
-              <a class="white" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
-                Version #{{ index}}: 
-                {{ frontendVersion.description }}
-              </a>
-            </div>
+          </span>
+          <div v-else-if="frontendVersionsLoaded" class="entries">
+            <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="white entry" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
+              Version #{{ index}}: 
+              {{ frontendVersion.description }}
+            </a>
           </div>
         </div>
       </div>
@@ -170,6 +168,7 @@ const showConfigPanel = ref(false)
 .footer-selected-version a, 
 .footer-selected-version span {
   padding: 0.5em 1em;
+  display: block;
 }
 
 .edited-frontend-version-selector {
@@ -179,9 +178,18 @@ const showConfigPanel = ref(false)
 .edited-frontend-version-selector-inner {
   position: absolute;
   bottom: 0;
+  background-color: var(--color-root-bg);
+  border-top: 1px solid var(--color-divider);
+  border-right: 1px solid var(--color-divider);
 }
 
+.edited-frontend-version-selector-inner .entries {
+  display: flex;
+  flex-direction: column;
+}
 
+.edited-frontend-version-selector-inner .entries .entry {
 
+}
 
 </style>

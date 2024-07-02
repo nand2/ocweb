@@ -114,6 +114,14 @@ button.secondary {
   color: var(--color-text-muted);
 }
 
+.text-90 {
+  font-size: 0.9em;
+}
+
+.text-80 {
+  font-size: 0.8em;
+}
+
 .anim-pulse {
   animation: pulse 1s infinite;
 }
