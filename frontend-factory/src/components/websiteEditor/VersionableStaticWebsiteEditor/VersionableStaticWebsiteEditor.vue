@@ -80,7 +80,8 @@ const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetchi
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    return await websiteClient.value.getFrontendVersions(0, 0)
+    const result = await websiteClient.value.getFrontendVersions(0, 0)
+    return result;
   },
   staleTime: 3600 * 1000,
   enabled: computed(() => websiteClientLoaded.value && showEditedFrontendVersionSelector.value),

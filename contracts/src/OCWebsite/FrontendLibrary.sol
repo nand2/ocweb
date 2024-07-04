@@ -67,7 +67,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
 
         newFrontend.viewer = IDecentralizedApp(Clones.clone(address(frontendVersionViewerImplementation)));
         ClonableFrontendVersionViewer(address(newFrontend.viewer)).initialize(IDecentralizedApp(address(this)), frontendVersions.length - 1);
-        
     }
 
     /**

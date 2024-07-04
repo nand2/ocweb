@@ -8,7 +8,7 @@ import "../library/LibStrings.sol";
  * Simple proxy to view non-live frontend versions (which need to be authorized
  * by the owner of the target contract). 
  */
-contract ClonableFrontendVersionViewer {
+contract ClonableFrontendVersionViewer is ResourceRequestWebsite {
     IDecentralizedApp public target;
     uint public frontendVersionIndex;
 
@@ -18,7 +18,7 @@ contract ClonableFrontendVersionViewer {
         frontendVersionIndex = _frontendVersionIndex;
     }
 
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         
         // We prefix the resource with /__frontend_version/{frontendVersionIndex}
         string[] memory newResource = new string[](resource.length + 2);
