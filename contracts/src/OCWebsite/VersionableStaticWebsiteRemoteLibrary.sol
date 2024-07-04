@@ -22,14 +22,14 @@ contract VersionableStaticWebsiteRemoteLibrary is VersionableStaticWebsiteBase {
         frontendLibrary = _frontendLibrary;
     }
 
-    function getFrontendLibrary() public view override returns (IFrontendLibrary) {
-        return frontendLibrary;
-    }
+    // function getFrontendLibrary() public view override returns (IFrontendLibrary) {
+    //     return frontendLibrary;
+    // }
 
-    function getLiveFrontendVersionIndex() public view override returns (uint256) {
-        if(useNonDefaultFrontend) {
-            return overridenFrontendIndex;
-        }
-        return frontendLibrary.getDefaultFrontendIndex();
-    }
+    // function getLiveFrontendVersionIndex() public view override returns (uint256) {
+    //     if(useNonDefaultFrontend) {
+    //         return overridenFrontendIndex;
+    //     }
+    //     return frontendLibrary.getDefaultFrontendIndex();
+    // }
 }

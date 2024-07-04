@@ -293,6 +293,75 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         }
     }
 
+    function addStaticContractAddressToFrontend(uint256 frontendIndex, string memory name, address addr, uint chainId) public onlyOwner frontendLibraryUnlocked {
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
+        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
+
+        // Reserved names
+        if(LibStrings.compare(name, "self")) {
+            revert ContractAddressNameReserved();
+        }
+        // Ensure the name was not used yet
+        for(uint i = 0; i < frontend.staticContractAddresses.length; i++) {
+            if(LibStrings.compare(frontend.staticContractAddresses[i].name, name)) {
+                revert ContractAddressNameAlreadyUsed();
+            }
+        }
+
+        frontend.staticContractAddresses.push(NamedAddressAndChainId(name, addr, chainId));
+    }
+
+    function removeStaticContractAddressFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
+        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
+
+        if(index >= frontend.staticContractAddresses.length) {
+            revert IndexOutOfBounds();
+        }
+
+        frontend.staticContractAddresses[index] = frontend.staticContractAddresses[frontend.staticContractAddresses.length - 1];
+        frontend.staticContractAddresses.pop();
+    }
+
+    function addProxiedWebsiteToFrontend(uint256 frontendIndex, IDecentralizedApp website, string[] memory localPrefix, string[] memory remotePrefix) public onlyOwner frontendLibraryUnlocked {
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
+        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
+
+        frontend.proxiedWebsites.push(ProxiedWebsite(website, localPrefix, remotePrefix));
+    }
+
+    function removeProxiedWebsiteFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
+        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        if(frontend.locked) {
+            revert FrontendVersionLocked();
+        }
+
+        if(index >= frontend.proxiedWebsites.length) {
+            revert IndexOutOfBounds();
+        }
+
+        frontend.proxiedWebsites[index] = frontend.proxiedWebsites[frontend.proxiedWebsites.length - 1];
+        frontend.proxiedWebsites.pop();
+    }
+
     /**
      * Lock a frontend version
      * @param frontendIndex The index of the frontend version

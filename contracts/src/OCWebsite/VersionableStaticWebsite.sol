@@ -12,22 +12,22 @@ import "../interfaces/IFrontendLibrary.sol";
 import "./VersionableStaticWebsiteBase.sol";
 import "./FrontendLibrary.sol";
 
-contract VersionableStaticWebsite is VersionableStaticWebsiteBase, FrontendLibrary {
-    function getFrontendLibrary() public view override returns (IFrontendLibrary) {
-        return this;
-    }
+contract VersionableStaticWebsite is VersionableStaticWebsiteBase {
+    // function getFrontendLibrary() public view override returns (IFrontendLibrary) {
+    //     return this;
+    // }
 
-    function getLiveFrontendVersionIndex() public override view returns (uint256) {
-        return getDefaultFrontendIndex();
-    }
+    // function getLiveFrontendVersionIndex() public override view returns (uint256) {
+    //     return getDefaultFrontendIndex();
+    // }
 
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
+    // function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
 
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = StaticWebsiteBase._processWeb3Request(resource, params);
-        if (statusCode != 0 || internalRedirectResource.length > 0) {
-            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
-        }
+    //     (statusCode, body, headers) = VersionableStaticWebsiteBase._processWeb3Request(resource, params);
+    //     if (statusCode != 0) {
+    //         return (statusCode, body, headers);
+    //     }
 
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
-    }
+    //     (statusCode, body, headers) = super._processWeb3Request(resource, params);
+    // }
 }

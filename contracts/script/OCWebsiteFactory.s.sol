@@ -112,15 +112,15 @@ contract OCWebsiteFactoryScript is Script {
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite(IStorageBackend(address(0)));
             // Add the factory contract address to the frontend
-            factoryFrontend.addStaticContractAddress(string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
+            // factoryFrontend.addStaticContractAddress(string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
             // Testing: Add hardcoded factory for sepolia && holesky
-            factoryFrontend.addStaticContractAddress(string.concat("factory-", "holesky"), 0xFE98Da931c7E15473344bf5Cfc4AB86f1fC4C831, 17000);
-            // factoryFrontend.addStaticContractAddress(string.concat("factory-", "sep"), 0x0578C5e76273237F2109F0921E5A55EB5676B014, 11155111);
+            factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "holesky"), 0xFE98Da931c7E15473344bf5Cfc4AB86f1fC4C831, 17000);
+            factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "sep"), 0x0578C5e76273237F2109F0921E5A55EB5676B014, 11155111);
 
-            // Add internal redirect to index.html, for 404 handling, and #/ handling
-            string[] memory internalRedirect = new string[](1);
-            internalRedirect[0] = "index.html";
-            factoryFrontend.setGlobalInternalRedirect(internalRedirect, new KeyValue[](0));
+            // // Add internal redirect to index.html, for 404 handling, and #/ handling
+            // string[] memory internalRedirect = new string[](1);
+            // internalRedirect[0] = "index.html";
+            // factoryFrontend.setGlobalInternalRedirect(internalRedirect, new KeyValue[](0));
             // Set the website as the factory frontend
             factory.setWebsite(factoryFrontend);
 

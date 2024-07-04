@@ -19,9 +19,7 @@ contract ProxyWebsite is ResourceRequestWebsite, SettingsLockable {
   }
 
   function removeProxiedWebsite(uint index) public onlyOwner settingsUnlocked {
-    if(index >= proxiedWebsites.length) {
-      revert IndexOutOfBounds();
-    }
+    require(index < proxiedWebsites.length, "Index out of bounds");
 
     proxiedWebsites[index] = proxiedWebsites[proxiedWebsites.length - 1];
     proxiedWebsites.pop();
@@ -31,16 +29,16 @@ contract ProxyWebsite is ResourceRequestWebsite, SettingsLockable {
     return proxiedWebsites;
   }
 
-  function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override virtual view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
+  function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override virtual view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
 
     ResourceRequestWebsite[] memory websites = _getProxiedWebsites();
     for (uint i = 0; i < websites.length; i++) {
       (statusCode, body, headers) = websites[i].request(resource, params);
       if (statusCode != 0 && statusCode != 404) {
-        return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
+        return (statusCode, body, headers);
       }
     }
 
-    (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
+    (statusCode, body, headers) = super._processWeb3Request(resource, params);
   }
 }

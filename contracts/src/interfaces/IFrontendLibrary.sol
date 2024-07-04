@@ -5,6 +5,7 @@ import "./IFileInfos.sol";
 import "./IStorageBackend.sol";
 
 interface IFrontendLibrary {
+    error IndexOutOfBounds();
     error FrontendLibraryLocked();
     error FrontendIndexOutOfBounds();
     error FrontendVersionLocked();
@@ -12,6 +13,8 @@ interface IFrontendLibrary {
     error FileNotFound();
     error FileAlreadyExistsAtNewLocation();
     error ArraysLengthMismatch();
+    error ContractAddressNameReserved();
+    error ContractAddressNameAlreadyUsed();
 
     // Add/get/remove frontend versions
     function addFrontendVersion(IStorageBackend storageBackend, string memory description) external;
@@ -50,6 +53,14 @@ interface IFrontendLibrary {
     // Remove files
     function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) external;
     function removeAllFilesFromFrontendVersion(uint256 frontendIndex) external;
+
+    // Add/remove static contract address served at /contractAddresses.json 
+    function addStaticContractAddressToFrontend(uint256 frontendIndex, string memory name, address addr, uint chainId) external;
+    function removeStaticContractAddressFromFrontend(uint256 frontendIndex, uint index) external;
+
+    // Add/remove proxied websites
+    function addProxiedWebsiteToFrontend(uint256 frontendIndex, IDecentralizedApp website, string[] memory localPrefix, string[] memory remotePrefix) external;
+    function removeProxiedWebsiteFromFrontend(uint256 frontendIndex, uint index) external;
 
     // Lock a frontend version: It won't be editable anymore, and cannot be deleted
     function lockFrontendVersion(uint256 frontendIndex) external;

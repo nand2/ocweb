@@ -49,8 +49,36 @@ abstract contract StaticWebsiteBase is ResourceRequestWebsite {
      * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
      *                   process the call
      */
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         (FrontendFilesSet memory frontend, ) = getLiveFrontendVersion();
+
+        // Special path : contractAddresses.json
+        // Serve static contract addresses to be consumed by the frontend to boostrap
+        if(resource.length == 1 && LibStrings.compare(resource[0], "contractAddresses.json")) {
+            // We output all the static contract addresses and ourselves
+            // Manual JSON serialization, safe with the vars we encode
+            body = string.concat('{'
+                '"self":{'
+                    '"address":"', LibStrings.toHexString(address(this)), '",'
+                    '"chainId":', LibStrings.toString(block.chainid), 
+                '}');
+
+            NamedAddressAndChainId[] memory contractAddresses = frontend.staticContractAddresses;
+            for(uint i = 0; i < contractAddresses.length; i++) {
+                body = string.concat(body, ','
+                '"', contractAddresses[i].name, '":{'
+                    '"address":"', LibStrings.toHexString(contractAddresses[i].addr), '",',
+                    '"chainId":', LibStrings.toString(contractAddresses[i].chainId), 
+                '}');
+            }
+            body = string.concat(body, '}');
+            
+            statusCode = 200;
+            headers = new KeyValue[](1);
+            headers[0].key = "Content-type";
+            headers[0].value = "application/json";
+            return (statusCode, body, headers);
+        }
 
         // Compute the filePath of the requested resource
         string memory filePath = _getStaticFrontendAssetFilePathForRequest(resource, params);
@@ -66,7 +94,7 @@ abstract contract StaticWebsiteBase is ResourceRequestWebsite {
                     headers[0].key = "Location";
                     headers[0].value = string.concat("web3://", LibStrings.toHexString(address(this)), ":", LibStrings.toString(storageBackend.getReadChainId()), "/", filePath);
                     statusCode = 302;
-                    return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
+                    return (statusCode, body, headers);
                 }
 
                 // web3:// chunk feature : if the file is big, we will send the file
@@ -105,8 +133,42 @@ abstract contract StaticWebsiteBase is ResourceRequestWebsite {
                     headers[headers.length - 1].value = string.concat("/", filePath, "?chunk=", LibStrings.toString(nextChunkId));
                 }
 
-                return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
+                return (statusCode, body, headers);
+            }
+        }
+
+        // If the file was not found: Now let's query the proxies
+        for(uint i = 0; i < frontend.proxiedWebsites.length; i++) {
+            ProxiedWebsite memory proxiedWebsite = frontend.proxiedWebsites[i];
+            if(resource.length < proxiedWebsite.localPrefix.length) {
+                continue;
+            }
+
+            bool prefixMatch = true;
+            for(uint j = 0; j < proxiedWebsite.localPrefix.length; j++) {
+                if(LibStrings.compare(resource[j], proxiedWebsite.localPrefix[j]) == false) {
+                    prefixMatch = false;
+                    break;
+                }
+            }
+
+            if(prefixMatch) {
+                string[] memory newResource = new string[](resource.length - proxiedWebsite.localPrefix.length + proxiedWebsite.remotePrefix.length);
+                for(uint j = 0; j < proxiedWebsite.remotePrefix.length; j++) {
+                    newResource[j] = proxiedWebsite.remotePrefix[j];
+                }
+                for(uint j = 0; j < resource.length - proxiedWebsite.localPrefix.length; j++) {
+                    newResource[j + proxiedWebsite.remotePrefix.length] = resource[j + proxiedWebsite.localPrefix.length];
+                }
+
+                (statusCode, body, headers) = proxiedWebsite.website.request(newResource, params);
+
+                if (statusCode != 0 && statusCode != 404) {
+                    return (statusCode, body, headers);
+                }
             }
         }
     }
+
+
 }

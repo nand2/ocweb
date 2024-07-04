@@ -12,41 +12,32 @@ import "./ResourceRequestWebsite.sol";
  * web3:// addresses to call them
  */
 contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
-    struct AddressAndChainId {
+    struct NamedAddressAndChainId {
         string name;
         address addr;
         uint chainId;
     }
-    AddressAndChainId[] public staticContractAddresses;
-
-    error NameReserved();
-    error NameAlreadyUsed();
+    NamedAddressAndChainId[] public staticContractAddresses;
 
     constructor() {}
 
     function addStaticContractAddress(string memory name, address addr, uint chainId) public onlyOwner settingsUnlocked {
         // Reserved names
-        if(LibStrings.compare(name, "self")) {
-            revert NameReserved();
-        }
+        require(LibStrings.compare(name, "self") == false, "Name reserved");
         // Ensure the name was not used yet
         for(uint i = 0; i < staticContractAddresses.length; i++) {
-            if(LibStrings.compare(staticContractAddresses[i].name, name)) {
-                revert NameAlreadyUsed();
-            }
+            require(LibStrings.compare(staticContractAddresses[i].name, name) == false, "Name already used");
         }
 
-        staticContractAddresses.push(AddressAndChainId(name, addr, chainId));
+        staticContractAddresses.push(NamedAddressAndChainId(name, addr, chainId));
     }
 
-    function getStaticContractAddresses() public view returns (AddressAndChainId[] memory) {
+    function getStaticContractAddresses() public view returns (NamedAddressAndChainId[] memory) {
         return staticContractAddresses;
     }
 
     function removeStaticContractAddress(uint index) public onlyOwner settingsUnlocked {
-        if(index >= staticContractAddresses.length) {
-            revert IndexOutOfBounds();
-        }
+        require(index < staticContractAddresses.length, "Index out of bounds");
 
         staticContractAddresses[index] = staticContractAddresses[staticContractAddresses.length - 1];
         staticContractAddresses.pop();
@@ -56,7 +47,7 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
      * Hook to override
      * If you want to add some dynamically added contract addresses, override this function
      */
-    function _getContractAddresses() internal virtual view returns (AddressAndChainId[] memory) {
+    function _getContractAddresses() internal virtual view returns (NamedAddressAndChainId[] memory) {
         return staticContractAddresses;
     }
 
@@ -65,7 +56,7 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
      * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
      *                   process the call
      */
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers, string[] memory internalRedirectResource, KeyValue[] memory internalRedirectParams) {
+    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         if(resource.length == 1 && LibStrings.compare(resource[0], "contractAddresses.json")) {
             // We output all the static contract addresses and ourselves
             // Manual JSON serialization, safe with the vars we encode
@@ -75,7 +66,7 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
                     '"chainId":', LibStrings.toString(block.chainid), 
                 '}');
 
-            AddressAndChainId[] memory contractAddresses = _getContractAddresses();
+            NamedAddressAndChainId[] memory contractAddresses = _getContractAddresses();
             for(uint i = 0; i < contractAddresses.length; i++) {
                 body = string.concat(body, ','
                 '"', contractAddresses[i].name, '":{'
@@ -89,10 +80,10 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
             headers = new KeyValue[](1);
             headers[0].key = "Content-type";
             headers[0].value = "application/json";
-            return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
+            return (statusCode, body, headers);
         }
 
-        (statusCode, body, headers, internalRedirectResource, internalRedirectParams) = super._processWeb3Request(resource, params);
+        (statusCode, body, headers) = super._processWeb3Request(resource, params);
     }
         
 }
