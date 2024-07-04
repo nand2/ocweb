@@ -7,7 +7,6 @@ import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 
-import "./StaticWebsiteBase.sol";
 import "./VersionableStaticWebsite.sol";
 import "./ContractAddressesWebsite.sol";
 import "./ProxyWebsite.sol";
