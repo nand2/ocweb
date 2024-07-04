@@ -53,6 +53,13 @@ class VersionableStaticWebsiteClient {
     }
   }
 
+  async prepareLockFrontendVersionTransaction(frontendIndex) {
+    return {
+      functionName: 'lockFrontendVersion',
+      args: [frontendIndex],
+    }
+  }
+
   async prepareRenameFrontendVersionTransaction(frontendIndex, newDescription) {
     return {
       functionName: 'renameFrontendVersion',

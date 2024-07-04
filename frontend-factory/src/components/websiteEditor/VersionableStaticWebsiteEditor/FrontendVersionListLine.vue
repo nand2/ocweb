@@ -6,6 +6,8 @@ import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionRece
 import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
 import PlayCircleIcon from '../../../icons/PlayCircleIcon.vue';
+import LockFillIcon from '../../../icons/LockFillIcon.vue';
+import UnlockFillIcon from '../../../icons/UnlockFillIcon.vue';
 
 import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery } from '../../../utils/queries.js';
 
@@ -96,6 +98,30 @@ const setLive = async () => {
 
   setLiveMutate()
 }
+
+// Lock
+const { isPending: lockIsPending, isError: lockIsError, error: lockError, isSuccess: lockIsSuccess, mutate: lockMutate, reset: lockReset } = useMutation({
+  mutationFn: async () => {
+    // Switch chain if necessary
+    await switchChainAsync({ chainId: props.chainId })
+
+    const transaction = await props.websiteClient.prepareLockFrontendVersionTransaction(props.frontendVersionIndex);
+
+    const hash = await props.websiteClient.executeTransaction(transaction);
+
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId] })
+  }
+})
+const lock = async () => {
+  if(confirm("WARNING: You are about to lock this version *permanently*. You will no longer be able to edit it (edit files, ...). Continue?") == false) {
+    return
+  }
+
+  lockMutate()
+}
 </script>
 
 <template>
@@ -103,6 +129,8 @@ const setLive = async () => {
     <div class="frontend-version">
       <div>
         <PencilSquareIcon v-if="renameIsPending == true" class="anim-pulse" />
+        <PlayCircleIcon v-else-if="setLiveIsPending == true" class="anim-pulse" />
+        <LockFillIcon v-else-if="lockIsPending == true" class="anim-pulse" />
         <span v-else>
           #{{ frontendVersionIndex }} 
         </span>
@@ -128,19 +156,23 @@ const setLive = async () => {
         </span>
       </div>
       <div>
+        <LockFillIcon v-if="frontendVersion.locked" />
+        <UnlockFillIcon v-else class="text-muted" />
+      </div>
+      <div>
         <span class="badge" v-if="liveFrontendVersionLoaded && frontendVersionIndex == liveFrontendVersionData.frontendIndex">
           Live
         </span>
       </div>
-      <div>
-        locked:{{ frontendVersion.locked }}
-      </div>
-      <div>
-        <a @click.stop.prevent="showRenameForm = !showRenameForm; newDescription = frontendVersion.description" class="white" v-if="renameIsPending == false">
+      <div style="justify-content: right">
+        <a @click.stop.prevent="showRenameForm = !showRenameForm; newDescription = frontendVersion.description" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
           <PencilSquareIcon />
         </a>
-        <a @click.stop.prevent="setLive()" class="white" v-if="liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false">
+        <a @click.stop.prevent="setLive()" class="white" v-if="liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
           <PlayCircleIcon />
+        </a>
+        <a @click.stop.prevent="lock()" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
+          <LockFillIcon />
         </a>
       </div>
     </div>
@@ -156,22 +188,29 @@ const setLive = async () => {
         Error setting live the version: {{ setLiveError.shortMessage || setLiveError.message }} <a @click.stop.prevent="setLiveReset()">Hide</a>
       </span>
     </div>
+
+    <div v-if="lockIsError" class="mutation-error">
+      <span>
+        Error locking the version: {{ lockError.shortMessage || lockError.message }} <a @click.stop.prevent="lockReset()">Hide</a>
+      </span>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .frontend-version {
   display: grid;
-  grid-template-columns: max-content 3fr 1.5fr 1fr 1fr;
-  padding: 0.5em 0em;
+  grid-template-columns: minmax(3em, max-content) 3fr 1fr 1fr 1fr;
+  padding: 0.5em 0.5em;
   align-items: center;
+  width: 100%;
 }
 
 .frontend-version > div {
   display: flex;
   line-height: 1em;
   gap: 0.5em;
-  padding: 0em 1em;
+  padding: 0em 0.5em;
   word-break: break-all;
 }
 
