@@ -53,7 +53,7 @@ const newFrontendVersionStorageBackend = ref(null)
 const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddFrontendVersionTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value);
+    const transaction = await props.websiteClient.prepareAddFrontendVersionTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value, -1);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 

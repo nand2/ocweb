@@ -23,10 +23,10 @@ class VersionableStaticWebsiteClient {
   /**
    * Prepare the addition of a frontend version
    */
-  async prepareAddFrontendVersionTransaction(storageBackend, description) {
+  async prepareAddFrontendVersionTransaction(storageBackend, description, settingsCopiedFromFrontendVersionIndex) {
     return {
       functionName: 'addFrontendVersion',
-      args: [storageBackend, description],
+      args: [storageBackend, description, settingsCopiedFromFrontendVersionIndex],
     }
   }
 
