@@ -33,8 +33,7 @@ const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableSt
 (props.contractAddress)
 
 
-// Fetch the live frontend
-const frontendVersionBeingEditedIndex = ref(-1)
+// Fetch the live frontend infos
 const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useQuery({
   queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId],
   queryFn: async () => {
@@ -43,27 +42,35 @@ const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, is
     
     const result = await websiteClient.value.getLiveFrontendVersion()
 
-    // Set the index of the frontend version being edited
-    frontendVersionBeingEditedIndex.value = result.frontendIndex
-
     return result
   },
   staleTime: 3600 * 1000,
   enabled: websiteClientLoaded,
 })
 
+const userSelectedFrontendVersionBeingEditedIndex = ref(-1)
+// The index of the frontend version being edited is by default the live version
+// and then can be changed by the select form
+const frontendVersionBeingEditedIndex = computed(() => {
+  if(userSelectedFrontendVersionBeingEditedIndex.value != -1) {
+    return userSelectedFrontendVersionBeingEditedIndex.value
+  }
+  if(liveFrontendVersionLoaded.value) {
+    return liveFrontendVersionData.value.frontendIndex
+  }
+  return -1;
+})
+
 // Get a frontend version
-let initialLiveFrontendValueUsed = false
 const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedLoading, isFetching: frontendVersionBeingEditedFetching, isError: frontendVersionBeingEditedIsError, error: frontendVersionBeingEditedError, isSuccess: frontendVersionBeingEditedLoaded } = useQuery({
   queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex],
   queryFn: async () => {
     // Invalidate dependent query : sizes
     queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionFilesSizes', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex.value] })
 
-    // If this is the first time we are called, we are called to fetch again the live version
+    // If the user has not selected a version yet, the default is the live version
     // Skip that and reuse liveFrontendVersionData directly
-    if(initialLiveFrontendValueUsed == false) {
-      initialLiveFrontendValueUsed = true;
+    if(userSelectedFrontendVersionBeingEditedIndex.value == -1) {
       return liveFrontendVersionData.value.frontendVersion
     }
 
@@ -78,7 +85,7 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
 
 const showEditedFrontendVersionSelector = ref(false)
 
-// Get frontend versions
+// Get the list frontend versions
 const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useQuery({
   queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId],
   queryFn: async () => {
@@ -108,10 +115,10 @@ const showConfigPanel = ref(false)
     <div class="footer">
       <div class="footer-inner">
         <span v-if="frontendVersionBeingEditedLoading">
-          Loading live version...
+          Loading version...
         </span>
         <span v-else-if="frontendVersionBeingEditedIsError">
-          Error loading live version: {{ error.shortMessage || error.message }}
+          Error loading version: {{ frontendVersionBeingEditedError.shortMessage || frontendVersionBeingEditedError.message }}
         </span>
         <a v-else-if="frontendVersionBeingEditedLoaded" class="bg" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
             
@@ -124,7 +131,7 @@ const showConfigPanel = ref(false)
                 Error loading frontend versions: {{ frontendVersionsError.message }}
               </span>
               <div v-else-if="frontendVersionsLoaded" class="entries">
-                <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="bg entry" @click.prevent.stop="frontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
+                <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="bg entry" @click.prevent.stop="userSelectedFrontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
                   Version #{{ index }}: 
                   {{ frontendVersion.description }}
                   <span class="badge" v-if="index == liveFrontendVersionData.frontendIndex">

@@ -42,10 +42,16 @@ const props = defineProps({
       </span>
     </div>
     <div>
-      Live?
+      <!-- <span class="badge" v-if="frontendVersionIndex == liveFrontendVersionData.frontendIndex">
+        Live
+      </span> -->
+      Live/Setlive
     </div>
     <div>
       locked:{{ frontendVersion.locked }}
+    </div>
+    <div>
+      [rename][lock]
     </div>
   </div>
 </template>
@@ -53,7 +59,7 @@ const props = defineProps({
 <style scoped>
 .frontend-version {
   display: grid;
-  grid-template-columns: 1fr 3fr 1.5fr 1fr;
+  grid-template-columns: 1fr 3fr 1.5fr 1fr 1fr;
   padding: 0.5em 0em;
   align-items: center;
 }

@@ -35,8 +35,7 @@ contract ProxyWebsite is ResourceRequestWebsite, SettingsLockable {
 
     ResourceRequestWebsite[] memory websites = _getProxiedWebsites();
     for (uint i = 0; i < websites.length; i++) {
-      ResourceRequestWebsite website = websites[i];
-      (statusCode, body, headers) = website.request(resource, params);
+      (statusCode, body, headers) = websites[i].request(resource, params);
       if (statusCode != 0 && statusCode != 404) {
         return (statusCode, body, headers, internalRedirectResource, internalRedirectParams);
       }
