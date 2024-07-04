@@ -54,6 +54,25 @@ function useVersionableStaticWebsiteClient(websiteContractAddress) {
   }
 }
 
+function useLiveFrontendVersion(contractAddress, chainId) {
+  const { data: websiteClient, isSucces: websiteClientIsSuccess} = useVersionableStaticWebsiteClient(contractAddress)
+  const { switchChainAsync } = useSwitchChain()
 
-export { useContractAddresses, useVersionableStaticWebsiteClient }
+  return useQuery({
+    queryKey: ['OCWebsiteLiveFrontend', contractAddress, chainId],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+      
+      const result = await websiteClient.value.getLiveFrontendVersion()
+
+      return result
+    },
+    staleTime: 3600 * 1000,
+    enabled: websiteClientIsSuccess,
+  });
+}
+
+
+export { useContractAddresses, useVersionableStaticWebsiteClient, useLiveFrontendVersion }
 

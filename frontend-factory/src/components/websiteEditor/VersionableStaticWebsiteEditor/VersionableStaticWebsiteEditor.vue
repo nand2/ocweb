@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 
 import FrontendVersionEditor from './FrontendVersionEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
-import { useVersionableStaticWebsiteClient } from '../../../utils/queries.js';
+import { useVersionableStaticWebsiteClient, useLiveFrontendVersion } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
 
@@ -34,19 +34,7 @@ const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableSt
 
 
 // Fetch the live frontend infos
-const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useQuery({
-  queryKey: ['OCWebsiteLiveFrontend', props.contractAddress, props.chainId],
-  queryFn: async () => {
-    // Switch chain if necessary
-    await switchChainAsync({ chainId: props.chainId })
-    
-    const result = await websiteClient.value.getLiveFrontendVersion()
-
-    return result
-  },
-  staleTime: 3600 * 1000,
-  enabled: websiteClientLoaded,
-})
+const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(props.contractAddress, props.chainId)
 
 const userSelectedFrontendVersionBeingEditedIndex = ref(-1)
 // The index of the frontend version being edited is by default the live version

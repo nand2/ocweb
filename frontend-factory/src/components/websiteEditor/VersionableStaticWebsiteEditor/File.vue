@@ -122,7 +122,7 @@ const deleteFile = async () => {
         <span v-if="showRenameForm" class="rename-form">
           <PencilSquareIcon />
           <input v-model="newFileName" type="text" />
-          <button @click="renameFile()" :disabled="renameIsPending">Rename</button>
+          <button @click="renameFile()" :disabled="renameIsPending" class="sm">Rename</button>
         </span>
         <a v-else :href="fileUrl" class="white" target="_blank">
           <span>
@@ -233,11 +233,7 @@ const deleteFile = async () => {
 
 .file .rename-form input {
   padding: 0.2em 0.5em;
-}
-
-.file .rename-form button {
-  font-size: 0.8em;
-  padding: 0.3em 0.75em;
+  max-width: 70%;
 }
 
 @media (max-width: 700px) {

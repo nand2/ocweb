@@ -46,6 +46,13 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getFrontendVersion([frontendIndex])
   }
 
+  async prepareRenameFrontendVersion(frontendIndex, newDescription) {
+    return {
+      functionName: 'renameFrontendVersion',
+      args: [frontendIndex, newDescription],
+    }
+  }
+
   async getFrontendFilesSizesFromStorageBackend(frontendVersion) {
     // Gather the filename and content keys
     const fileInfos = frontendVersion.files.map(file => {

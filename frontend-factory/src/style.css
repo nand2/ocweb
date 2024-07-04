@@ -111,6 +111,11 @@ button:not([disabled]):hover {
 button.secondary {
   background-color: var(--color-button-secondary-bg);
 }
+button.sm {
+  font-size: 0.8em;
+  padding: 0.3em 0.75em;
+}
+
 
 .text-danger {
   color: var(--color-text-danger);
