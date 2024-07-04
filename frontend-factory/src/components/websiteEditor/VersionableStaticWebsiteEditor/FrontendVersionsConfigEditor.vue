@@ -7,6 +7,7 @@ import FrontendVersionList from './FrontendVersionList.vue';
 import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
+import { useContractAddresses } from '../../../utils/queries';
 
 const props = defineProps({
   contractAddress: {
@@ -25,13 +26,34 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 
+// Fetch the list of storage backends
+const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
+const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching: storageBackendsFetching, isError: storageBackendsIsError, error: storageBackendsError, isSuccess: storageBackendsLoaded } = useQuery({
+  queryKey: ['storageBackends', props.contractAddress, props.chainId],
+  queryFn: async () => {
+    const factoryAddress = contractAddresses.value.factories.find(f => f.chainId === props.chainId)?.address
+
+    const response = await fetch(`web3://${factoryAddress}:${props.chainId}/getStorageBackends?returns=((address,string)[])`)
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    const decodedResponse = await response.json()
+    const result = decodedResponse[0].map(([address, name]) => ({ address, name }))
+
+    return result
+  },
+  staleTime: 3600 * 1000,
+  enabled: contractAddressesLoaded,
+})
+
 // Create frontendVersion
 const showNewFrontendVersionForm = ref(false)
 const newFrontendVersionDescription = ref("")
+const newFrontendVersionStorageBackend = ref(null)
 const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddFrontendVersionTransaction("0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB", newFrontendVersionDescription.value);
+    const transaction = await props.websiteClient.prepareAddFrontendVersionTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
@@ -80,7 +102,18 @@ const showGlobalLockForm = ref(false)
         </div>
         <div class="form-area" v-if="showNewFrontendVersionForm">
           <input type="text" v-model="newFrontendVersionDescription" placeholder="Version description" />
-          <button @click="newfrontendversionFile">Add new version</button>
+
+          <select v-model="newFrontendVersionStorageBackend">
+            <option :value="null">- Select a storage backend -</option>
+            <option v-for="storageBackend in storageBackendsData" :key="storageBackend.address" :value="storageBackend.address">
+              {{ storageBackend.name }}
+            </option>
+          </select>
+          <div v-if="storageBackendsIsError" class="text-danger text-90">
+            Error loading storage backends: {{ storageBackendsError.shortMessage || storageBackendsError.message }}
+          </div>
+
+          <button @click="newfrontendversionFile" :disabled="newFrontendVersionDescription == '' || newFrontendVersionStorageBackend == null">Add new version</button>
 
           <div v-if="newfrontendversionIsError" class="text-danger text-90">
             Error adding new version: {{ newfrontendversionError.shortMessage || newfrontendversionError.message }}
