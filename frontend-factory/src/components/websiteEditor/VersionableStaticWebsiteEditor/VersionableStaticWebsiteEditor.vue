@@ -89,6 +89,9 @@ const showEditedFrontendVersionSelector = ref(false)
 const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useQuery({
   queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId],
   queryFn: async () => {
+    // Switch chain if necessary
+    await switchChainAsync({ chainId: props.chainId })
+
     return await websiteClient.value.getFrontendVersions(0, 0)
   },
   staleTime: 3600 * 1000,

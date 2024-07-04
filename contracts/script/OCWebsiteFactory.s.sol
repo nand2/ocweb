@@ -114,7 +114,7 @@ contract OCWebsiteFactoryScript is Script {
             // Add the factory contract address to the frontend
             factoryFrontend.addStaticContractAddress(string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
             // Testing: Add hardcoded factory for sepolia && holesky
-            factoryFrontend.addStaticContractAddress(string.concat("factory-", "holesky"), 0x44c0EeaDfd4B00899C1d3D276cC57ab9b4509574, 17000);
+            factoryFrontend.addStaticContractAddress(string.concat("factory-", "holesky"), 0xFE98Da931c7E15473344bf5Cfc4AB86f1fC4C831, 17000);
             // factoryFrontend.addStaticContractAddress(string.concat("factory-", "sep"), 0x0578C5e76273237F2109F0921E5A55EB5676B014, 11155111);
 
             // Add internal redirect to index.html, for 404 handling, and #/ handling
@@ -152,6 +152,11 @@ contract OCWebsiteFactoryScript is Script {
                 bytes32 domainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
                 nameWrapper.setRecord(domainNamehash, msg.sender, address(publicResolver), 365 * 24 * 3600);
                 publicResolver.setAddr(domainNamehash, address(factory.website()));
+            }
+
+            // If local, send some ETH to a testing account
+            if(targetChain == TargetChain.LOCAL) {
+                payable(0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e).transfer(3 ether);
             }
         }
 

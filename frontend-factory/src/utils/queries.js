@@ -31,7 +31,7 @@ function useContractAddresses() {
 
       return result
     },
-    staleTime: 365 * 24 * 3600 * 1000,
+    staleTime: 24 * 3600 * 1000,
   })
 }
 

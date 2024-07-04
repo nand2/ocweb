@@ -105,7 +105,7 @@ elif [ "$TARGET_CHAIN" == "sepolia" ]; then
 elif [ "$TARGET_CHAIN" == "holesky" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   # Weird, I have "Failed to get EIP-1559 fees" on holesky, need --legacy
-  FORGE_SCRIPT_OPTIONS="--broadcast --verify --legacy"
+  FORGE_SCRIPT_OPTIONS="--broadcast --verify --legacy --with-gas-price=1000000000"
 elif [ "$TARGET_CHAIN" == "base-sepolia" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   FORGE_SCRIPT_OPTIONS="--broadcast --verify"
