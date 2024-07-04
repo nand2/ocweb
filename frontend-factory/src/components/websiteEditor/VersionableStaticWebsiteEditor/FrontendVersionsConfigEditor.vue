@@ -7,7 +7,7 @@ import FrontendVersionList from './FrontendVersionList.vue';
 import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
-import { useContractAddresses } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionsQuery } from '../../../utils/queries';
 
 const props = defineProps({
   contractAddress: {
@@ -64,7 +64,7 @@ const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsErr
     showNewFrontendVersionForm.value = false
 
     // Refresh the frontend version
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId] })
+    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const newfrontendversionFile = async () => {

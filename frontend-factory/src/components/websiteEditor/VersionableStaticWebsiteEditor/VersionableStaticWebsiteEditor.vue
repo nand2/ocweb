@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 
 import FrontendVersionEditor from './FrontendVersionEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
-import { useVersionableStaticWebsiteClient, useLiveFrontendVersion } from '../../../utils/queries.js';
+import { useVersionableStaticWebsiteClient, useLiveFrontendVersion, useFrontendVersions } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
 
@@ -68,18 +68,7 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
 const showEditedFrontendVersionSelector = ref(false)
 
 // Get the list frontend versions
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId],
-  queryFn: async () => {
-    // Switch chain if necessary
-    await switchChainAsync({ chainId: props.chainId })
-
-    const result = await websiteClient.value.getFrontendVersions(0, 0)
-    return result;
-  },
-  staleTime: 3600 * 1000,
-  enabled: computed(() => websiteClientLoaded.value && showEditedFrontendVersionSelector.value),
-})
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId, showEditedFrontendVersionSelector)
 
 const showConfigPanel = ref(false)
 </script>

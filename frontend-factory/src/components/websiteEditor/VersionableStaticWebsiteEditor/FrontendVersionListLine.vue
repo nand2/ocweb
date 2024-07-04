@@ -9,7 +9,7 @@ import PlayCircleIcon from '../../../icons/PlayCircleIcon.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import UnlockFillIcon from '../../../icons/UnlockFillIcon.vue';
 
-import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery } from '../../../utils/queries.js';
+import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionsQuery } from '../../../utils/queries.js';
 
 const props = defineProps({
   frontendVersion: {
@@ -38,7 +38,7 @@ const queryClient = useQueryClient()
 const { switchChainAsync } = useSwitchChain()
 
 // Fetch the live frontend infos
-const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(props.contractAddress, props.chainId)
+const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(queryClient, props.contractAddress, props.chainId)
 
 
 // Rename version
@@ -57,7 +57,7 @@ const { isPending: renameIsPending, isError: renameIsError, error: renameError, 
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend versions
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId] })
+    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const renameFrontendVersion = async () => {
@@ -112,7 +112,7 @@ const { isPending: lockIsPending, isError: lockIsError, error: lockError, isSucc
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId] })
+    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const lock = async () => {

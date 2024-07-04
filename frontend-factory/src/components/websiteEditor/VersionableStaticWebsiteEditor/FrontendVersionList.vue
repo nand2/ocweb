@@ -1,9 +1,9 @@
 <script setup>
 import { ref, shallowRef, computed, defineProps } from 'vue';
-import { useQuery, useMutation } from '@tanstack/vue-query'
-import { useQueryClient } from '@tanstack/vue-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
 import FrontendVersionListLine from './FrontendVersionListLine.vue';
+import { useFrontendVersions } from '../../../utils/queries.js';
 
 const props = defineProps({
   contractAddress: {
@@ -20,16 +20,10 @@ const props = defineProps({
   },
 })
 
+const queryClient = useQueryClient()
 
 // Get frontend versions
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId],
-  queryFn: async () => {
-    return await props.websiteClient.getFrontendVersions(0, 0)
-  },
-  staleTime: 3600 * 1000,
-  enabled: computed(() => props.websiteClient != null),
-})
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId)
 </script>
 
 <template>
