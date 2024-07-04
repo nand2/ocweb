@@ -4,11 +4,13 @@ pragma solidity ^0.8.13;
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 import { LibStrings } from "../library/LibStrings.sol";
 import { Ownable } from "../library/Ownable.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IFrontendLibrary.sol";
 import "../interfaces/IStorageBackend.sol";
+import "./ClonableFrontendVersionViewer.sol";
 
 contract FrontendLibrary is IFrontendLibrary, Ownable {
 
@@ -17,6 +19,8 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     uint256 public defaultFrontendIndex;
     // Is the frontend library locked?
     bool public frontendLibraryLocked;
+
+    ClonableFrontendVersionViewer public frontendVersionViewerImplementation;
 
 
     //
@@ -30,13 +34,29 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         _;
     }
 
+    constructor(ClonableFrontendVersionViewer _viewerImplementation) {
+        frontendVersionViewerImplementation = _viewerImplementation;
+    }
+
     /**
      * Add a new frontend version
      * @param storageBackend Address of the storage backend
      * @param _description A description of the frontend version
+     * @param settingsCopiedFromFrontendVersionIndex If > 0, copy static contract addresses and proxied websites from this frontend version
      */
-    function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwner frontendLibraryUnlocked {
+    function addFrontendVersion(IStorageBackend storageBackend, string memory _description, int settingsCopiedFromFrontendVersionIndex) public onlyOwner frontendLibraryUnlocked {
         _addFrontendVersion(storageBackend, _description);
+
+        if(settingsCopiedFromFrontendVersionIndex >= 0) {
+            if(uint(settingsCopiedFromFrontendVersionIndex) >= frontendVersions.length) {
+                revert FrontendIndexOutOfBounds();
+            }
+            FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
+            FrontendFilesSet storage sourceFrontend = frontendVersions[uint(settingsCopiedFromFrontendVersionIndex)];
+            
+            newFrontend.staticContractAddresses = sourceFrontend.staticContractAddresses;
+            newFrontend.proxiedWebsites = sourceFrontend.proxiedWebsites;
+        }
     }
 
     function _addFrontendVersion(IStorageBackend storageBackend, string memory _description) internal {
@@ -44,6 +64,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
         newFrontend.storageBackend = storageBackend;
         newFrontend.description = _description;
+
+        newFrontend.viewer = IDecentralizedApp(Clones.clone(address(frontendVersionViewerImplementation)));
+        ClonableFrontendVersionViewer(address(newFrontend.viewer)).initialize(IDecentralizedApp(address(this)), frontendVersions.length - 1);
+        
     }
 
     /**
@@ -293,6 +317,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         }
     }
 
+    /**
+     * Add a static contract address served at /contractAddresses.json 
+     * @param frontendIndex The index of the frontend version
+     * @param name The name of the contract address
+     * @param addr The address of the contract
+     * @param chainId The chain ID of the contract
+     */
     function addStaticContractAddressToFrontend(uint256 frontendIndex, string memory name, address addr, uint chainId) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
@@ -316,6 +347,11 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         frontend.staticContractAddresses.push(NamedAddressAndChainId(name, addr, chainId));
     }
 
+    /**
+     * Remove a static contract address served at /contractAddresses.json 
+     * @param frontendIndex The index of the frontend version
+     * @param index The index of the contract address to remove
+     */
     function removeStaticContractAddressFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
@@ -333,6 +369,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         frontend.staticContractAddresses.pop();
     }
 
+    /**
+     * Add a proxied website to a frontend version
+     * @param frontendIndex The index of the frontend version
+     * @param website The website to proxy
+     * @param localPrefix The proxy behavior will be at our local path /{localPrefix}/...
+     * @param remotePrefix We will call the proxy at the remote path /{remotePrefix}/...
+     */
     function addProxiedWebsiteToFrontend(uint256 frontendIndex, IDecentralizedApp website, string[] memory localPrefix, string[] memory remotePrefix) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
@@ -345,6 +388,11 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         frontend.proxiedWebsites.push(ProxiedWebsite(website, localPrefix, remotePrefix));
     }
 
+    /**
+     * Remove a proxied website from a frontend version
+     * @param frontendIndex The index of the frontend version
+     * @param index The index of the proxied website to remove
+     */
     function removeProxiedWebsiteFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
@@ -360,6 +408,19 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
 
         frontend.proxiedWebsites[index] = frontend.proxiedWebsites[frontend.proxiedWebsites.length - 1];
         frontend.proxiedWebsites.pop();
+    }
+
+    /**
+     * Enable/disable the viewing of a non-live frontend version
+     * @param frontendIndex The index of the frontend version
+     * @param enable Enable or disable the viewer
+     */
+    function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) public onlyOwner frontendLibraryUnlocked {
+        if(frontendIndex >= frontendVersions.length) {
+            revert FrontendIndexOutOfBounds();
+        }
+
+        frontendVersions[frontendIndex].isViewable = enable;
     }
 
     /**

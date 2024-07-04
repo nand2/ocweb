@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import { LibStrings } from "./library/LibStrings.sol";
 import "./OCWebsite/OCWebsite.sol";
 import "./OCWebsite/ClonableOCWebsite.sol";
+import "./OCWebsite/ClonableFrontendVersionViewer.sol";
 import "./OCWebsiteFactoryToken.sol";
 import "./interfaces/IStorageBackend.sol";
 import "./interfaces/IStorageBackendLibrary.sol";
@@ -24,6 +25,8 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     OCWebsite[] public websites;
     mapping(OCWebsite=> uint) public websiteToIndex;
     event WebsiteCreated(uint indexed websiteId, address website);
+    
+    ClonableFrontendVersionViewer public frontendVersionViewerImplementation;
 
     string public topdomain;
     string public domain;
@@ -55,6 +58,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         string domain;
         OCWebsiteFactoryToken factoryToken;
         ClonableOCWebsite websiteImplementation;
+        ClonableFrontendVersionViewer frontendVersionViewerImplementation;
     }
     constructor(ConstructorParams memory _params) ERC721("OCWebsite", "OCW") {
         owner = _params.owner;
@@ -64,6 +68,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
 
         factoryToken = _params.factoryToken;
         websiteImplementation = _params.websiteImplementation;
+        frontendVersionViewerImplementation = _params.frontendVersionViewerImplementation;
 
         // Adding some backlinks
         factoryToken.setWebsiteFactory(this);
@@ -85,7 +90,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
             firstFrontendVersionStorageBackend = storageBackends[0];
         }
 
-        newWebsite.initialize(msg.sender, address(this), firstFrontendVersionStorageBackend);
+        newWebsite.initialize(msg.sender, address(this), frontendVersionViewerImplementation, firstFrontendVersionStorageBackend);
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
 

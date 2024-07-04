@@ -39,7 +39,7 @@ contract UploadSstore2Frontend is Script {
         // Otherwise we add a new version
         else {
             console.log("Adding new frontend version");
-            frontendLibrary.addFrontendVersion(storageBackend, "Initial version");
+            frontendLibrary.addFrontendVersion(storageBackend, "Initial version", -1);
         }
 
         // Get the files to upload

@@ -14,12 +14,16 @@ import './FrontendLibrary.sol';
 
 abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLibrary {
 
+    constructor(ClonableFrontendVersionViewer _frontendVersionViewerImplementation) ResourceRequestWebsite() FrontendLibrary(_frontendVersionViewerImplementation) {
+    }
 
+    /**
+     * Get the current live frontend version, and its index
+     */
     function getLiveFrontendVersion() public view returns (FrontendFilesSet memory frontendVersion, uint256 frontendIndex) {
         frontendIndex = getDefaultFrontendIndex();
         frontendVersion = getFrontendVersion(frontendIndex);
     }
-
 
     /**
      * Hook to override

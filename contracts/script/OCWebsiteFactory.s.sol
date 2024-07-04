@@ -33,6 +33,7 @@ import { OCWebsiteFactory } from "../src/OCWebsiteFactory.sol";
 import { OCWebsiteFactoryToken } from "../src/OCWebsiteFactoryToken.sol";
 import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
 import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
+import { ClonableFrontendVersionViewer } from "../src/OCWebsite/ClonableFrontendVersionViewer.sol";
 import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
 
 contract OCWebsiteFactoryScript is Script {
@@ -89,6 +90,9 @@ contract OCWebsiteFactoryScript is Script {
             // Create the website implementations
             ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
 
+            // Create the frontend version viewer implementation
+            ClonableFrontendVersionViewer frontendVersionViewerImplementation = new ClonableFrontendVersionViewer();
+
             // Deploying the blog factory
             // {salt: bytes32(vm.envBytes("CONTRACT_SALT"))}
             factory = new OCWebsiteFactory(OCWebsiteFactory.ConstructorParams({
@@ -96,7 +100,8 @@ contract OCWebsiteFactoryScript is Script {
                 topdomain: "eth",
                 domain: domain,
                 factoryToken: factoryToken,
-                websiteImplementation: websiteImplementation
+                websiteImplementation: websiteImplementation,
+                frontendVersionViewerImplementation: frontendVersionViewerImplementation
             }));
 
             // Transfer the website implementation ownership to the factory
@@ -112,10 +117,10 @@ contract OCWebsiteFactoryScript is Script {
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite(IStorageBackend(address(0)));
             // Add the factory contract address to the frontend
-            // factoryFrontend.addStaticContractAddress(string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
+            factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
             // Testing: Add hardcoded factory for sepolia && holesky
             factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "holesky"), 0xFE98Da931c7E15473344bf5Cfc4AB86f1fC4C831, 17000);
-            factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "sep"), 0x0578C5e76273237F2109F0921E5A55EB5676B014, 11155111);
+            // factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "sep"), 0x0578C5e76273237F2109F0921E5A55EB5676B014, 11155111);
 
             // // Add internal redirect to index.html, for 404 handling, and #/ handling
             // string[] memory internalRedirect = new string[](1);

@@ -6,7 +6,7 @@ import "./OCWebsite.sol";
 contract ClonableOCWebsite is OCWebsite {
     error AlreadyInitialized();
 
-    constructor() OCWebsite() {
+    constructor() OCWebsite(ClonableFrontendVersionViewer(address(0))) {
     }
 
     // An optional controller for the ownership. 
@@ -29,7 +29,7 @@ contract ClonableOCWebsite is OCWebsite {
      * @param _owner The owner of the website
      * @param _ownershipController The controller of the ownership. Can be null.
      */
-    function initialize(address _owner, address _ownershipController, IStorageBackend firstFrontendVersionStorageBackend) public {
+    function initialize(address _owner, address _ownershipController, ClonableFrontendVersionViewer _frontendViewerImplementation, IStorageBackend firstFrontendVersionStorageBackend) public {
         if(owner != address(0)) {
             revert AlreadyInitialized();
         }
@@ -38,6 +38,7 @@ contract ClonableOCWebsite is OCWebsite {
         }
         owner = _owner;
         ownershipController = _ownershipController;
+        frontendVersionViewerImplementation = _frontendViewerImplementation;
 
         // Add the first frontend version
         if(address(firstFrontendVersionStorageBackend) != address(0)) {
