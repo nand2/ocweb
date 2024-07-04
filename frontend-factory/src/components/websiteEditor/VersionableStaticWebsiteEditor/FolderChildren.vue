@@ -325,17 +325,13 @@ const addNewFolder = async () => {
   margin-right: 1em;
   margin-left: v-bind('operationsPaddingLeftForCSS');
   margin-bottom: 0.5em;
-  gap: 0.5em;
+  gap: 1em;
   align-items:flex-start;
 }
 @media (max-width: 700px) {
   .operations {
     flex-direction: column;
   }
-}
-
-.operations > div {
-
 }
 
 .operations .button-area {

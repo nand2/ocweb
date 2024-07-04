@@ -203,7 +203,6 @@ const lock = async () => {
   grid-template-columns: minmax(3em, max-content) 3fr 1fr 1fr 1fr;
   padding: 0.5em 0.5em;
   align-items: center;
-  width: 100%;
 }
 
 .frontend-version > div {

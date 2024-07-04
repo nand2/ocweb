@@ -5,6 +5,8 @@ import { useQueryClient } from '@tanstack/vue-query'
 
 import FrontendVersionList from './FrontendVersionList.vue';
 import FrontendVersionListLine from './FrontendVersionListLine.vue';
+import LockFillIcon from '../../../icons/LockFillIcon.vue';
+import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -24,6 +26,7 @@ const props = defineProps({
 const queryClient = useQueryClient()
 
 // Create frontendVersion
+const showNewFrontendVersionForm = ref(false)
 const newFrontendVersionDescription = ref("")
 const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
   mutationFn: async () => {
@@ -35,6 +38,9 @@ const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsErr
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
+    newFrontendVersionDescription.value = ""
+    showNewFrontendVersionForm.value = false
+
     // Refresh the frontend version
     return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', props.contractAddress, props.chainId] })
   }
@@ -48,12 +54,14 @@ const newfrontendversionFile = async () => {
 
   newfrontendversionMutate()
 }
+
+const showGlobalLockForm = ref(false)
 </script>
 
 <template>
   <div class="versions-body">
         
-    <div class="versions-list">
+    <div class="list">
       <FrontendVersionList 
         :contractAddress
         :chainId
@@ -61,19 +69,46 @@ const newfrontendversionFile = async () => {
         />
     </div>
 
-    <div class="versions-actions">
-      <div class="versions-add-new-form">
-        <div>
-          <input type="text" v-model="newFrontendVersionDescription" placeholder="Version description" />
-          <br />
-          <button @click="newfrontendversionFile">Add new version</button>
+    <div class="operations">
+      <div class="op-add-new">
+
+        <div class="button-area" @click="showNewFrontendVersionForm = !showNewFrontendVersionForm; newFolderErrorLabel = ''">
+          <span class="button-text">
+            <PlusLgIcon />
+            Add new version
+          </span>
         </div>
-        <span v-if="newfrontendversionIsError">
-          Error adding new version: {{ newfrontendversionError.shortMessage || newfrontendversionError.message }}
-        </span>
+        <div class="form-area" v-if="showNewFrontendVersionForm">
+          <input type="text" v-model="newFrontendVersionDescription" placeholder="Version description" />
+          <button @click="newfrontendversionFile">Add new version</button>
+
+          <div v-if="newfrontendversionIsError" class="text-danger text-90">
+            Error adding new version: {{ newfrontendversionError.shortMessage || newfrontendversionError.message }}
+            <a @click.stop.prevent="newfrontendversionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+          </div>
+        </div>
       </div>
-      <div class="versions-global-lock-form">
-        <button>Lock all versions</button>
+      <div class="op-global-lock">
+
+        <div class="button-area" @click="showGlobalLockForm = !showGlobalLockForm; newFolderErrorLabel = ''">
+          <span class="button-text">
+            <LockFillIcon />
+            Global lock
+          </span>
+        </div>
+        <div class="form-area" v-if="showGlobalLockForm">
+
+          <div>
+            <input type="text" class="form-control" placeholder="Folder name" v-model="newFolderName" />
+          </div>
+          <div class="text-danger" style="font-size: 0.9em">
+            {{ newFolderErrorLabel }}
+          </div>
+          <div>
+            <button type="button" style="width: 100%" @click="addNewFolder">Lock all versions</button>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -83,19 +118,53 @@ const newfrontendversionFile = async () => {
 <style scoped>
 .versions-body {
   display: flex;
+  flex-direction: column;
   border-top: 1px solid var(--color-divider-secondary);
   gap: 1em;
 }
 
-.versions-list {
+.list {
   flex: 1;
 }
 
-.versions-actions {
+.operations {
+  display: flex;
+  gap: 1em;
+  margin: 0em 1em 1em 1em;
+  align-items: flex-start;
+}
+@media (max-width: 700px) {
+  .operations {
+    flex-direction: column;
+  }
+}
+
+.operations .button-area {
+  text-align: center;
+  position: relative;
+  background-color: var(--color-input-bg);
+  border: 1px solid #555;
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+.operations .button-area .button-text {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  justify-content: center;
+}
+
+.operations .form-area {
+  border-left: 1px solid #555;
+  border-right: 1px solid #555;
+  border-bottom: 1px solid #555;
+  background-color: var(--color-popup-bg);
+  font-size: 0.9em;
+  padding: 0.75em 1em;
   display: flex;
   flex-direction: column;
-  gap: 1em;
-  border-left: 1px solid var(--color-divider);
+  gap: 0.5em;
 }
 
 </style>
