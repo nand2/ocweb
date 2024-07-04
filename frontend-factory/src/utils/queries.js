@@ -54,7 +54,7 @@ function useVersionableStaticWebsiteClient(websiteContractAddress) {
   }
 }
 
-function useLiveFrontendVersion(contractAddress, chainId) {
+function useLiveFrontendVersion(queryClient,contractAddress, chainId) {
   const { data: websiteClient, isSucces: websiteClientIsSuccess} = useVersionableStaticWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
@@ -65,6 +65,12 @@ function useLiveFrontendVersion(contractAddress, chainId) {
       await switchChainAsync({ chainId: chainId })
       
       const result = await websiteClient.value.getLiveFrontendVersion()
+
+      // We got a frontend version, prefill the cache of the individual frontend version
+      await queryClient.prefetchQuery({
+        queryKey: ['OCWebsiteFrontendVersion', contractAddress, chainId, result.frontendIndex],
+        queryFn: () => { return result.frontendVersion },
+      })
 
       return result
     },
@@ -77,6 +83,10 @@ function invalidateLiveFrontendVersionQuery(queryClient, contractAddress, chainI
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', contractAddress, chainId] })
 }
 
+function invalidateFrontendVersionQuery(queryClient, contractAddress, chainId, version) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', contractAddress, chainId, version] })
+}
 
-export { useContractAddresses, useVersionableStaticWebsiteClient, useLiveFrontendVersion, invalidateLiveFrontendVersionQuery }
+
+export { useContractAddresses, useVersionableStaticWebsiteClient, useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionQuery }
 

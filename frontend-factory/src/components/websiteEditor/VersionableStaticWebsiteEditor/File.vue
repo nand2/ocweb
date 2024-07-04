@@ -7,6 +7,7 @@ import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
+import { invalidateFrontendVersionQuery } from '../../../utils/queries.js';
 
 const props = defineProps({
   file: {
@@ -66,7 +67,7 @@ const { isPending: renameIsPending, isError: renameIsError, error: renameError, 
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend version
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
   }
 })
 const renameFile = async () => {
@@ -104,7 +105,7 @@ const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, 
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend version
-    return await queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
   }
 })
 const deleteFile = async () => {

@@ -10,6 +10,7 @@ import SendIcon from '../../../icons/SendIcon.vue';
 import CheckLgIcon from '../../../icons/ChecLgkIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
 import XCircleIcon from '../../../icons/XCircleIcon.vue';
+import { invalidateFrontendVersionQuery } from '../../../utils/queries.js';
 
 const props = defineProps({
   folderChildren: {
@@ -132,12 +133,12 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     // This scope will make the mutations run serially
     id: 'addFilesToFrontendVersion'
   },
-  onSuccess: (data) => {
+  onSuccess: async (data) => {
     // Mark the transaction as successful
     addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'success'}
 
     // Refresh the frontend version
-    queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
   },
   onError: (error) => {
     // Mark the transaction as failed

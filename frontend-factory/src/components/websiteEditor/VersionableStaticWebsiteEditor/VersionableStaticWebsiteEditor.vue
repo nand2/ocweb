@@ -34,7 +34,7 @@ const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableSt
 
 
 // Fetch the live frontend infos
-const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(props.contractAddress, props.chainId)
+const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(queryClient, props.contractAddress, props.chainId)
 
 const userSelectedFrontendVersionBeingEditedIndex = ref(-1)
 // The index of the frontend version being edited is by default the live version
@@ -55,12 +55,6 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
   queryFn: async () => {
     // Invalidate dependent query : sizes
     queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionFilesSizes', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex.value] })
-
-    // If the user has not selected a version yet, the default is the live version
-    // Skip that and reuse liveFrontendVersionData directly
-    if(userSelectedFrontendVersionBeingEditedIndex.value == -1) {
-      return liveFrontendVersionData.value.frontendVersion
-    }
 
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
