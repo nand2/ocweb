@@ -46,7 +46,14 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getFrontendVersion([frontendIndex])
   }
 
-  async prepareRenameFrontendVersion(frontendIndex, newDescription) {
+  async prepareSetDefaultFrontendIndexTransaction(frontendIndex) {
+    return {
+      functionName: 'setDefaultFrontendIndex',
+      args: [frontendIndex],
+    }
+  }
+
+  async prepareRenameFrontendVersionTransaction(frontendIndex, newDescription) {
     return {
       functionName: 'renameFrontendVersion',
       args: [frontendIndex, newDescription],

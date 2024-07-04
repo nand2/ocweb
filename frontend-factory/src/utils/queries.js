@@ -73,6 +73,10 @@ function useLiveFrontendVersion(contractAddress, chainId) {
   });
 }
 
+function invalidateLiveFrontendVersionQuery(queryClient, contractAddress, chainId) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', contractAddress, chainId] })
+}
 
-export { useContractAddresses, useVersionableStaticWebsiteClient, useLiveFrontendVersion }
+
+export { useContractAddresses, useVersionableStaticWebsiteClient, useLiveFrontendVersion, invalidateLiveFrontendVersionQuery }
 
