@@ -7,7 +7,7 @@ import { SettingsLockable } from "../library/SettingsLockable.sol";
 import "./ResourceRequestWebsite.sol";
 
 /**
- * Extension: Expose a list of contract addresses at the /contractAddresses.json endpoint
+ * Extension: Expose a list of contract addresses at the /variables.json endpoint
  * This is useful for the frontend to know where to find the contracts and to start building
  * web3:// addresses to call them
  */
@@ -57,7 +57,7 @@ contract ContractAddressesWebsite is ResourceRequestWebsite, SettingsLockable {
      *                   process the call
      */
     function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
-        if(resource.length == 1 && LibStrings.compare(resource[0], "contractAddresses.json")) {
+        if(resource.length == 1 && LibStrings.compare(resource[0], "variables.json")) {
             // We output all the static contract addresses and ourselves
             // Manual JSON serialization, safe with the vars we encode
             body = string.concat('{'

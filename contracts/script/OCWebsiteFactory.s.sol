@@ -35,6 +35,7 @@ import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
 import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
 import { ClonableFrontendVersionViewer } from "../src/OCWebsite/ClonableFrontendVersionViewer.sol";
 import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
+import { LibStrings } from "../src/library/LibStrings.sol";
 
 contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -117,9 +118,9 @@ contract OCWebsiteFactoryScript is Script {
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite(IStorageBackend(address(0)));
             // Add the factory contract address to the frontend
-            factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", getChainShortName(targetChain)), address(factory), block.chainid);
+            factoryFrontend.addInjectedVariableToFrontend(0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
             // Testing: Add hardcoded factory for sepolia && holesky
-            factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "holesky"), 0xFE98Da931c7E15473344bf5Cfc4AB86f1fC4C831, 17000);
+            factoryFrontend.addInjectedVariableToFrontend(0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0xFE98Da931c7E15473344bf5Cfc4AB86f1fC4C831), ":", LibStrings.toString(17000)));
             // factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "sep"), 0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07, 11155111);
 
             // // Add internal redirect to index.html, for 404 handling, and #/ handling

@@ -26,25 +26,6 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
     }
 
     /**
-     * Hook to override
-     * Static frontend serving: For a given web3:// request, compute the file path of 
-     * the requested static asset to serve
-     */
-    function _getStaticFrontendAssetFilePathForRequest(string[] memory resource, KeyValue[] memory params) internal virtual view returns (string memory filePath) {
-        if(resource.length == 0) {
-            filePath = "index.html";
-        }
-        else {
-            for(uint i = 0; i < resource.length; i++) {
-                if(i > 0) {
-                    filePath = string.concat(filePath, "/");
-                }
-                filePath = string.concat(filePath, resource[i]);
-            }
-        }
-    }
-
-    /**
      * Return an answer to a web3:// request after the static frontend is served
      * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
      *                   process the call
@@ -74,24 +55,18 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
             }
         }
 
-        // Special path : contractAddresses.json
+        // Special path : variables.json
         // Serve static contract addresses to be consumed by the frontend to boostrap
-        if(resource.length == 1 && LibStrings.compare(resource[0], "contractAddresses.json")) {
+        if(resource.length == 1 && LibStrings.compare(resource[0], "variables.json")) {
             // We output all the static contract addresses and ourselves
             // Manual JSON serialization, safe with the vars we encode
             body = string.concat('{'
-                '"self":{'
-                    '"address":"', LibStrings.toHexString(address(this)), '",'
-                    '"chainId":', LibStrings.toString(block.chainid), 
-                '}');
+                '"self":"', LibStrings.toHexString(address(this)), ':', LibStrings.toString(block.chainid), '"');
 
-            NamedAddressAndChainId[] memory contractAddresses = frontend.staticContractAddresses;
-            for(uint i = 0; i < contractAddresses.length; i++) {
+            KeyValueVariable[] memory injectedVariables = frontend.injectedVariables;
+            for(uint i = 0; i < injectedVariables.length; i++) {
                 body = string.concat(body, ','
-                '"', contractAddresses[i].name, '":{'
-                    '"address":"', LibStrings.toHexString(contractAddresses[i].addr), '",',
-                    '"chainId":', LibStrings.toString(contractAddresses[i].chainId), 
-                '}');
+                '"', injectedVariables[i].key, '":"', injectedVariables[i].value, '"');
             }
             body = string.concat(body, '}');
             
@@ -102,19 +77,42 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
             return (statusCode, body, headers);
         }
 
-        // Compute the filePath of the requested resource
-        string memory filePath = _getStaticFrontendAssetFilePathForRequest(resource, params);
+        // Compute the filePaths of the requested resource. 2 paths:
+        // - The path as a file path (e.g. "images/logo.png") if "logo.png" is a file
+        // - The path as a folder path (e.g. "images/logo.png/index.html") if "logo.png" is a folder
+        string memory filePath;
+        string memory filePathAsFolder;
+        if(resource.length == 0) {
+            filePath = "index.html";
+            filePathAsFolder = filePath;
+        }
+        else {
+            for(uint i = 0; i < resource.length; i++) {
+                if(i > 0) {
+                    filePath = string.concat(filePath, "/");
+                }
+                filePath = string.concat(filePath, resource[i]);
+            }
+            filePathAsFolder = string.concat(filePath, "/index.html");
+        }
 
         // Search for the requested resource in our static file list
         for(uint i = 0; i < frontend.files.length; i++) {
-            if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
+            string memory matchedPath;
+            if(LibStrings.compare(frontend.files[i].filePath, filePath)) {
+                matchedPath = filePath;
+            }
+            else if(LibStrings.compare(frontend.files[i].filePath, filePathAsFolder)) {
+                matchedPath = filePathAsFolder;
+            }
+            if(bytes(matchedPath).length > 0) {
                 IStorageBackend storageBackend = frontend.storageBackend;
 
                 // Storage backend read chain id check. If not the same, we need to redirect
                 if(storageBackend.getReadChainId() != block.chainid) {
                     headers = new KeyValue[](1);
                     headers[0].key = "Location";
-                    headers[0].value = string.concat("web3://", LibStrings.toHexString(address(this)), ":", LibStrings.toString(storageBackend.getReadChainId()), "/", filePath);
+                    headers[0].value = string.concat("web3://", LibStrings.toHexString(address(this)), ":", LibStrings.toString(storageBackend.getReadChainId()), "/", matchedPath);
                     statusCode = 302;
                     return (statusCode, body, headers);
                 }
@@ -152,7 +150,7 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
                 // If there is more chunk remaining, add a pointer to the next chunk
                 if(nextChunkId > 0) {
                     headers[headers.length - 1].key = "web3-next-chunk";
-                    headers[headers.length - 1].value = string.concat("/", filePath, "?chunk=", LibStrings.toString(nextChunkId));
+                    headers[headers.length - 1].value = string.concat("/", matchedPath, "?chunk=", LibStrings.toString(nextChunkId));
                 }
 
                 return (statusCode, body, headers);
@@ -175,15 +173,12 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
             }
 
             if(prefixMatch) {
-                string[] memory newResource = new string[](resource.length - proxiedWebsite.localPrefix.length + proxiedWebsite.remotePrefix.length + (resource.length == proxiedWebsite.localPrefix.length ? 1 : 0));
+                string[] memory newResource = new string[](resource.length - proxiedWebsite.localPrefix.length + proxiedWebsite.remotePrefix.length);
                 for(uint j = 0; j < proxiedWebsite.remotePrefix.length; j++) {
                     newResource[j] = proxiedWebsite.remotePrefix[j];
                 }
                 for(uint j = 0; j < resource.length - proxiedWebsite.localPrefix.length; j++) {
                     newResource[j + proxiedWebsite.remotePrefix.length] = resource[j + proxiedWebsite.localPrefix.length];
-                }
-                if(resource.length == proxiedWebsite.localPrefix.length) {
-                    newResource[newResource.length - 1] = "index.html";
                 }
 
                 (statusCode, body, headers) = proxiedWebsite.website.request(newResource, params);

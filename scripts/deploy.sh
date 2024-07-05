@@ -187,7 +187,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   SSTORE2_FILE_ARGS_SIG=""
   ETHSTORAGE_FILE_ARGS=""
   # Exclude blogFactoryAddress.json
-  FULL_FILES=$(find frontend-factory/dist -type f | grep -v "contractAddresses.json")
+  FULL_FILES=$(find frontend-factory/dist -type f | grep -v "variables.json")
   for FULL_FILE in $FULL_FILES; do
     # Remove the frontend-factory/dist/ prefix
     FILE=$(echo $FULL_FILE | sed "s|frontend-factory/dist/||")

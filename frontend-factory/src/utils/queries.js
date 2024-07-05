@@ -10,7 +10,7 @@ function useContractAddresses() {
   return useQuery({
     queryKey: ['contractAddresses'],
     queryFn: async () => {
-      const response = await fetch('/contractAddresses.json')
+      const response = await fetch('/variables.json')
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
@@ -20,7 +20,8 @@ function useContractAddresses() {
       const factories = []
       for (const [key, value] of Object.entries(decodedResponse)) {
         if (key.startsWith('factory-')) {
-          factories.push({...value, chainShortName: key.slice(8)})
+          const [address, chainId] = value.split(':')
+          factories.push({address, chainId: parseInt(chainId), chainShortName: key.slice(8)})
         }
       }
 

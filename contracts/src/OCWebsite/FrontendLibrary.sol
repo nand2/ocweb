@@ -54,7 +54,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
             FrontendFilesSet storage sourceFrontend = frontendVersions[uint(settingsCopiedFromFrontendVersionIndex)];
             
-            newFrontend.staticContractAddresses = sourceFrontend.staticContractAddresses;
+            newFrontend.injectedVariables = sourceFrontend.injectedVariables;
             newFrontend.proxiedWebsites = sourceFrontend.proxiedWebsites;
         }
     }
@@ -151,6 +151,26 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
 
         uint totalFundsUsed = 0;
         for(uint i = 0; i < fileUploadInfos.length; i++) {
+            // Check if the file already exists as a directory
+            bytes memory newFilePathAsDir = bytes(string.concat(fileUploadInfos[i].filePath, "/"));
+            uint newFilePathAsDirLength = newFilePathAsDir.length;
+            for(uint j = 0; j < frontend.files.length; j++) {
+                // Crude string and substring comparaison, but the most contract-size efficient
+                // (that I know of)
+                bool identical = true;
+                if(bytes(frontend.files[j].filePath).length < newFilePathAsDirLength) {
+                    continue;
+                }
+                for(uint k = 0; k < newFilePathAsDirLength; k++) {
+                    if(bytes(frontend.files[j].filePath)[k] != newFilePathAsDir[k]) {
+                        identical = false;
+                        break;
+                    }
+                }
+                if(identical) {
+                    revert FileAlreadyExistsAsDirectory();
+                }
+            }
             // Search if the file already exists
             (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, fileUploadInfos[i].filePath);
             // If it does, remove it from the storage backend
@@ -317,13 +337,12 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     }
 
     /**
-     * Add a static contract address served at /contractAddresses.json 
+     * Add an injected variable to a frontend version, which will be served at the /variables.json URL
      * @param frontendIndex The index of the frontend version
-     * @param name The name of the contract address
-     * @param addr The address of the contract
-     * @param chainId The chain ID of the contract
+     * @param key The key of the variable
+     * @param value The value of the variable
      */
-    function addStaticContractAddressToFrontend(uint256 frontendIndex, string memory name, address addr, uint chainId) public onlyOwner frontendLibraryUnlocked {
+    function addInjectedVariableToFrontend(uint256 frontendIndex, string memory key, string memory value) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
@@ -332,26 +351,26 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             revert FrontendVersionLocked();
         }
 
-        // Reserved names
-        if(LibStrings.compare(name, "self")) {
+        // Reserved keys
+        if(LibStrings.compare(key, "self")) {
             revert ContractAddressNameReserved();
         }
-        // Ensure the name was not used yet
-        for(uint i = 0; i < frontend.staticContractAddresses.length; i++) {
-            if(LibStrings.compare(frontend.staticContractAddresses[i].name, name)) {
+        // Ensure the key was not used yet
+        for(uint i = 0; i < frontend.injectedVariables.length; i++) {
+            if(LibStrings.compare(frontend.injectedVariables[i].key, key)) {
                 revert ContractAddressNameAlreadyUsed();
             }
         }
 
-        frontend.staticContractAddresses.push(NamedAddressAndChainId(name, addr, chainId));
+        frontend.injectedVariables.push(KeyValueVariable(key, value));
     }
 
     /**
-     * Remove a static contract address served at /contractAddresses.json 
+     * Remove an injected variable from a frontend version
      * @param frontendIndex The index of the frontend version
-     * @param index The index of the contract address to remove
+     * @param index The index of the injected variable to remove
      */
-    function removeStaticContractAddressFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
+    function removeInjectedVariableFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
@@ -360,12 +379,12 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             revert FrontendVersionLocked();
         }
 
-        if(index >= frontend.staticContractAddresses.length) {
+        if(index >= frontend.injectedVariables.length) {
             revert IndexOutOfBounds();
         }
 
-        frontend.staticContractAddresses[index] = frontend.staticContractAddresses[frontend.staticContractAddresses.length - 1];
-        frontend.staticContractAddresses.pop();
+        frontend.injectedVariables[index] = frontend.injectedVariables[frontend.injectedVariables.length - 1];
+        frontend.injectedVariables.pop();
     }
 
     /**
