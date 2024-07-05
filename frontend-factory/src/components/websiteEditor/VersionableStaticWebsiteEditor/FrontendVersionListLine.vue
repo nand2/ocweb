@@ -8,6 +8,9 @@ import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
 import PlayCircleIcon from '../../../icons/PlayCircleIcon.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import UnlockFillIcon from '../../../icons/UnlockFillIcon.vue';
+import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
+import EyeIcon from '../../../icons/EyeIcon.vue';
+import EyeSlashIcon from '../../../icons/EyeSlashIcon.vue';
 
 import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionsQuery } from '../../../utils/queries.js';
 
@@ -122,6 +125,38 @@ const lock = async () => {
 
   lockMutate()
 }
+
+// Toggle is viewable
+const { isPending: toggleisviewableIsPending, isError: toggleisviewableIsError, error: toggleisviewableError, isSuccess: toggleisviewableIsSuccess, mutate: toggleisviewableMutate, reset: toggleisviewableReset } = useMutation({
+  mutationFn: async () => {
+    // Switch chain if necessary
+    await switchChainAsync({ chainId: props.chainId })
+
+    const transaction = await props.websiteClient.prepareEnableViewerForFrontendVersionTransaction(props.frontendVersionIndex, !props.frontendVersion.isViewable);
+
+    const hash = await props.websiteClient.executeTransaction(transaction);
+
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+  }
+})
+const toggleisviewable = async () => {
+  if(props.frontendVersion.isViewable == false && confirm("You are about to make publicly accessible a non-live version, via a separate web3:// address. It can be useful to preview a change, or to make an historical version accessible. Continue?") == false) {
+    return
+  }
+
+  if(props.frontendVersion.isViewable && confirm("You are about to disable the web3:// address for this non-live version. Continue?") == false) {
+    return
+  }
+
+  toggleisviewableMutate()
+}
+
+const viewerAddress = computed(() => {
+  return `web3://${props.frontendVersion.viewer}:${props.chainId}`
+})
 </script>
 
 <template>
@@ -153,15 +188,24 @@ const lock = async () => {
           <span class="text-muted" style="font-size: 0.8em">
             {{ frontendVersion.files.length }} files
           </span>
+          <LockFillIcon v-if="frontendVersion.locked" />
+          <span class="badge" v-if="liveFrontendVersionLoaded && frontendVersionIndex == liveFrontendVersionData.frontendIndex">
+            Live
+          </span>
         </span>
       </div>
-      <div>
-        <LockFillIcon v-if="frontendVersion.locked" />
-        <UnlockFillIcon v-else class="text-muted" />
-      </div>
-      <div>
-        <span class="badge" v-if="liveFrontendVersionLoaded && frontendVersionIndex == liveFrontendVersionData.frontendIndex">
-          Live
+      <div class="text-80">
+        <a :href="viewerAddress" target="_blank" style="display: flex; max-width: 100%; align-items: center;" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && frontendVersion.isViewable">
+          <span style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
+            {{ viewerAddress.substring(0, 45) }} 
+          </span>
+          <span style="white-space: nowrap;">
+            {{ viewerAddress.substring(45) }}
+          </span>
+          <BoxArrowUpRightIcon style="flex: 0 0 auto; margin-left: 0.5em" />
+        </a>
+        <span v-else-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && frontendVersion.isViewable == false" style="margin:auto;">
+          <EyeSlashIcon class="text-muted" />
         </span>
       </div>
       <div style="justify-content: right">
@@ -170,6 +214,10 @@ const lock = async () => {
         </a>
         <a @click.stop.prevent="setLive()" class="white" v-if="liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
           <PlayCircleIcon />
+        </a>
+        <a @click.stop.prevent="toggleisviewable()" class="white" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
+          <EyeIcon v-if="frontendVersion.isViewable == false" />
+          <EyeSlashIcon v-else />
         </a>
         <a @click.stop.prevent="lock()" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
           <LockFillIcon />
@@ -200,7 +248,7 @@ const lock = async () => {
 <style scoped>
 .frontend-version {
   display: grid;
-  grid-template-columns: minmax(3em, max-content) 3fr 1fr 1fr 1fr;
+  grid-template-columns: minmax(3em, max-content) 3fr minmax(0, 2fr) 1fr;
   padding: 0.5em 0.5em;
   align-items: center;
 }

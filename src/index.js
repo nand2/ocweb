@@ -60,6 +60,13 @@ class VersionableStaticWebsiteClient {
     }
   }
 
+  async prepareEnableViewerForFrontendVersionTransaction(frontendIndex, enable) {
+    return {
+      functionName: 'enableViewerForFrontendVersion',
+      args: [frontendIndex, enable],
+    }
+  }
+
   async prepareRenameFrontendVersionTransaction(frontendIndex, newDescription) {
     return {
       functionName: 'renameFrontendVersion',
