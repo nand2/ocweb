@@ -2,7 +2,7 @@
 import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
-import { useContractAddresses, invalidateFrontendVersionsQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
@@ -37,6 +37,7 @@ const showNewProxiedWebsiteForm = ref(false)
 const newProxiedWebsiteLocalPrefix = ref('')
 const newProxiedWebsiteRemoteAddress = ref('')
 const newProxiedWebsiteRemotePrefix = ref('')
+const preNewProxiedWebsiteError = ref('')
 const { isPending: newProxiedWebsiteIsPending, isError: newProxiedWebsiteIsError, error: newProxiedWebsiteError, isSuccess: newProxiedWebsiteIsSuccess, mutate: newProxiedWebsiteMutate, reset: newProxiedWebsiteReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
@@ -53,10 +54,18 @@ const { isPending: newProxiedWebsiteIsPending, isError: newProxiedWebsiteIsError
     showNewProxiedWebsiteForm.value = false
 
     // Refresh the frontend version
-    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
   }
 })
 const newProxiedWebsiteFile = async () => {
+  preNewProxiedWebsiteError.value = ''
+
+  // Check if newProxiedWebsiteRemoteAddress is the right format (ethereum address)
+  if(newProxiedWebsiteRemoteAddress.value.match(/^0x[a-fA-F0-9]{40}$/) == null) {
+    preNewProxiedWebsiteError.value = 'The remote address is not a valid hexadecimal address ("0x...")'
+    return
+  }
+
   newProxiedWebsiteMutate()
 }
 
@@ -73,7 +82,7 @@ const { isPending: removeProxiedWebsiteIsPending, isError: removeProxiedWebsiteI
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend version
-    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
   }
 })
 const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
@@ -126,12 +135,16 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
           </span>
         </div>
       </div>
+      
+      <div v-if="frontendVersion && frontendVersion.proxiedWebsites.length == 0" class="no-entries">
+        No mappings
+      </div>
 
 
       <div class="operations">
         <div class="op-add-new">
 
-          <div class="button-area" @click="showNewProxiedWebsiteForm = !showNewProxiedWebsiteForm; newFolderErrorLabel = ''">
+          <div class="button-area" @click="showNewProxiedWebsiteForm = !showNewProxiedWebsiteForm; preNewProxiedWebsiteError = ''">
             <span class="button-text">
               <PlusLgIcon />
               Add new mapping
@@ -146,7 +159,7 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
             <ArrowRightIcon />
             <span style="display: flex; align-items: center; gap: 0.2em;">
               web3://
-              <input type="text" v-model="newProxiedWebsiteRemoteAddress" placeholder="External website address" />
+              <input type="text" v-model="newProxiedWebsiteRemoteAddress" placeholder="Remote website address" />
               <span style="display: flex">
                 <span v-if="chainId > 1">:{{ chainId }}</span>
                 /
@@ -155,8 +168,13 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
               /*
             </span>
 
+            <div v-if="preNewProxiedWebsiteError" class="text-danger text-90">
+              <span>
+                {{ preNewProxiedWebsiteError }}
+              </span>
+            </div>
 
-            <button @click="newProxiedWebsiteFile" :disabled="newProxiedWebsiteRemoteAddress == ''">Add mapping</button>
+            <button @click="newProxiedWebsiteFile" :disabled="newProxiedWebsiteRemoteAddress == '' || newProxiedWebsiteIsPending">Add mapping</button>
 
             <div v-if="newProxiedWebsiteIsError" class="text-danger text-90">
               Error adding the mapping: {{ newProxiedWebsiteError.shortMessage || newProxiedWebsiteError.message }}
@@ -279,5 +297,11 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
 .delete-pending {
   opacity: 0.5;
   text-decoration: line-through;
+}
+
+.no-entries {
+  padding: 1.5em;
+  text-align: center;
+  color: var(--color-text-muted);
 }
 </style>
