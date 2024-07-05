@@ -155,7 +155,7 @@ const toggleIsViewable = async () => {
 }
 
 const viewerAddress = computed(() => {
-  return `web3://${props.frontendVersion.viewer}:${props.chainId}`
+  return `web3://${props.frontendVersion.viewer}:${props.chainId}/`
 })
 </script>
 
@@ -199,10 +199,7 @@ const viewerAddress = computed(() => {
       <div class="text-80">
         <a :href="viewerAddress" target="_blank" style="display: flex; max-width: 100%; align-items: center;" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && frontendVersion.isViewable">
           <span style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
-            {{ viewerAddress.substring(0, 45) }} 
-          </span>
-          <span style="white-space: nowrap;">
-            {{ viewerAddress.substring(45) }}
+            {{ viewerAddress }} 
           </span>
           <BoxArrowUpRightIcon style="flex: 0 0 auto; margin-left: 0.5em" />
         </a>

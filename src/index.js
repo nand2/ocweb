@@ -293,6 +293,35 @@ class VersionableStaticWebsiteClient {
   }
 
   /**
+   * Prepare the addition of a proxied website to a frontend
+   * @param frontendIndex: The index of the frontend version to add the proxied website to
+   * @param website: The address of the website contract to proxy to
+   * @param localPrefix: A string representing the path prefix on the local website. 
+   * E.g. "", "/", "/prefix", "/prefix/", "/prefix/prefix2/"
+   * @param remotePrefix: A string representing the path prefix on the remote website.
+   */
+  async prepareAddProxiedWebsiteToFrontendTransaction(frontendIndex, localPrefix, websiteAddress, remotePrefix) {
+    // We split the local and remote prefixes into arrays of strings
+    const localPrefixArray = localPrefix.split('/').filter(s => s !== '')
+    const remotePrefixArray = remotePrefix.split('/').filter(s => s !== '')
+
+    return {
+      functionName: 'addProxiedWebsiteToFrontend',
+      args: [frontendIndex, websiteAddress, localPrefixArray, remotePrefixArray],
+    }
+  }
+
+  async prepareRemoveProxiedWebsiteFromFrontendTransaction(frontendIndex, proxiedWebsiteIndex) {
+    return {
+      functionName: 'removeProxiedWebsiteFromFrontend',
+      args: [frontendIndex, proxiedWebsiteIndex],
+    }
+  }
+
+
+  // function addProxiedWebsiteToFrontend(uint256 frontendIndex, IDecentralizedApp website, string[] memory localPrefix, string[] memory remotePrefix) external;
+
+  /**
    * Prepare the global lock of the frontend library
    */
   async prepareLockFrontendLibraryTransaction() {

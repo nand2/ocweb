@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import FilesTab from './FilesTab.vue';
 import PreviewTab from './PreviewTab.vue';
 import SettingsTab from './SettingsTab.vue';
-import FrontendVersionEditor from './FrontendVersionEditor.vue';
+import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
 import { useVersionableStaticWebsiteClient, useLiveFrontendVersion, useFrontendVersions } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
@@ -62,7 +62,7 @@ const frontendVersionBeingEditedIndex = computed(() => {
   return -1;
 })
 
-// Get a frontend version
+// Get the frontend version being edited
 const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedLoading, isFetching: frontendVersionBeingEditedFetching, isError: frontendVersionBeingEditedIsError, error: frontendVersionBeingEditedError, isSuccess: frontendVersionBeingEditedLoaded } = useQuery({
   queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex],
   queryFn: async () => {
@@ -104,7 +104,14 @@ const showConfigPanel = ref(false)
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'files'" />
     <PreviewTab :contractAddress :chainId class="tab" v-show="activeTab == 'preview'" />
-    <SettingsTab :contractAddress :chainId class="tab" v-show="activeTab == 'settings'" />
+    <SettingsTab 
+      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
+      :frontendVersionIndex="frontendVersionBeingEditedIndex"
+      :contractAddress 
+      :chainId 
+      :websiteClient="websiteClient"
+      class="tab" v-show="activeTab == 'settings'" />
+
 
     <div class="footer">
       <div class="footer-inner">
