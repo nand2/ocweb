@@ -175,14 +175,16 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
             }
 
             if(prefixMatch) {
-                string[] memory newResource = new string[](resource.length - proxiedWebsite.localPrefix.length + proxiedWebsite.remotePrefix.length + 1);
+                string[] memory newResource = new string[](resource.length - proxiedWebsite.localPrefix.length + proxiedWebsite.remotePrefix.length + (resource.length == proxiedWebsite.localPrefix.length ? 1 : 0));
                 for(uint j = 0; j < proxiedWebsite.remotePrefix.length; j++) {
                     newResource[j] = proxiedWebsite.remotePrefix[j];
                 }
                 for(uint j = 0; j < resource.length - proxiedWebsite.localPrefix.length; j++) {
                     newResource[j + proxiedWebsite.remotePrefix.length] = resource[j + proxiedWebsite.localPrefix.length];
                 }
-                newResource[newResource.length - 1] = "index.html";
+                if(resource.length == proxiedWebsite.localPrefix.length) {
+                    newResource[newResource.length - 1] = "index.html";
+                }
 
                 (statusCode, body, headers) = proxiedWebsite.website.request(newResource, params);
 
