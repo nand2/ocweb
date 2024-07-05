@@ -27,7 +27,7 @@ const props = defineProps({
     required: true,
   },
   websiteClient: {
-    type: Object,
+    type: [Object, null],
     required: true,
   },
   globalEmptyFolders: {

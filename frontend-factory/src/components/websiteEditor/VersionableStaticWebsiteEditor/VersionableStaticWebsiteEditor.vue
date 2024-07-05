@@ -4,6 +4,9 @@ import { useQuery, useMutation } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
 
+import FilesTab from './FilesTab.vue';
+import PreviewTab from './PreviewTab.vue';
+import SettingsTab from './SettingsTab.vue';
 import FrontendVersionEditor from './FrontendVersionEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
 import { useVersionableStaticWebsiteClient, useLiveFrontendVersion, useFrontendVersions } from '../../../utils/queries.js';
@@ -24,9 +27,19 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
 
-// Folders are not stored in the backend, like git
-// We keep track of the empty folders to display them
-const globalEmptyFolders = ref([])
+// Tabs handling
+const activeTab = ref('files');
+const activeComponent = computed(() => {
+  switch (activeTab.value) {
+    case 'files':
+      return FilesTab;
+    case 'preview':
+      return PreviewTab;
+    case 'settings':
+      return SettingsTab;
+  }
+});
+
 
 // Fetch the website client
 const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
@@ -65,9 +78,9 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
   enabled: computed(() => websiteClientLoaded.value && liveFrontendVersionLoaded.value),
 })
 
-const showEditedFrontendVersionSelector = ref(false)
 
-// Get the list frontend versions
+// Get the list frontend versions : Only when the user display the form to select a version
+const showEditedFrontendVersionSelector = ref(false)
 const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId, showEditedFrontendVersionSelector)
 
 const showConfigPanel = ref(false)
@@ -76,16 +89,22 @@ const showConfigPanel = ref(false)
 <template>
   <div class="versionable-static-website-editor">
     
-    <div>
-      <FrontendVersionEditor 
-        :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
-        :frontendVersionIndex="frontendVersionBeingEditedIndex"
-        :frontendVersionIsFetching="frontendVersionBeingEditedFetching"
-        :contractAddress
-        :chainId
-        :websiteClient="websiteClient"
-        />
+    <div class="tabs">
+      <a @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
+      <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
+      <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
+    
+    <FilesTab 
+      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
+      :frontendVersionIndex="frontendVersionBeingEditedIndex"
+      :frontendVersionIsFetching="frontendVersionBeingEditedFetching"
+      :contractAddress 
+      :chainId 
+      :websiteClient="websiteClient"
+      class="tab" v-show="activeTab == 'files'" />
+    <PreviewTab :contractAddress :chainId class="tab" v-show="activeTab == 'preview'" />
+    <SettingsTab :contractAddress :chainId class="tab" v-show="activeTab == 'settings'" />
 
     <div class="footer">
       <div class="footer-inner">
@@ -150,7 +169,41 @@ const showConfigPanel = ref(false)
   min-height: 500px;
   display: flex;
   flex-direction: column;
+}
+
+
+.tabs {
+  display: flex;
+  gap: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  background-color: #303030;
   justify-content: space-between;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.tabs a {
+  color: var(--color-text);
+  padding-top: 1em;
+  padding-bottom: calc(1em - 3px);
+}
+
+.tabs a:hover {
+  color: var(--color-bglink-hover);
+}
+
+.tabs a.active {
+  border-bottom: 3px solid var(--color-link);
+
+}
+
+.tabSettings {
+  margin-left: auto;
+}
+
+
+.footer {
+  margin-top: auto;
 }
 
 .footer .footer-inner {
