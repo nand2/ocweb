@@ -84,7 +84,7 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
 <template>
   <div class="settings">
     <div class="settings-item" style="flex:0 0 60%">
-      <div class="title">Mappings to external websites</div>
+      <div class="title">Mappings to external websites <small class="text-muted" style="font-weight: normal; font-size:0.7em;">Local files have priority</small></div>
       
       <div class="table-header">
         <div>
@@ -102,20 +102,21 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
       </div>
 
       <div v-if="frontendVersion" v-for="(proxiedWebsite, proxiedWebsiteIndex) in frontendVersion.proxiedWebsites">
-        <div class="table-row">
+        <div :class="{'table-row': true, 'delete-pending': removeProxiedWebsiteIsPending && removeProxiedWebsiteVariables == proxiedWebsiteIndex}">
           <div>
-            /{{ proxiedWebsite.localPrefix.join('/') }}{{ proxiedWebsite.localPrefix.length > 0 ? "/" : "" }}
+            /{{ proxiedWebsite.localPrefix.join('/') }}{{ proxiedWebsite.localPrefix.length > 0 ? "/" : "" }}*
           </div>
           <div>
             <ArrowRightIcon />
           </div>
           <div class="text-80">
-            web3://{{ proxiedWebsite.website }}{{ chainId > 1 ? ':' + chainId : '' }}/{{ proxiedWebsite.remotePrefix.join('/') }}{{ proxiedWebsite.remotePrefix.length > 0 ? "/" : "" }}
+            web3://{{ proxiedWebsite.website }}{{ chainId > 1 ? ':' + chainId : '' }}/{{ proxiedWebsite.remotePrefix.join('/') }}{{ proxiedWebsite.remotePrefix.length > 0 ? "/" : "" }}*
           </div>
           <div style="text-align: right">
             <a @click.stop.prevent="removeProxiedWebsiteFile(proxiedWebsiteIndex)" class="white" v-if="removeProxiedWebsiteIsPending == false">
               <TrashIcon />
             </a>
+            <TrashIcon class="anim-pulse" v-if="removeProxiedWebsiteIsPending && removeProxiedWebsiteVariables == proxiedWebsiteIndex" />
           </div>
         </div>
 
@@ -140,7 +141,7 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
             <span style="display: flex; align-items: center; gap: 0.2em;">
               /
               <input type="text" v-model="newProxiedWebsiteLocalPrefix" placeholder="Local path prefix" />
-              /
+              /*
             </span>
             <ArrowRightIcon />
             <span style="display: flex; align-items: center; gap: 0.2em;">
@@ -151,7 +152,7 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
                 /
               </span>
               <input type="text" v-model="newProxiedWebsiteRemotePrefix" placeholder="Remote path prefix" />
-              /
+              /*
             </span>
 
 
@@ -273,5 +274,10 @@ const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
 
 .operations input {
   max-width: 150px;
+}
+
+.delete-pending {
+  opacity: 0.5;
+  text-decoration: line-through;
 }
 </style>

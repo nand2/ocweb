@@ -53,6 +53,8 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
         (FrontendFilesSet memory frontend, ) = getLiveFrontendVersion();
 
         // Special path prefix : /__frontend_version/{id}
+        // Combined with the CLonableFrontendVersionViewer, this allows to serve a 
+        // specific frontend version
         if(resource.length >= 2 && LibStrings.compare(resource[0], "__frontend_version")) {
             uint overridenFrontendIndex = LibStrings.stringToUint(resource[1]);
             (, uint frontendVersionsCount) = getFrontendVersions(0, 0);
@@ -173,13 +175,14 @@ abstract contract VersionableStaticWebsite is ResourceRequestWebsite, FrontendLi
             }
 
             if(prefixMatch) {
-                string[] memory newResource = new string[](resource.length - proxiedWebsite.localPrefix.length + proxiedWebsite.remotePrefix.length);
+                string[] memory newResource = new string[](resource.length - proxiedWebsite.localPrefix.length + proxiedWebsite.remotePrefix.length + 1);
                 for(uint j = 0; j < proxiedWebsite.remotePrefix.length; j++) {
                     newResource[j] = proxiedWebsite.remotePrefix[j];
                 }
                 for(uint j = 0; j < resource.length - proxiedWebsite.localPrefix.length; j++) {
                     newResource[j + proxiedWebsite.remotePrefix.length] = resource[j + proxiedWebsite.localPrefix.length];
                 }
+                newResource[newResource.length - 1] = "index.html";
 
                 (statusCode, body, headers) = proxiedWebsite.website.request(newResource, params);
 
