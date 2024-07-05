@@ -127,7 +127,7 @@ const lock = async () => {
 }
 
 // Toggle is viewable
-const { isPending: toggleisviewableIsPending, isError: toggleisviewableIsError, error: toggleisviewableError, isSuccess: toggleisviewableIsSuccess, mutate: toggleisviewableMutate, reset: toggleisviewableReset } = useMutation({
+const { isPending: toggleIsViewableIsPending, isError: toggleIsViewableIsError, error: toggleIsViewableError, isSuccess: toggleIsViewableIsSuccess, mutate: toggleIsViewableMutate, reset: toggleIsViewableReset } = useMutation({
   mutationFn: async () => {
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
@@ -142,7 +142,7 @@ const { isPending: toggleisviewableIsPending, isError: toggleisviewableIsError, 
     return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
-const toggleisviewable = async () => {
+const toggleIsViewable = async () => {
   if(props.frontendVersion.isViewable == false && confirm("You are about to make publicly accessible a non-live version, via a separate web3:// address. It can be useful to preview a change, or to make an historical version accessible. Continue?") == false) {
     return
   }
@@ -151,7 +151,7 @@ const toggleisviewable = async () => {
     return
   }
 
-  toggleisviewableMutate()
+  toggleIsViewableMutate()
 }
 
 const viewerAddress = computed(() => {
@@ -166,6 +166,8 @@ const viewerAddress = computed(() => {
         <PencilSquareIcon v-if="renameIsPending == true" class="anim-pulse" />
         <PlayCircleIcon v-else-if="setLiveIsPending == true" class="anim-pulse" />
         <LockFillIcon v-else-if="lockIsPending == true" class="anim-pulse" />
+        <EyeIcon v-else-if="toggleIsViewableIsPending == true && frontendVersion.isViewable == false" class="anim-pulse" />
+        <EyeSlashIcon v-else-if="toggleIsViewableIsPending == true && frontendVersion.isViewable == true" class="anim-pulse" />
         <span v-else>
           #{{ frontendVersionIndex }} 
         </span>
@@ -209,17 +211,17 @@ const viewerAddress = computed(() => {
         </span>
       </div>
       <div style="justify-content: right">
-        <a @click.stop.prevent="showRenameForm = !showRenameForm; newDescription = frontendVersion.description" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
+        <a @click.stop.prevent="showRenameForm = !showRenameForm; newDescription = frontendVersion.description" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <PencilSquareIcon />
         </a>
-        <a @click.stop.prevent="setLive()" class="white" v-if="liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
+        <a @click.stop.prevent="setLive()" class="white" v-if="liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <PlayCircleIcon />
         </a>
-        <a @click.stop.prevent="toggleisviewable()" class="white" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
+        <a @click.stop.prevent="toggleIsViewable()" class="white" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <EyeIcon v-if="frontendVersion.isViewable == false" />
           <EyeSlashIcon v-else />
         </a>
-        <a @click.stop.prevent="lock()" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false">
+        <a @click.stop.prevent="lock()" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <LockFillIcon />
         </a>
       </div>
@@ -234,6 +236,12 @@ const viewerAddress = computed(() => {
     <div v-if="setLiveIsError" class="mutation-error">
       <span>
         Error setting live the version: {{ setLiveError.shortMessage || setLiveError.message }} <a @click.stop.prevent="setLiveReset()">Hide</a>
+      </span>
+    </div>
+
+    <div v-if="toggleIsViewableIsError" class="mutation-error">
+      <span>
+        Error toggling visibility: {{ toggleIsViewableError.shortMessage || toggleIsViewableError.message }} <a @click.stop.prevent="toggleIsViewableReset()">Hide</a>
       </span>
     </div>
 
