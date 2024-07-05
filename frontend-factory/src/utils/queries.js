@@ -67,10 +67,10 @@ function useLiveFrontendVersion(queryClient,contractAddress, chainId) {
       const result = await websiteClient.value.getLiveFrontendVersion()
 
       // We got a frontend version, prefill the cache of the individual frontend version
-      // await queryClient.prefetchQuery({
-      //   queryKey: ['OCWebsiteFrontendVersion', contractAddress, chainId, result.frontendIndex],
-      //   queryFn: () => { return result.frontendVersion },
-      // })
+      await queryClient.prefetchQuery({
+        queryKey: ['OCWebsiteFrontendVersion', contractAddress, chainId, result.frontendIndex],
+        queryFn: () => { return result.frontendVersion },
+      })
 
       return result
     },
