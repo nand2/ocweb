@@ -293,6 +293,16 @@ class VersionableStaticWebsiteClient {
   }
 
   /**
+   * Prepare the global lock of the frontend library
+   */
+  async prepareLockFrontendLibraryTransaction() {
+    return {
+      functionName: 'lockFrontendLibrary',
+      args: [],
+    }
+  }
+
+  /**
    * Execute a transaction prepared by one of the prepare* methods
    */
   async executeTransaction(transaction) {

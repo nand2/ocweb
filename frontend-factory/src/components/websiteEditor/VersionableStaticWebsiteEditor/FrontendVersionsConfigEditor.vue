@@ -7,6 +7,7 @@ import FrontendVersionList from './FrontendVersionList.vue';
 import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
+import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
 import { useContractAddresses, invalidateFrontendVersionsQuery } from '../../../utils/queries';
 
 const props = defineProps({
@@ -68,16 +69,30 @@ const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsErr
   }
 })
 const newfrontendversionFile = async () => {
-  // // Check that the name is not already taken
-  // if(props.folderParentChildren.find(child => child.name === newFileName.value)) {
-  //   preNewFrontendVersionError.value = 'A file with this name already exists in this folder'
-  //   return
-  // }
-
   newfrontendversionMutate()
 }
 
+// Global lock
 const showGlobalLockForm = ref(false)
+const { isPending: globalLockIsPending, isError: globalLockIsError, error: globalLockError, isSuccess: globalLockIsSuccess, mutate: globalLockMutate, reset: globalLockReset } = useMutation({
+  mutationFn: async () => {
+    // Prepare the transaction
+    const transaction = await props.websiteClient.prepareLockFrontendLibraryTransaction();
+
+    const hash = await props.websiteClient.executeTransaction(transaction);
+
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    showGlobalLockForm.value = false
+
+    // Refresh the frontend version
+    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+  }
+})
+const activateGlobalLock = async () => {
+  globalLockMutate()
+}
 </script>
 
 <template>
@@ -130,15 +145,21 @@ const showGlobalLockForm = ref(false)
           </span>
         </div>
         <div class="form-area" v-if="showGlobalLockForm">
-
-          <div>
-            <input type="text" class="form-control" placeholder="Folder name" v-model="newFolderName" />
+          <div class="text-danger" style="display: flex; align-items: center; gap: 1em;">
+            <div>
+              <LockFillIcon v-if="globalLockIsPending" style="scale: 2; margin: 0em 1em;" class="anim-pulse" />
+              <ExclamationTriangleIcon v-else style="scale: 2; margin: 0em 1em;" />
+            </div>
+            <div>
+              Once the global lock is set, nothing can be edited anymore, and the website become immutable. It cannot be undone. <br />
+               Are you sure you want to proceed?
+            </div>
           </div>
-          <div class="text-danger" style="font-size: 0.9em">
-            {{ newFolderErrorLabel }}
-          </div>
           <div>
-            <button type="button" style="width: 100%" @click="addNewFolder">Lock all versions</button>
+            <button type="button" style="width: 100%" @click="activateGlobalLock"><LockFillIcon /> Lock everything permanently</button>
+          </div>
+          <div v-if="globalLockIsError" class="text-danger" style="font-size: 0.9em">
+            Error activating the global lock: {{ globalLockError.shortMessage || globalLockError.message }} <a @click.stop.prevent="globalLockReset()" style="color: inherit; text-decoration: underline;">Hide</a>
           </div>
 
         </div>
