@@ -4,21 +4,33 @@ import { computed, shallowRef } from 'vue'
 
 import { VersionableStaticWebsiteClient } from '../../../src/index.js';
 
-// Fetch the contract addresses advertised by the website
-// Group the factories together
-function useContractAddresses() {
+function useInjectedVariables() {
   return useQuery({
-    queryKey: ['contractAddresses'],
+    queryKey: ['injectedVariables'],
     queryFn: async () => {
       const response = await fetch('/variables.json')
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
       const decodedResponse = await response.json()
+      return decodedResponse
+    },
+    staleTime: 24 * 3600 * 1000,
+  })
+}
+
+// Fetch the contract addresses advertised by the website
+// Group the factories together
+function useContractAddresses() {
+  const { data: injectedVariables, isLoading, isSuccess, isError, error } = useInjectedVariables()
+
+  return useQuery({
+    queryKey: ['contractAddresses'],
+    queryFn: async () => {
 
       // Factories on various chains are stored with the key "factory-<chainShortName>"
       const factories = []
-      for (const [key, value] of Object.entries(decodedResponse)) {
+      for (const [key, value] of Object.entries(injectedVariables.value)) {
         if (key.startsWith('factory-')) {
           const [address, chainId] = value.split(':')
           factories.push({address, chainId: parseInt(chainId), chainShortName: key.slice(8)})
@@ -26,13 +38,14 @@ function useContractAddresses() {
       }
 
       const result = {
-        self: decodedResponse.self,
+        self: injectedVariables.self,
         factories: factories,
       }
 
       return result
     },
     staleTime: 24 * 3600 * 1000,
+    enabled: isSuccess
   })
 }
 
@@ -111,6 +124,7 @@ function invalidateFrontendVersionsQuery(queryClient, contractAddress, chainId) 
 }
 
 export { 
+  useInjectedVariables,
   useContractAddresses, 
   useVersionableStaticWebsiteClient, 
   useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, 

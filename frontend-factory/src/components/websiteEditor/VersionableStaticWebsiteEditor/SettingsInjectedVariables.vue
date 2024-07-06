@@ -110,6 +110,21 @@ const removeItem = async (index) => {
       </div>
     </div>
 
+    <div class="table-row">
+      <div>
+        <code>
+          self
+        </code>
+      </div>
+      <div>
+        <code>
+          {{ contractAddress }}:{{ chainId }}
+        </code>
+      </div>
+      <div>
+      </div>
+    </div>
+
     <div v-if="frontendVersion" v-for="(injectedVariable, index) in frontendVersion.injectedVariables">
       <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == index}">
         <div>
@@ -135,10 +150,6 @@ const removeItem = async (index) => {
           Error renaming the version: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
         </span>
       </div>
-    </div>
-    
-    <div v-if="frontendVersion && frontendVersion.injectedVariables.length == 0" class="no-entries">
-      No mappings
     </div>
 
 
