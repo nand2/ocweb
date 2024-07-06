@@ -7,6 +7,7 @@ import { useContractAddresses } from '../utils/queries.js';
 import OCWebsiteEditor from './websiteEditor/OCWebsiteEditor.vue';
 import XCircleIcon from '../icons/XCircleIcon.vue';
 import CopyIcon from '../icons/CopyIcon.vue';
+import BoxArrowUpRightIcon from '../icons/BoxArrowUpRightIcon.vue';
 
 
 const props = defineProps({
@@ -74,6 +75,10 @@ function copyWeb3AddressToClipboard() {
     showCopiedIndicator.value = false
   }, 1000)
 }
+
+const urlWithSlash = computed(() => {
+  return `web3://${props.contractAddress}${props.chainId > 1 ? ':' + props.chainId : ''}/`
+})
 </script>
 
 <template>
@@ -85,6 +90,9 @@ function copyWeb3AddressToClipboard() {
         <span class="copy-indicator">
           Copied!
         </span>
+      </a>
+      <a :href="urlWithSlash" target="_blank" class="white header-icon">
+        <BoxArrowUpRightIcon />
       </a>
       <a @click.stop.prevent="isOpened = false" class="white header-icon">
         <XCircleIcon class="close"  />
@@ -118,6 +126,7 @@ function copyWeb3AddressToClipboard() {
   justify-content: space-between;
   align-items: stretch;
   transition: height 0.5s;
+  padding-right: 0.5em;
 }
 
 .ocwebsite a.web3-address {
@@ -138,6 +147,7 @@ function copyWeb3AddressToClipboard() {
   color: var(--color-text);
   position: relative;
   padding: 0.5em 1em;
+  margin-right: auto;
 }
 
 .ocwebsite a.web3-address:hover {
@@ -168,14 +178,14 @@ function copyWeb3AddressToClipboard() {
   visibility: hidden;
   opacity: 0;
   transition: visibility 0.5s, opacity 0.5s;
-  padding: 0.5em 1em;
+  padding: 0.5em 0.5em;
 }
 
 .ocwebsite .header .header-icon:hover {
   color: var(--color-text);
 }
 
-.ocwebsite .header svg.close {
+.ocwebsite .header .header-icon svg {
   height: 25px;
   width: 25px;
   cursor: pointer;
