@@ -1,6 +1,11 @@
 export const abi = [
   {
     inputs: [],
+    stateMutability: "nonpayable",
+    type: "constructor"
+  },
+  {
+    inputs: [],
     name: "AlreadyInitialized",
     type: "error"
   },
@@ -17,6 +22,11 @@ export const abi = [
   {
     inputs: [],
     name: "ContractAddressNameReserved",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "FileAlreadyExistsAsDirectory",
     type: "error"
   },
   {
@@ -140,6 +150,29 @@ export const abi = [
         type: "uint256"
       },
       {
+        internalType: "string",
+        name: "key",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "value",
+        type: "string"
+      }
+    ],
+    name: "addInjectedVariableToFrontend",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "frontendIndex",
+        type: "uint256"
+      },
+      {
         internalType: "contract IDecentralizedApp",
         name: "website",
         type: "address"
@@ -169,34 +202,6 @@ export const abi = [
       },
       {
         internalType: "string",
-        name: "name",
-        type: "string"
-      },
-      {
-        internalType: "address",
-        name: "addr",
-        type: "address"
-      },
-      {
-        internalType: "uint256",
-        name: "chainId",
-        type: "uint256"
-      }
-    ],
-    name: "addStaticContractAddressToFrontend",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "frontendIndex",
-        type: "uint256"
-      },
-      {
-        internalType: "string",
         name: "filePath",
         type: "string"
       },
@@ -209,6 +214,19 @@ export const abi = [
     name: "appendToFileInFrontendVersion",
     outputs: [],
     stateMutability: "payable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "defaultFrontendIndex",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
     type: "function"
   },
   {
@@ -227,6 +245,71 @@ export const abi = [
     name: "enableViewerForFrontendVersion",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "frontendLibraryLocked",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "frontendVersionViewerImplementation",
+    outputs: [
+      {
+        internalType: "contract ClonableFrontendVersionViewer",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    name: "frontendVersions",
+    outputs: [
+      {
+        internalType: "contract IStorageBackend",
+        name: "storageBackend",
+        type: "address"
+      },
+      {
+        internalType: "string",
+        name: "description",
+        type: "string"
+      },
+      {
+        internalType: "contract IDecentralizedApp",
+        name: "viewer",
+        type: "address"
+      },
+      {
+        internalType: "bool",
+        name: "isViewable",
+        type: "bool"
+      },
+      {
+        internalType: "bool",
+        name: "locked",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
     type: "function"
   },
   {
@@ -295,22 +378,17 @@ export const abi = [
             components: [
               {
                 internalType: "string",
-                name: "name",
+                name: "key",
                 type: "string"
               },
               {
-                internalType: "address",
-                name: "addr",
-                type: "address"
-              },
-              {
-                internalType: "uint256",
-                name: "chainId",
-                type: "uint256"
+                internalType: "string",
+                name: "value",
+                type: "string"
               }
             ],
-            internalType: "struct NamedAddressAndChainId[]",
-            name: "staticContractAddresses",
+            internalType: "struct KeyValueVariable[]",
+            name: "injectedVariables",
             type: "tuple[]"
           },
           {
@@ -417,22 +495,17 @@ export const abi = [
             components: [
               {
                 internalType: "string",
-                name: "name",
+                name: "key",
                 type: "string"
               },
               {
-                internalType: "address",
-                name: "addr",
-                type: "address"
-              },
-              {
-                internalType: "uint256",
-                name: "chainId",
-                type: "uint256"
+                internalType: "string",
+                name: "value",
+                type: "string"
               }
             ],
-            internalType: "struct NamedAddressAndChainId[]",
-            name: "staticContractAddresses",
+            internalType: "struct KeyValueVariable[]",
+            name: "injectedVariables",
             type: "tuple[]"
           },
           {
@@ -533,22 +606,17 @@ export const abi = [
             components: [
               {
                 internalType: "string",
-                name: "name",
+                name: "key",
                 type: "string"
               },
               {
-                internalType: "address",
-                name: "addr",
-                type: "address"
-              },
-              {
-                internalType: "uint256",
-                name: "chainId",
-                type: "uint256"
+                internalType: "string",
+                name: "value",
+                type: "string"
               }
             ],
-            internalType: "struct NamedAddressAndChainId[]",
-            name: "staticContractAddresses",
+            internalType: "struct KeyValueVariable[]",
+            name: "injectedVariables",
             type: "tuple[]"
           },
           {
@@ -754,7 +822,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "removeProxiedWebsiteFromFrontend",
+    name: "removeInjectedVariableFromFrontend",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -772,7 +840,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "removeStaticContractAddressFromFrontend",
+    name: "removeProxiedWebsiteFromFrontend",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

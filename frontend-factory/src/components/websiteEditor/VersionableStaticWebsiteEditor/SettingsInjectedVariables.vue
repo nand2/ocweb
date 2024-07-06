@@ -34,23 +34,21 @@ const queryClient = useQueryClient()
 
 // Add new proxied website
 const showNewProxiedWebsiteForm = ref(false)
-const additionLocalPrefix = ref('')
-const additionRemoteAddress = ref('')
-const additionRemotePrefix = ref('')
+const additionName = ref('')
+const additionValue = ref('')
 const preAdditionError = ref('')
 const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddProxiedWebsiteToFrontendTransaction(props.frontendVersionIndex, additionLocalPrefix.value, additionRemoteAddress.value, additionRemotePrefix.value);
+    const transaction = await props.websiteClient.prepareAddInjectedVariableToFrontendTransaction(props.frontendVersionIndex, additionName.value, additionValue.value);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    additionLocalPrefix.value = ""
-    additionRemoteAddress.value = ""
-    additionRemotePrefix.value = ""
+    additionName.value = ""
+    additionValue.value = ""
     showNewProxiedWebsiteForm.value = false
 
     // Refresh the frontend version
@@ -60,9 +58,15 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
 const additionFile = async () => {
   preAdditionError.value = ''
 
-  // Check if additionRemoteAddress is the right format (ethereum address)
-  if(additionRemoteAddress.value.match(/^0x[a-fA-F0-9]{40}$/) == null) {
-    preAdditionError.value = 'The remote address is not a valid hexadecimal address ("0x...")'
+  // Check that the name is not a reserved name : 'self'
+  if (additionName.value == 'self') {
+    preAdditionError.value = "The name 'self' is reserved"
+    return
+  }
+
+  // Check that the name is not one of the existing
+  if (props.frontendVersion.injectedVariables.find(v => v.key == additionName.value)) {
+    preAdditionError.value = "The name is already in use"
     return
   }
 
@@ -74,7 +78,7 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
   mutationFn: async (index) => {
 
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareRemoveProxiedWebsiteFromFrontendTransaction(props.frontendVersionIndex, index);
+    const transaction = await props.websiteClient.prepareRemoveInjectedVariableFromFrontendTransaction(props.frontendVersionIndex, index);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
@@ -92,33 +96,31 @@ const removeItem = async (index) => {
 
 <template>
   <div>
-    <div class="title">Mappings to external websites <small class="text-muted" style="font-weight: normal; font-size:0.7em;">Local files have priority</small></div>
+    <div class="title">Injected variables <small class="text-muted" style="font-weight: normal; font-size:0.7em;">Accessible via the /variables.json path</small></div>
     
     <div class="table-header">
       <div>
-        Local path
+        Name
       </div>
       <div>
-        
-      </div>
-      <div>
-        Destination
+        Value
       </div>
       <div>
 
       </div>
     </div>
 
-    <div v-if="frontendVersion" v-for="(proxiedWebsite, index) in frontendVersion.proxiedWebsites">
+    <div v-if="frontendVersion" v-for="(injectedVariable, index) in frontendVersion.injectedVariables">
       <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == index}">
         <div>
-          /{{ proxiedWebsite.localPrefix.join('/') }}
+          <code>
+            {{ injectedVariable.key }}
+          </code>
         </div>
         <div>
-          <ArrowRightIcon />
-        </div>
-        <div class="text-80">
-          web3://{{ proxiedWebsite.website }}{{ chainId > 1 ? ':' + chainId : '' }}/{{ proxiedWebsite.remotePrefix.join('/') }}
+          <code>
+            {{ injectedVariable.value }}
+          </code>
         </div>
         <div style="text-align: right">
           <a @click.stop.prevent="removeItem(index)" class="white" v-if="removeIsPending == false">
@@ -135,7 +137,7 @@ const removeItem = async (index) => {
       </div>
     </div>
     
-    <div v-if="frontendVersion && frontendVersion.proxiedWebsites.length == 0" class="no-entries">
+    <div v-if="frontendVersion && frontendVersion.injectedVariables.length == 0" class="no-entries">
       No mappings
     </div>
 
@@ -146,24 +148,12 @@ const removeItem = async (index) => {
         <div class="button-area" @click="showNewProxiedWebsiteForm = !showNewProxiedWebsiteForm; preAdditionError = ''">
           <span class="button-text">
             <PlusLgIcon />
-            Add new mapping
+            Add new variable
           </span>
         </div>
         <div class="form-area" v-if="showNewProxiedWebsiteForm">
-          <span style="display: flex; align-items: center; gap: 0.2em;">
-            /
-            <input type="text" v-model="additionLocalPrefix" placeholder="Local path prefix" />
-          </span>
-          <ArrowRightIcon />
-          <span style="display: flex; align-items: center; gap: 0.2em;">
-            web3://
-            <input type="text" v-model="additionRemoteAddress" placeholder="Remote website address" />
-            <span style="display: flex">
-              <span v-if="chainId > 1">:{{ chainId }}</span>
-              /
-            </span>
-            <input type="text" v-model="additionRemotePrefix" placeholder="Remote path prefix" />
-          </span>
+          <input type="text" v-model="additionName" placeholder="Name" />
+          <input type="text" v-model="additionValue" placeholder="Value" />
 
           <div v-if="preAdditionError" class="text-danger text-90">
             <span>
@@ -171,7 +161,7 @@ const removeItem = async (index) => {
             </span>
           </div>
 
-          <button @click="additionFile" :disabled="additionRemoteAddress == '' || additionIsPending">Add mapping</button>
+          <button @click="additionFile" :disabled="additionName == '' || additionValue == '' || additionIsPending">Add mapping</button>
 
           <div v-if="additionIsError" class="text-danger text-90">
             Error adding the mapping: {{ additionError.shortMessage || additionError.message }}
@@ -203,7 +193,7 @@ const removeItem = async (index) => {
 
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 0.5fr 3fr 2em;
+  grid-template-columns: 1fr 3fr 2em;
   padding: 0.5em;
   font-weight: bold;
   border-bottom: 1px solid var(--color-divider-secondary);
@@ -217,7 +207,7 @@ const removeItem = async (index) => {
 
 .table-row {
   display: grid;
-  grid-template-columns: 1fr 0.5fr 3fr 2em;
+  grid-template-columns: 1fr 3fr 2em;
   padding: 0.5em;
 }
 

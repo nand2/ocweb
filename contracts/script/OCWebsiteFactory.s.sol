@@ -120,7 +120,7 @@ contract OCWebsiteFactoryScript is Script {
             // Add the factory contract address to the frontend
             factoryFrontend.addInjectedVariableToFrontend(0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
             // Testing: Add hardcoded factory for sepolia && holesky
-            factoryFrontend.addInjectedVariableToFrontend(0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0xFE98Da931c7E15473344bf5Cfc4AB86f1fC4C831), ":", LibStrings.toString(17000)));
+            factoryFrontend.addInjectedVariableToFrontend(0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x051eCAe0901694F59fe55EEFeDbc12699F1192A5), ":", LibStrings.toString(17000)));
             // factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "sep"), 0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07, 11155111);
 
             // // Add internal redirect to index.html, for 404 handling, and #/ handling

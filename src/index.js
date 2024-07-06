@@ -318,6 +318,27 @@ class VersionableStaticWebsiteClient {
     }
   }
 
+  /**
+   * Prepare the addition of an injected variable
+   * @param frontendIndex: The index of the frontend version to add the injected variable to
+   * @param name: The name of the injected variable
+   * @param value: The value of the injected variable
+   */
+  async prepareAddInjectedVariableToFrontendTransaction(frontendIndex, name, value) {
+    return {
+      functionName: 'addInjectedVariableToFrontend',
+      args: [frontendIndex, name, value],
+    }
+  }
+
+  async prepareRemoveInjectedVariableFromFrontendTransaction(frontendIndex, injectedVariableIndex) {
+    return {
+      functionName: 'removeInjectedVariableFromFrontend',
+      args: [frontendIndex, injectedVariableIndex],
+    }
+  }
+  
+
 
   // function addProxiedWebsiteToFrontend(uint256 frontendIndex, IDecentralizedApp website, string[] memory localPrefix, string[] memory remotePrefix) external;
 

@@ -4,9 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
 import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
-import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
-import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
-import TrashIcon from '../../../icons/TrashIcon.vue';
+import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 
 const props = defineProps({
   frontendVersion: {
@@ -45,7 +43,12 @@ const props = defineProps({
         :websiteClient />
     </div>
     <div class="settings-item">
-      <div class="title">Injected contract addresses</div>
+      <SettingsInjectedVariables
+        :frontendVersion
+        :frontendVersionIndex
+        :contractAddress
+        :chainId
+        :websiteClient />
     </div>
   </div>
 </template>
