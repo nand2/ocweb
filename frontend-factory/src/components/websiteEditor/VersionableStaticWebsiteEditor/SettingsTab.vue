@@ -3,6 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
 import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
+import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
@@ -30,160 +31,18 @@ const props = defineProps({
   },
 })
 
-const queryClient = useQueryClient()
 
-// Add new proxied website
-const showNewProxiedWebsiteForm = ref(false)
-const newProxiedWebsiteLocalPrefix = ref('')
-const newProxiedWebsiteRemoteAddress = ref('')
-const newProxiedWebsiteRemotePrefix = ref('')
-const preNewProxiedWebsiteError = ref('')
-const { isPending: newProxiedWebsiteIsPending, isError: newProxiedWebsiteIsError, error: newProxiedWebsiteError, isSuccess: newProxiedWebsiteIsSuccess, mutate: newProxiedWebsiteMutate, reset: newProxiedWebsiteReset } = useMutation({
-  mutationFn: async () => {
-    // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddProxiedWebsiteToFrontendTransaction(props.frontendVersionIndex, newProxiedWebsiteLocalPrefix.value, newProxiedWebsiteRemoteAddress.value, newProxiedWebsiteRemotePrefix.value);
-
-    const hash = await props.websiteClient.executeTransaction(transaction);
-
-    return await props.websiteClient.waitForTransactionReceipt(hash);
-  },
-  onSuccess: async (data, variables, context) => {
-    newProxiedWebsiteLocalPrefix.value = ""
-    newProxiedWebsiteRemoteAddress.value = ""
-    newProxiedWebsiteRemotePrefix.value = ""
-    showNewProxiedWebsiteForm.value = false
-
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
-  }
-})
-const newProxiedWebsiteFile = async () => {
-  preNewProxiedWebsiteError.value = ''
-
-  // Check if newProxiedWebsiteRemoteAddress is the right format (ethereum address)
-  if(newProxiedWebsiteRemoteAddress.value.match(/^0x[a-fA-F0-9]{40}$/) == null) {
-    preNewProxiedWebsiteError.value = 'The remote address is not a valid hexadecimal address ("0x...")'
-    return
-  }
-
-  newProxiedWebsiteMutate()
-}
-
-// Remove new proxied website
-const { isPending: removeProxiedWebsiteIsPending, isError: removeProxiedWebsiteIsError, error: removeProxiedWebsiteError, isSuccess: removeProxiedWebsiteIsSuccess, mutate: removeProxiedWebsiteMutate, reset: removeProxiedWebsiteReset, variables: removeProxiedWebsiteVariables } = useMutation({
-  mutationFn: async (proxiedWebsiteIndex) => {
-
-    // Prepare the transaction
-    const transaction = await props.websiteClient.prepareRemoveProxiedWebsiteFromFrontendTransaction(props.frontendVersionIndex, proxiedWebsiteIndex);
-
-    const hash = await props.websiteClient.executeTransaction(transaction);
-
-    return await props.websiteClient.waitForTransactionReceipt(hash);
-  },
-  onSuccess: async (data, variables, context) => {
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
-  }
-})
-const removeProxiedWebsiteFile = async (proxiedWebsiteIndex) => {
-  removeProxiedWebsiteMutate(proxiedWebsiteIndex)
-}
 </script>
 
 <template>
   <div class="settings">
     <div class="settings-item" style="flex:0 0 60%">
-      <div class="title">Mappings to external websites <small class="text-muted" style="font-weight: normal; font-size:0.7em;">Local files have priority</small></div>
-      
-      <div class="table-header">
-        <div>
-          Local path
-        </div>
-        <div>
-          
-        </div>
-        <div>
-          Destination
-        </div>
-        <div>
-
-        </div>
-      </div>
-
-      <div v-if="frontendVersion" v-for="(proxiedWebsite, proxiedWebsiteIndex) in frontendVersion.proxiedWebsites">
-        <div :class="{'table-row': true, 'delete-pending': removeProxiedWebsiteIsPending && removeProxiedWebsiteVariables == proxiedWebsiteIndex}">
-          <div>
-            /{{ proxiedWebsite.localPrefix.join('/') }}{{ proxiedWebsite.localPrefix.length > 0 ? "/" : "" }}*
-          </div>
-          <div>
-            <ArrowRightIcon />
-          </div>
-          <div class="text-80">
-            web3://{{ proxiedWebsite.website }}{{ chainId > 1 ? ':' + chainId : '' }}/{{ proxiedWebsite.remotePrefix.join('/') }}{{ proxiedWebsite.remotePrefix.length > 0 ? "/" : "" }}*
-          </div>
-          <div style="text-align: right">
-            <a @click.stop.prevent="removeProxiedWebsiteFile(proxiedWebsiteIndex)" class="white" v-if="removeProxiedWebsiteIsPending == false">
-              <TrashIcon />
-            </a>
-            <TrashIcon class="anim-pulse" v-if="removeProxiedWebsiteIsPending && removeProxiedWebsiteVariables == proxiedWebsiteIndex" />
-          </div>
-        </div>
-
-        <div v-if="removeProxiedWebsiteIsError && removeProxiedWebsiteVariables == proxiedWebsiteIndex" class="mutation-error">
-          <span>
-            Error renaming the version: {{ removeProxiedWebsiteError.shortMessage || removeProxiedWebsiteError.message }} <a @click.stop.prevent="removeProxiedWebsiteReset()">Hide</a>
-          </span>
-        </div>
-      </div>
-      
-      <div v-if="frontendVersion && frontendVersion.proxiedWebsites.length == 0" class="no-entries">
-        No mappings
-      </div>
-
-
-      <div class="operations">
-        <div class="op-add-new">
-
-          <div class="button-area" @click="showNewProxiedWebsiteForm = !showNewProxiedWebsiteForm; preNewProxiedWebsiteError = ''">
-            <span class="button-text">
-              <PlusLgIcon />
-              Add new mapping
-            </span>
-          </div>
-          <div class="form-area" v-if="showNewProxiedWebsiteForm">
-            <span style="display: flex; align-items: center; gap: 0.2em;">
-              /
-              <input type="text" v-model="newProxiedWebsiteLocalPrefix" placeholder="Local path prefix" />
-              /*
-            </span>
-            <ArrowRightIcon />
-            <span style="display: flex; align-items: center; gap: 0.2em;">
-              web3://
-              <input type="text" v-model="newProxiedWebsiteRemoteAddress" placeholder="Remote website address" />
-              <span style="display: flex">
-                <span v-if="chainId > 1">:{{ chainId }}</span>
-                /
-              </span>
-              <input type="text" v-model="newProxiedWebsiteRemotePrefix" placeholder="Remote path prefix" />
-              /*
-            </span>
-
-            <div v-if="preNewProxiedWebsiteError" class="text-danger text-90">
-              <span>
-                {{ preNewProxiedWebsiteError }}
-              </span>
-            </div>
-
-            <button @click="newProxiedWebsiteFile" :disabled="newProxiedWebsiteRemoteAddress == '' || newProxiedWebsiteIsPending">Add mapping</button>
-
-            <div v-if="newProxiedWebsiteIsError" class="text-danger text-90">
-              Error adding the mapping: {{ newProxiedWebsiteError.shortMessage || newProxiedWebsiteError.message }}
-              <a @click.stop.prevent="newProxiedWebsiteReset()" style="color: inherit; text-decoration: underline;">Hide</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <SettingsProxiedWebsites 
+        :frontendVersion
+        :frontendVersionIndex
+        :contractAddress
+        :chainId
+        :websiteClient />
     </div>
     <div class="settings-item">
       <div class="title">Injected contract addresses</div>

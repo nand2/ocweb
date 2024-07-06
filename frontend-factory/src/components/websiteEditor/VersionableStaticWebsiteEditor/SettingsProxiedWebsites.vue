@@ -1,0 +1,300 @@
+<script setup>
+import { ref, computed, defineProps } from 'vue';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+
+import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
+import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
+import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
+import TrashIcon from '../../../icons/TrashIcon.vue';
+
+const props = defineProps({
+  frontendVersion: {
+    type: [Object, null],
+    required: true
+  },
+  frontendVersionIndex: {
+    type: Number,
+    required: true,
+  },
+  contractAddress: {
+    type: String,
+    required: true,
+  },
+  chainId: {
+    type: Number,
+    required: true,
+  },
+  websiteClient: {
+    type: [Object, null],
+    required: true,
+  },
+})
+
+const queryClient = useQueryClient()
+
+// Add new proxied website
+const showNewProxiedWebsiteForm = ref(false)
+const additionLocalPrefix = ref('')
+const additionRemoteAddress = ref('')
+const additionRemotePrefix = ref('')
+const preNewProxiedWebsiteError = ref('')
+const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset } = useMutation({
+  mutationFn: async () => {
+    // Prepare the transaction
+    const transaction = await props.websiteClient.prepareAddProxiedWebsiteToFrontendTransaction(props.frontendVersionIndex, additionLocalPrefix.value, additionRemoteAddress.value, additionRemotePrefix.value);
+
+    const hash = await props.websiteClient.executeTransaction(transaction);
+
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    additionLocalPrefix.value = ""
+    additionRemoteAddress.value = ""
+    additionRemotePrefix.value = ""
+    showNewProxiedWebsiteForm.value = false
+
+    // Refresh the frontend version
+    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+  }
+})
+const additionFile = async () => {
+  preNewProxiedWebsiteError.value = ''
+
+  // Check if additionRemoteAddress is the right format (ethereum address)
+  if(additionRemoteAddress.value.match(/^0x[a-fA-F0-9]{40}$/) == null) {
+    preNewProxiedWebsiteError.value = 'The remote address is not a valid hexadecimal address ("0x...")'
+    return
+  }
+
+  additionMutate()
+}
+
+// Remove new proxied website
+const { isPending: removeIsPending, isError: removeIsError, error: removeError, isSuccess: removeIsSuccess, mutate: removeMutate, reset: removeReset, variables: removeVariables } = useMutation({
+  mutationFn: async (proxiedWebsiteIndex) => {
+
+    // Prepare the transaction
+    const transaction = await props.websiteClient.prepareRemoveProxiedWebsiteFromFrontendTransaction(props.frontendVersionIndex, proxiedWebsiteIndex);
+
+    const hash = await props.websiteClient.executeTransaction(transaction);
+
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    // Refresh the frontend version
+    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+  }
+})
+const removeFile = async (proxiedWebsiteIndex) => {
+  removeMutate(proxiedWebsiteIndex)
+}
+</script>
+
+<template>
+  <div>
+    <div class="title">Mappings to external websites <small class="text-muted" style="font-weight: normal; font-size:0.7em;">Local files have priority</small></div>
+    
+    <div class="table-header">
+      <div>
+        Local path
+      </div>
+      <div>
+        
+      </div>
+      <div>
+        Destination
+      </div>
+      <div>
+
+      </div>
+    </div>
+
+    <div v-if="frontendVersion" v-for="(proxiedWebsite, proxiedWebsiteIndex) in frontendVersion.proxiedWebsites">
+      <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == proxiedWebsiteIndex}">
+        <div>
+          /{{ proxiedWebsite.localPrefix.join('/') }}
+        </div>
+        <div>
+          <ArrowRightIcon />
+        </div>
+        <div class="text-80">
+          web3://{{ proxiedWebsite.website }}{{ chainId > 1 ? ':' + chainId : '' }}/{{ proxiedWebsite.remotePrefix.join('/') }}
+        </div>
+        <div style="text-align: right">
+          <a @click.stop.prevent="removeFile(proxiedWebsiteIndex)" class="white" v-if="removeIsPending == false">
+            <TrashIcon />
+          </a>
+          <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == proxiedWebsiteIndex" />
+        </div>
+      </div>
+
+      <div v-if="removeIsError && removeVariables == proxiedWebsiteIndex" class="mutation-error">
+        <span>
+          Error renaming the version: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
+        </span>
+      </div>
+    </div>
+    
+    <div v-if="frontendVersion && frontendVersion.proxiedWebsites.length == 0" class="no-entries">
+      No mappings
+    </div>
+
+
+    <div class="operations">
+      <div class="op-add-new">
+
+        <div class="button-area" @click="showNewProxiedWebsiteForm = !showNewProxiedWebsiteForm; preNewProxiedWebsiteError = ''">
+          <span class="button-text">
+            <PlusLgIcon />
+            Add new mapping
+          </span>
+        </div>
+        <div class="form-area" v-if="showNewProxiedWebsiteForm">
+          <span style="display: flex; align-items: center; gap: 0.2em;">
+            /
+            <input type="text" v-model="additionLocalPrefix" placeholder="Local path prefix" />
+          </span>
+          <ArrowRightIcon />
+          <span style="display: flex; align-items: center; gap: 0.2em;">
+            web3://
+            <input type="text" v-model="additionRemoteAddress" placeholder="Remote website address" />
+            <span style="display: flex">
+              <span v-if="chainId > 1">:{{ chainId }}</span>
+              /
+            </span>
+            <input type="text" v-model="additionRemotePrefix" placeholder="Remote path prefix" />
+          </span>
+
+          <div v-if="preNewProxiedWebsiteError" class="text-danger text-90">
+            <span>
+              {{ preNewProxiedWebsiteError }}
+            </span>
+          </div>
+
+          <button @click="additionFile" :disabled="additionRemoteAddress == '' || additionIsPending">Add mapping</button>
+
+          <div v-if="additionIsError" class="text-danger text-90">
+            Error adding the mapping: {{ additionError.shortMessage || additionError.message }}
+            <a @click.stop.prevent="additionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<style scoped>
+.settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-item {
+  margin: 1em;
+}
+
+.title {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 3fr 2em;
+  padding: 0.5em;
+  font-weight: bold;
+  border-bottom: 1px solid var(--color-divider-secondary);
+  background-color: var(--color-root-bg)
+}
+
+.table-header > div {
+  padding: 0em 0.5em;
+  word-break: break-all;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 3fr 2em;
+  padding: 0.5em;
+}
+
+.table-row > div {
+  padding: 0em 0.5em;
+  word-break: break-all;
+}
+
+.mutation-error {
+  padding: 0em 1em 0.5em 1em;
+  color: var(--color-text-danger);
+  line-height: 1em;
+}
+
+.mutation-error span {
+  font-size: 0.8em;
+}
+
+.mutation-error a {
+  color: var(--color-text-danger);
+  text-decoration: underline;
+}
+
+
+
+.operations {
+  display: flex;
+  gap: 1em;
+  margin-top: 1em;
+  align-items: flex-start;
+}
+@media (max-width: 700px) {
+  .operations {
+    flex-direction: column;
+  }
+}
+
+.operations .button-area {
+  text-align: center;
+  position: relative;
+  background-color: var(--color-input-bg);
+  border: 1px solid #555;
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+.operations .button-area .button-text {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  justify-content: center;
+}
+
+.operations .form-area {
+  border-left: 1px solid #555;
+  border-right: 1px solid #555;
+  border-bottom: 1px solid #555;
+  background-color: var(--color-popup-bg);
+  font-size: 0.9em;
+  padding: 0.75em 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.operations input {
+  max-width: 150px;
+}
+
+.delete-pending {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.no-entries {
+  padding: 1.5em;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+</style>
