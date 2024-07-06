@@ -64,20 +64,31 @@ const tokenSVGTemplateDataUrlForCSS = computed(() => {
 })
 
 // Copy the web3 address to the clipboard
+const showCopiedIndicator = ref(false)
 function copyWeb3AddressToClipboard() {
-  navigator.clipboard.writeText(`web3://${props.contractAddress}:${props.chainId}`)  
+  navigator.clipboard.writeText(`web3://${props.contractAddress}:${props.chainId}`)
+
+  // Show a success message
+  showCopiedIndicator.value = true
+  setTimeout(() => {
+    showCopiedIndicator.value = false
+  }, 1000)
 }
 </script>
 
 <template>
   <div :class="{ocwebsite: true, isOpened: isOpened}" @click="isOpened == false ? isOpened = true : null">
     <div class="header">
-      <div class="web3-address">
-        <a @click.stop.prevent="copyWeb3AddressToClipboard()">
-          web3://{{ contractAddress }}:{{ chainId }} <CopyIcon />
-        </a>
-      </div>
-      <XCircleIcon class="close" @click.stop="isOpened = false" />
+      <a @click.stop.prevent="copyWeb3AddressToClipboard()" :class="{'web3-address': true, copied: showCopiedIndicator}">
+        web3://{{ contractAddress }}:{{ chainId }} 
+        <CopyIcon />
+        <span class="copy-indicator">
+          Copied!
+        </span>
+      </a>
+      <a @click.stop.prevent="isOpened = false" class="white header-icon">
+        <XCircleIcon class="close"  />
+      </a>
     </div>
 
     <OCWebsiteEditor class="editor" :contractAddress :chainId v-if="isOpened" />
@@ -103,42 +114,71 @@ function copyWeb3AddressToClipboard() {
 
 .ocwebsite .header {
   height: 100px;
-  padding: 0px 15px;
   display: flex;
   justify-content: space-between;
-  gap: 1em;
-  align-items: center;
+  align-items: stretch;
   transition: height 0.5s;
 }
 
-.ocwebsite .web3-address {
-  flex: 1;
+.ocwebsite a.web3-address {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+
   font-weight: bold;
   visibility: hidden;
   opacity: 0;
   font-size: 1px;
-  transition: visibility 0.25s, opacity 0.25s, font-size 0.25s 0.25s;
+  transition: color 0.25s, visibility 0.25s, opacity 0.25s, font-size 0.25s 0.25s;
   cursor: pointer;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.ocwebsite .web3-address a {
   color: var(--color-text);
+  position: relative;
+  padding: 0.5em 1em;
 }
 
-.ocwebsite .web3-address a:hover {
+.ocwebsite a.web3-address:hover {
   background-color: rgb(255, 255, 255, 0.2);
+}
+
+.ocwebsite a.web3-address.copied {
+  color: transparent;
+  transition: color 0.25s;
+}
+
+.ocwebsite a.web3-address .copy-indicator {
+  color: var(--color-text);
+  position: absolute;
+  left: 50%;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.ocwebsite a.web3-address.copied .copy-indicator {
+  opacity: 1;
+  transition: opacity 0.25s;
+}
+
+.ocwebsite .header .header-icon {
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.5s, opacity 0.5s;
+  padding: 0.5em 1em;
+}
+
+.ocwebsite .header .header-icon:hover {
+  color: var(--color-text);
 }
 
 .ocwebsite .header svg.close {
   height: 25px;
   width: 25px;
   cursor: pointer;
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0.5s, opacity 0.5s;
 }
 
 .ocwebsite .editor {
@@ -177,10 +217,10 @@ function copyWeb3AddressToClipboard() {
   visibility: visible;
   opacity: 1;
   font-size: 1em;
-  transition: visibility 0.25s 0.25s, opacity 0.25s 0.25s, font-size 0.25s;
+  transition: color 0.25s, visibility 0.25s 0.25s, opacity 0.25s 0.25s, font-size 0.25s;
 }
 
-.ocwebsite.isOpened .header svg.close {
+.ocwebsite.isOpened .header .header-icon {
   visibility: visible;
   opacity: 1;
   transition: visibility 0.5s, opacity 0.5s;
