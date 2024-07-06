@@ -7,6 +7,8 @@ import { useLiveFrontendVersion, invalidateFrontendVersionQuery } from '../../..
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
+import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
+import CopyIcon from '../../../icons/CopyIcon.vue';
 
 const props = defineProps({
   frontendVersion: {
@@ -59,6 +61,18 @@ const urlWithEndingSlash = computed(() => {
   return url.value.length > 0 && url.value.endsWith('/') == false ? url.value + '/' : url.value
 })
 
+// Copy the web3 address to the clipboard
+const showCopiedIndicator = ref(false)
+function copyWeb3AddressToClipboard() {
+  navigator.clipboard.writeText(url.value)
+
+  // Show a success message
+  showCopiedIndicator.value = true
+  setTimeout(() => {
+    showCopiedIndicator.value = false
+  }, 1000)
+}
+
 
 // Set isViewable
 const { isPending: setIsViewableIsPending, isError: setIsViewableIsError, error: setIsViewableError, isSuccess: setIsViewableIsSuccess, mutate: setIsViewableMutate, reset: setIsViewableReset } = useMutation({
@@ -83,13 +97,22 @@ const setIsViewable = async () => {
 
 <template>
   <div>
-    <div class="url">
+    <div class="url-bar">
       <span v-if="frontendVersion != null && liveFrontendVersionLoaded && frontendIsLiveVersion == false && frontendVersion.isViewable == false" class="text-muted">
         Version not viewable
       </span>
-      <span v-else>
-        {{ url }}
-      </span>
+      <div v-else class="url-bar-with-url">
+        <a @click.stop.prevent="copyWeb3AddressToClipboard()" :class="{'url': true, copied: showCopiedIndicator}">
+          {{ url }}
+          <CopyIcon />
+          <span class="copy-indicator">
+            Copied!
+          </span>
+        </a>
+        <a :href="urlWithEndingSlash" target="_blank" class="white header-icon">
+          <BoxArrowUpRightIcon />
+        </a>
+      </div>
     </div>
     <div v-if="frontendVersion != null && liveFrontendVersionLoaded && frontendIsLiveVersion == false && frontendVersion.isViewable == false" class="version-not-viewable">
       <div style="padding: 1em; text-align: center; max-width: 70%;">
@@ -124,10 +147,56 @@ const setIsViewable = async () => {
 </template>
 
 <style scoped>
+.url-bar {
+  border-bottom: 1px solid #ccc;
+  background-color: var(--color-root-bg);
+}
+
+.url-bar-with-url {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
 .url {
+  display: block;
   padding: 0.5em 1em;
-  border-bottom: 1px solid #ccc;
+  color: var(--color-text);
+  transition: color 0.25s;
+  position: relative;
+}
+
+.url:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.url .copy-indicator {
+  color: var(--color-text);
+  position: absolute;
+  left: 50%;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.url.copied {
+  color: transparent;
+  transition: color 0.25s;
+}
+
+.url.copied .copy-indicator {
+  opacity: 1;
+  transition: opacity 0.25s;
+}
+
+.url-bar-with-url .header-icon {
+  padding: 0.25em 0.75em;
+  line-height: 1em;
+}
+
+.url-bar-with-url .header-icon svg {
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
 }
 
 .preview {
