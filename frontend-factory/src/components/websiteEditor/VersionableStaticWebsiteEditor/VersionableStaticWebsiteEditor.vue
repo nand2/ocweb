@@ -103,7 +103,13 @@ const showConfigPanel = ref(false)
       :chainId 
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'files'" />
-    <PreviewTab :contractAddress :chainId class="tab" v-show="activeTab == 'preview'" />
+    <PreviewTab 
+      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
+      :frontendVersionIndex="frontendVersionBeingEditedIndex"
+      :contractAddress 
+      :chainId 
+      :websiteClient="websiteClient"
+      class="tab" v-show="activeTab == 'preview'" />
     <SettingsTab 
       :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
       :frontendVersionIndex="frontendVersionBeingEditedIndex"
