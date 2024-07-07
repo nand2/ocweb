@@ -60,7 +60,11 @@ const props = defineProps({
 }
 
 .settings-item {
-  margin: 1em;
+  padding: 1em;
+}
+
+.settings-item + .settings-item {
+  border-top: 1px solid var(--color-divider-secondary);
 }
 
 .title {
