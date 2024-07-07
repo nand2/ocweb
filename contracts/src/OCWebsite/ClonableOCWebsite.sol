@@ -42,7 +42,7 @@ contract ClonableOCWebsite is OCWebsite {
 
         // Add the first frontend version
         if(address(firstFrontendVersionStorageBackend) != address(0)) {
-            _addFrontendVersion(firstFrontendVersionStorageBackend, "Initial version");
+            getFrontendLibrary().addFrontendVersion(firstFrontendVersionStorageBackend, "Initial version");
 
             // Add the plugins
             for(uint i = 0; i < _preStaticContentplugins.length; i++) {

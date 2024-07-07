@@ -51,10 +51,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param _description A description of the frontend version
      */
     function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwnerOrSelf frontendLibraryUnlocked {
-        _addFrontendVersion(storageBackend, _description);
-    }
-
-    function _addFrontendVersion(IStorageBackend storageBackend, string memory _description) internal {
         frontendVersions.push();
         FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
         newFrontend.storageBackend = storageBackend;

@@ -115,7 +115,6 @@ const removeItem = async (key) => {
 
 <template>
   <div>
-    <div class="title">Injected variables <small class="text-muted" style="font-weight: normal; font-size:0.7em;">Accessible via the /variables.json path</small></div>
     
     <div class="table-header">
       <div>
@@ -212,20 +211,9 @@ const removeItem = async (key) => {
 </template>
 
 <style scoped>
-.settings {
-  display: flex;
-  flex-direction: column;
-}
 
-.settings-item {
-  margin: 1em;
-}
 
-.title {
-  font-size: 1.1em;
-  font-weight: bold;
-  margin-bottom: 1em;
-}
+
 
 
 .table-header {

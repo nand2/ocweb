@@ -38,6 +38,13 @@ const props = defineProps({
 
 <template>
   <div>
+    <div class="title">
+      {{ pluginInfos.infos.title }}
+      <small v-if="pluginInfos.infos.subTitle" class="text-muted" style="font-weight: normal; font-size:0.7em;">
+        {{ pluginInfos.infos.subTitle }}
+      </small>
+    </div>
+
     <SettingsProxiedWebsites 
       v-if="pluginInfos.infos.name == 'proxiedWebsites'"
       :frontendVersion
@@ -62,3 +69,11 @@ const props = defineProps({
     </div>
   </div>
 </template>
+
+<style scoped>
+.title {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+</style>

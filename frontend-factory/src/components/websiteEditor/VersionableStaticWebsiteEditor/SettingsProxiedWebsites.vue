@@ -110,9 +110,7 @@ const removeItem = async (index) => {
 </script>
 
 <template>
-  <div>
-    <div class="title">Mappings to external websites <small class="text-muted" style="font-weight: normal; font-size:0.7em;">Local files have priority</small></div>
-    
+  <div>  
     <div class="table-header">
       <div>
         Local path
@@ -211,20 +209,7 @@ const removeItem = async (index) => {
 </template>
 
 <style scoped>
-.settings {
-  display: flex;
-  flex-direction: column;
-}
 
-.settings-item {
-  margin: 1em;
-}
-
-.title {
-  font-size: 1.1em;
-  font-weight: bold;
-  margin-bottom: 1em;
-}
 
 
 .table-header {
