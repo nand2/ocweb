@@ -53,7 +53,7 @@ contract InjectedVariablesPlugin is IVersionableStaticWebsitePlugin {
     }
 
     function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
-        require(website.owner() == msg.sender, "Not the owner");
+        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         KeyValueVariable[] storage vars = variables[website][fromFrontendIndex];
         for (uint i = 0; i < vars.length; i++) {
@@ -62,7 +62,7 @@ contract InjectedVariablesPlugin is IVersionableStaticWebsitePlugin {
     }
 
     function addVariable(IVersionableStaticWebsite website, uint frontendIndex, string memory key, string memory value) public {
-        require(website.owner() == msg.sender, "Not the owner");
+        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
         require(frontendLibrary.isLocked() == false, "Frontend library is locked");
@@ -87,7 +87,7 @@ contract InjectedVariablesPlugin is IVersionableStaticWebsitePlugin {
     }
 
     function removeVariable(IVersionableStaticWebsite website, uint frontendIndex, string memory key) public {
-        require(website.owner() == msg.sender, "Not the owner");
+        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
         require(frontendLibrary.isLocked() == false, "Frontend library is locked");

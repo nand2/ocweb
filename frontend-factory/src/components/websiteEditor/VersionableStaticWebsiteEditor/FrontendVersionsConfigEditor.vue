@@ -8,7 +8,7 @@ import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateFrontendVersionsQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions } from '../../../utils/queries';
 
 const props = defineProps({
   contractAddress: {
@@ -47,6 +47,10 @@ const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching
   enabled: contractAddressesLoaded,
 })
 
+// Get the list frontend versions
+const showEditedFrontendVersionSelector = ref(false)
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId)
+
 // Create frontendVersion
 const showNewFrontendVersionForm = ref(false)
 const newFrontendVersionDescription = ref("")
@@ -54,7 +58,7 @@ const newFrontendVersionStorageBackend = ref(null)
 const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddFrontendVersionTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value, -1);
+    const transaction = await props.websiteClient.prepareAddFrontendVersionAndCopyPluginsTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value, frontendVersionsData.value.totalCount - 1);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 

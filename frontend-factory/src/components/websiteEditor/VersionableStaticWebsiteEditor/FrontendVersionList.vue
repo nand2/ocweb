@@ -35,7 +35,7 @@ const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetchi
       Error loading frontend versions: {{ frontendVersionsError.message }}
     </div>
     <div v-else-if="frontendVersionsLoaded">
-      <div v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index">
+      <div v-for="(frontendVersion, index) in frontendVersionsData.versions" :key="index">
         <FrontendVersionListLine
           :frontendVersion="frontendVersion"
           :frontendVersionIndex="index"

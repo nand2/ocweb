@@ -68,7 +68,7 @@ contract ProxiedWebsitesPlugin is IVersionableStaticWebsitePlugin {
     }
 
     function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
-        require(website.owner() == msg.sender, "Not the owner");
+        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         ProxiedWebsite[] storage vars = proxiedWebsites[website][fromFrontendIndex];
         for (uint i = 0; i < vars.length; i++) {
@@ -77,7 +77,7 @@ contract ProxiedWebsitesPlugin is IVersionableStaticWebsitePlugin {
     }
 
     function addProxiedWebsite(IVersionableStaticWebsite website, uint frontendIndex, IDecentralizedApp proxiedWebsite, string[] memory localPrefix, string[] memory remotePrefix) public {
-        require(website.owner() == msg.sender, "Not the owner");
+        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
         require(frontendLibrary.isLocked() == false, "Frontend library is locked");
@@ -109,7 +109,7 @@ contract ProxiedWebsitesPlugin is IVersionableStaticWebsitePlugin {
     }
 
     function removeProxiedWebsite(IVersionableStaticWebsite website, uint frontendIndex, uint index) public {
-        require(website.owner() == msg.sender, "Not the owner");
+        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
         require(frontendLibrary.isLocked() == false, "Frontend library is locked");

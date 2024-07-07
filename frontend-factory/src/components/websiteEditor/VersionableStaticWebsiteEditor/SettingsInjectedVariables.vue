@@ -11,7 +11,7 @@ import TrashIcon from '../../../icons/TrashIcon.vue';
 
 const props = defineProps({
   frontendVersion: {
-    type: Object,
+    type: [Object, null],
     required: true
   },
   frontendVersionIndex: {
@@ -45,7 +45,7 @@ const injectedVariablesPluginClient = computed(() => {
 
 // Get variables
 const { data: injectedVariables, isLoading: injectedVariablesLoading, isFetching: injectedVariablesFetching, isError: injectedVariablesIsError, error: injectedVariablesError, isSuccess: injectedVariablesLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex],
+  queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
   queryFn: async () => {
     const result = await injectedVariablesPluginClient.value.getVariables(props.frontendVersionIndex);
     return result;

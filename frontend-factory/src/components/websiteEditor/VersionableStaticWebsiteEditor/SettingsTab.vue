@@ -35,16 +35,16 @@ const { switchChainAsync } = useSwitchChain()
 
 
 const { data: frontendVersionPluginsData, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useQuery({
-    queryKey: ['OCWebsiteFrontendVersionPlugins', props.contractAddress, props.chainId, computed(() => props.frontendIndex)],
+    queryKey: ['OCWebsiteFrontendVersionPlugins', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
     queryFn: async () => {
       // Switch chain if necessary
       await switchChainAsync({ chainId: props.chainId })
-  
+
       const result = await props.websiteClient.getFrontendVersionPlugins(props.frontendVersionIndex)
       return result;
     },
     staleTime: 3600 * 1000,
-    enabled: computed(() => props.websiteClientLoaded && props.frontendVersion != null),
+    enabled: computed(() => props.websiteClient != null && props.frontendVersionIndex >= 0),
   })
 
 </script>
@@ -59,7 +59,7 @@ const { data: frontendVersionPluginsData, isLoading: frontendVersionPluginsLoadi
         <span>Failed to load plugin infos: {{ frontendVersionPluginsError.shortMessage || frontendVersionPluginsError.message }}</span>
       </div>
     </div>
-    <div v-else class="settings">
+    <div v-else-if="frontendVersionPluginsLoaded" class="settings">
 
       <div v-for="pluginInfos in frontendVersionPluginsData.preStaticContentPlugins" :key="pluginInfos.plugin" class="settings-item">
         <SettingsPlugin

@@ -9,7 +9,7 @@ import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 
 const props = defineProps({
   frontendVersion: {
-    type: Object,
+    type: [Object, null],
     required: true
   },
   frontendVersionIndex: {

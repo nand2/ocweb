@@ -140,6 +140,29 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "contract IStorageBackend",
+        name: "storageBackend",
+        type: "address"
+      },
+      {
+        internalType: "string",
+        name: "_description",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "copyPluginsFromFrontendIndex",
+        type: "uint256"
+      }
+    ],
+    name: "addFrontendVersionAndCopyPlugins",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "frontendIndex",
         type: "uint256"

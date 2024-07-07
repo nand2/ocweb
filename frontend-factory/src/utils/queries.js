@@ -112,7 +112,10 @@ function useFrontendVersions(queryClient, contractAddress, chainId, condition) {
       await switchChainAsync({ chainId: chainId })
   
       const result = await websiteClient.value.getFrontendVersions(0, 0)
-      return result;
+      return {
+        versions: result[0],
+        totalCount: Number(result[1]),
+      };
     },
     staleTime: 3600 * 1000,
     enabled: computed(() => websiteClientLoaded.value && (condition ? condition.value : true)),

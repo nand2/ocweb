@@ -138,7 +138,7 @@ const showConfigPanel = ref(false)
                 Error loading frontend versions: {{ frontendVersionsError.message }}
               </span>
               <div v-else-if="frontendVersionsLoaded" class="entries">
-                <a v-for="(frontendVersion, index) in frontendVersionsData[0]" :key="index" class="bg entry" @click.prevent.stop="userSelectedFrontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
+                <a v-for="(frontendVersion, index) in frontendVersionsData.versions" :key="index" class="bg entry" @click.prevent.stop="userSelectedFrontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
                   Version #{{ index }}: 
                   {{ frontendVersion.description }}
                   <span class="badge" v-if="index == liveFrontendVersionData.frontendIndex">

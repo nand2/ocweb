@@ -11,7 +11,7 @@ import TrashIcon from '../../../icons/TrashIcon.vue';
 
 const props = defineProps({
   frontendVersion: {
-    type: Object,
+    type: [Object, null],
     required: true
   },
   frontendVersionIndex: {
@@ -45,7 +45,7 @@ const proxiedWebsitesPluginClient = computed(() => {
 
 // Get proxied websites
 const { data: proxiedWebsites, isLoading: proxiedWebsitesLoading, isFetching: proxiedWebsitesFetching, isError: proxiedWebsitesIsError, error: proxiedWebsitesError, isSuccess: proxiedWebsitesLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex],
+  queryKey: ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
   queryFn: async () => {
     const result = await proxiedWebsitesPluginClient.value.getProxiedWebsites(props.frontendVersionIndex);
     return result;

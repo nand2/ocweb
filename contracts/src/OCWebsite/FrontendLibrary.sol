@@ -22,6 +22,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
 
     ClonableFrontendVersionViewer public frontendVersionViewerImplementation;
 
+    modifier onlyOwnerOrSelf() {
+        if(msg.sender != owner && msg.sender != address(this)) {
+            revert Unauthorized();
+        }
+        _;
+    }
+
 
     //
     // IFrontendLibrary implementation
@@ -43,7 +50,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param storageBackend Address of the storage backend
      * @param _description A description of the frontend version
      */
-    function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwner frontendLibraryUnlocked {
+    function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwnerOrSelf frontendLibraryUnlocked {
         _addFrontendVersion(storageBackend, _description);
     }
 

@@ -33,6 +33,34 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
     }
 
 
+    /**
+     * Add a new frontend version, copy the plugins and settings
+     * @param storageBackend Address of the storage backend
+     * @param _description A description of the frontend version
+     */
+    function addFrontendVersionAndCopyPlugins(IStorageBackend storageBackend, string memory _description, uint frontendVersionIndexToCopyFrom) public onlyOwner {
+        // Check that the frontend version to copy from exists
+        require(frontendVersionIndexToCopyFrom < getFrontendLibrary().getFrontendVersionCount(), "Invalid index");
+
+        // Add the frontend version
+        getFrontendLibrary().addFrontendVersion(storageBackend, _description);
+        
+        // Copy the plugins
+        uint newFrontendIndex = getFrontendLibrary().getFrontendVersionCount() - 1;
+        for(uint i = 0; i < preStaticContentplugins[frontendVersionIndexToCopyFrom].length; i++) {
+            preStaticContentplugins[newFrontendIndex].push(preStaticContentplugins[frontendVersionIndexToCopyFrom][i]);
+            preStaticContentplugins[newFrontendIndex][i].copyFrontendSettings(this, frontendVersionIndexToCopyFrom, newFrontendIndex);
+        }
+        for(uint i = 0; i < postStaticContentplugins[frontendVersionIndexToCopyFrom].length; i++) {
+            postStaticContentplugins[newFrontendIndex].push(postStaticContentplugins[frontendVersionIndexToCopyFrom][i]);
+            postStaticContentplugins[newFrontendIndex][i].copyFrontendSettings(this, frontendVersionIndexToCopyFrom, newFrontendIndex);
+        }
+    }
+
+    //
+    // Plugins
+    // 
+
     function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin, bool executeBeforeStaticContent) public override onlyOwner {
         if(executeBeforeStaticContent) {
             preStaticContentplugins[frontendIndex].push(plugin);
