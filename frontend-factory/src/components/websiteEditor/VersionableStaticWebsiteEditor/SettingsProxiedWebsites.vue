@@ -128,6 +128,13 @@ const removeItem = async (index) => {
       </div>
     </div>
 
+    <div v-if="proxiedWebsitesLoading" class="text-muted" style="text-align: center; margin: 1em;">
+      Loading...
+    </div>
+    <div v-if="proxiedWebsitesIsError" class="text-danger text-90" style="text-align: center; margin: 1em;">
+      Error loading the variables: {{ proxiedWebsitesError.shortMessage || proxiedWebsitesError.message }}
+    </div>
+
     <div v-if="proxiedWebsitesLoaded" v-for="(proxiedWebsite, index) in proxiedWebsites">
       <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == index}">
         <div>

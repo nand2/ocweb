@@ -129,7 +129,14 @@ const removeItem = async (key) => {
       </div>
     </div>
 
-    <div class="table-row">
+    <div v-if="injectedVariablesLoading" class="text-muted" style="text-align: center; margin: 1em;">
+      Loading...
+    </div>
+    <div v-if="injectedVariablesIsError" class="text-danger text-90" style="text-align: center; margin: 1em;">
+      Error loading the variables: {{ injectedVariablesError.shortMessage || injectedVariablesError.message }}
+    </div>
+
+    <div v-if="injectedVariablesLoaded" class="table-row">
       <div>
         <code>
           self
@@ -144,7 +151,7 @@ const removeItem = async (key) => {
       </div>
     </div>
 
-    <div v-for="(injectedVariable, index) in injectedVariables">
+    <div v-if="injectedVariablesLoaded" v-for="(injectedVariable, index) in injectedVariables">
       <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == injectedVariable.key}">
         <div>
           <code>
