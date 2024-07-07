@@ -6,6 +6,7 @@ import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
+import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
 
 const props = defineProps({
   frontendVersion: {
@@ -34,12 +35,19 @@ const props = defineProps({
   },
 })
 
+const openHomepage = () => {
+  window.open(props.pluginInfos.infos.homepage, '_blank');
+}
+
 </script>
 
 <template>
   <div>
     <div class="title">
       {{ pluginInfos.infos.title }}
+      <small v-if="pluginInfos.infos.version" style="font-size: 0.8em; margin-right: 0.25em">
+        {{ pluginInfos.infos.version }}
+      </small>
       <small v-if="pluginInfos.infos.subTitle" class="text-muted" style="font-weight: normal; font-size:0.7em;">
         {{ pluginInfos.infos.subTitle }}
       </small>
@@ -64,8 +72,14 @@ const props = defineProps({
       :pluginInfos />
 
     <div v-else>
-      {{ pluginInfos.infos.name }}
-      External plugin
+      <div v-if="pluginInfos.infos.homepage">
+        <button @click="openHomepage()" class="sm">Configure <BoxArrowUpRightIcon /></button>
+      </div>
+      <div v-else>
+        <div class="text-muted text-90">
+          The plugin did not provide an interface to configure it.
+        </div>
+      </div>
     </div>
   </div>
 </template>
