@@ -1,15 +1,17 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
 import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
+import { InjectedVariablesPluginClient } from '../../../../../src/plugins/injectedVariablesPluginClient.js';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
 
 const props = defineProps({
   frontendVersion: {
-    type: [Object, null],
+    type: Object,
     required: true
   },
   frontendVersionIndex: {
@@ -28,31 +30,49 @@ const props = defineProps({
     type: [Object, null],
     required: true,
   },
+  pluginInfos: {
+    type: Object,
+    required: true,
+  },
 })
 
 const queryClient = useQueryClient()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
 
-// Add new proxied website
-const showNewProxiedWebsiteForm = ref(false)
+const injectedVariablesPluginClient = computed(() => {
+  return viemClientLoaded.value ? new InjectedVariablesPluginClient(viemClient.value, props.contractAddress, props.pluginInfos.plugin) : null;
+})
+
+// Get variables
+const { data: injectedVariables, isLoading: injectedVariablesLoading, isFetching: injectedVariablesFetching, isError: injectedVariablesIsError, error: injectedVariablesError, isSuccess: injectedVariablesLoaded } = useQuery({
+  queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex],
+  queryFn: async () => {
+    const result = await injectedVariablesPluginClient.value.getVariables(props.frontendVersionIndex);
+    return result;
+  },
+  enabled: computed(() => injectedVariablesPluginClient.value != null),
+})
+
+// Add new var
+const showForm = ref(false)
 const additionName = ref('')
 const additionValue = ref('')
 const preAdditionError = ref('')
 const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddInjectedVariableToFrontendTransaction(props.frontendVersionIndex, additionName.value, additionValue.value);
+    const transaction = await injectedVariablesPluginClient.value.prepareAddVariableTransaction(props.frontendVersionIndex, additionName.value, additionValue.value);
 
-    const hash = await props.websiteClient.executeTransaction(transaction);
+    const hash = await injectedVariablesPluginClient.value.executeTransaction(transaction);
 
-    return await props.websiteClient.waitForTransactionReceipt(hash);
+    return await injectedVariablesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
     additionName.value = ""
     additionValue.value = ""
-    showNewProxiedWebsiteForm.value = false
+    showForm.value = false
 
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const additionFile = async () => {
@@ -65,7 +85,7 @@ const additionFile = async () => {
   }
 
   // Check that the name is not one of the existing
-  if (props.frontendVersion.injectedVariables.find(v => v.key == additionName.value)) {
+  if (injectedVariables.value.find(v => v.key == additionName.value)) {
     preAdditionError.value = "The name is already in use"
     return
   }
@@ -75,22 +95,21 @@ const additionFile = async () => {
 
 // Remove new proxied website
 const { isPending: removeIsPending, isError: removeIsError, error: removeError, isSuccess: removeIsSuccess, mutate: removeMutate, reset: removeReset, variables: removeVariables } = useMutation({
-  mutationFn: async (index) => {
+  mutationFn: async (key) => {
 
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareRemoveInjectedVariableFromFrontendTransaction(props.frontendVersionIndex, index);
+    const transaction = await injectedVariablesPluginClient.value.prepareRemoveVariableTransaction(props.frontendVersionIndex, key);
 
-    const hash = await props.websiteClient.executeTransaction(transaction);
+    const hash = await injectedVariablesPluginClient.value.executeTransaction(transaction);
 
-    return await props.websiteClient.waitForTransactionReceipt(hash);
+    return await injectedVariablesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
-const removeItem = async (index) => {
-  removeMutate(index)
+const removeItem = async (key) => {
+  removeMutate(key)
 }
 </script>
 
@@ -125,8 +144,8 @@ const removeItem = async (index) => {
       </div>
     </div>
 
-    <div v-if="frontendVersion" v-for="(injectedVariable, index) in frontendVersion.injectedVariables">
-      <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == index}">
+    <div v-for="(injectedVariable, index) in injectedVariables">
+      <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == injectedVariable.key}">
         <div>
           <code>
             {{ injectedVariable.key }}
@@ -138,16 +157,16 @@ const removeItem = async (index) => {
           </code>
         </div>
         <div style="text-align: right">
-          <a @click.stop.prevent="removeItem(index)" class="white" v-if="removeIsPending == false">
+          <a @click.stop.prevent="removeItem(injectedVariable.key)" class="white" v-if="removeIsPending == false">
             <TrashIcon />
           </a>
-          <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == index" />
+          <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == injectedVariable.key" />
         </div>
       </div>
 
-      <div v-if="removeIsError && removeVariables == index" class="mutation-error">
+      <div v-if="removeIsError && removeVariables == injectedVariable.key" class="mutation-error">
         <span>
-          Error renaming the version: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
+          Error removing the version: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
         </span>
       </div>
     </div>
@@ -156,13 +175,13 @@ const removeItem = async (index) => {
     <div class="operations">
       <div class="op-add-new">
 
-        <div class="button-area" @click="showNewProxiedWebsiteForm = !showNewProxiedWebsiteForm; preAdditionError = ''">
+        <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">
           <span class="button-text">
             <PlusLgIcon />
             Add new variable
           </span>
         </div>
-        <div class="form-area" v-if="showNewProxiedWebsiteForm">
+        <div class="form-area" v-if="showForm">
           <input type="text" v-model="additionName" placeholder="Name" />
           <input type="text" v-model="additionValue" placeholder="Value" />
 

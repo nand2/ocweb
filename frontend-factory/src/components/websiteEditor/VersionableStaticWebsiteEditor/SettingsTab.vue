@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useSwitchChain, useAccount } from '@wagmi/vue'
 
 import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
+import SettingsPlugin from './SettingsPlugin.vue';
 
 const props = defineProps({
   frontendVersion: {
@@ -29,26 +31,56 @@ const props = defineProps({
   },
 })
 
+const { switchChainAsync } = useSwitchChain()
+
+
+const { data: frontendVersionPluginsData, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useQuery({
+    queryKey: ['OCWebsiteFrontendVersionPlugins', props.contractAddress, props.chainId, computed(() => props.frontendIndex)],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: props.chainId })
+  
+      const result = await props.websiteClient.getFrontendVersionPlugins(props.frontendVersionIndex)
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: computed(() => props.websiteClientLoaded && props.frontendVersion != null),
+  })
 
 </script>
 
 <template>
-  <div class="settings">
-    <div class="settings-item" style="flex:0 0 60%">
-      <SettingsProxiedWebsites 
-        :frontendVersion
-        :frontendVersionIndex
-        :contractAddress
-        :chainId
-        :websiteClient />
+  <div>
+    <div v-if="frontendVersionPluginsLoading" style="text-align: center; margin: 2em;">
+      Loading plugin infos...
     </div>
-    <div class="settings-item">
-      <SettingsInjectedVariables
-        :frontendVersion
-        :frontendVersionIndex
-        :contractAddress
-        :chainId
-        :websiteClient />
+    <div v-else-if="frontendVersionPluginsIsError">
+      <div class="text-danger text-90" style="text-align: center; margin: 2em;">
+        <span>Failed to load plugin infos: {{ frontendVersionPluginsError.shortMessage || frontendVersionPluginsError.message }}</span>
+      </div>
+    </div>
+    <div v-else class="settings">
+
+      <div v-for="pluginInfos in frontendVersionPluginsData.preStaticContentPlugins" :key="pluginInfos.plugin" class="settings-item">
+        <SettingsPlugin
+          :frontendVersion
+          :frontendVersionIndex
+          :contractAddress
+          :chainId
+          :websiteClient 
+          :pluginInfos="pluginInfos" />
+      </div>
+
+      <div v-for="pluginInfos in frontendVersionPluginsData.postStaticContentPlugins" :key="pluginInfos.plugin" class="settings-item">
+        <SettingsPlugin
+          :frontendVersion
+          :frontendVersionIndex
+          :contractAddress
+          :chainId
+          :websiteClient 
+          :pluginInfos="pluginInfos" />
+      </div>
+
     </div>
   </div>
 </template>
@@ -74,48 +106,6 @@ const props = defineProps({
 }
 
 
-.table-header {
-  display: grid;
-  grid-template-columns: 1fr 0.5fr 3fr 2em;
-  padding: 0.5em;
-  font-weight: bold;
-  border-bottom: 1px solid var(--color-divider-secondary);
-  background-color: var(--color-root-bg)
-}
-
-.table-header > div {
-  padding: 0em 0.5em;
-  word-break: break-all;
-}
-
-.table-row {
-  display: grid;
-  grid-template-columns: 1fr 0.5fr 3fr 2em;
-  padding: 0.5em;
-}
-
-.table-row > div {
-  padding: 0em 0.5em;
-  word-break: break-all;
-}
-
-.mutation-error {
-  padding: 0em 1em 0.5em 1em;
-  color: var(--color-text-danger);
-  line-height: 1em;
-}
-
-.mutation-error span {
-  font-size: 0.8em;
-}
-
-.mutation-error a {
-  color: var(--color-text-danger);
-  text-decoration: underline;
-}
-
-
-
 .operations {
   display: flex;
   gap: 1em;
@@ -126,43 +116,6 @@ const props = defineProps({
   .operations {
     flex-direction: column;
   }
-}
-
-.operations .button-area {
-  text-align: center;
-  position: relative;
-  background-color: var(--color-input-bg);
-  border: 1px solid #555;
-  padding: 0.5em 1em;
-  cursor: pointer;
-}
-
-.operations .button-area .button-text {
-  display: flex;
-  gap: 0.5em;
-  align-items: center;
-  justify-content: center;
-}
-
-.operations .form-area {
-  border-left: 1px solid #555;
-  border-right: 1px solid #555;
-  border-bottom: 1px solid #555;
-  background-color: var(--color-popup-bg);
-  font-size: 0.9em;
-  padding: 0.75em 1em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-
-.operations input {
-  max-width: 150px;
-}
-
-.delete-pending {
-  opacity: 0.5;
-  text-decoration: line-through;
 }
 
 .no-entries {

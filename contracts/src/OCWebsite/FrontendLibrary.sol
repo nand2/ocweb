@@ -42,21 +42,9 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Add a new frontend version
      * @param storageBackend Address of the storage backend
      * @param _description A description of the frontend version
-     * @param settingsCopiedFromFrontendVersionIndex If > 0, copy static contract addresses and proxied websites from this frontend version
      */
-    function addFrontendVersion(IStorageBackend storageBackend, string memory _description, int settingsCopiedFromFrontendVersionIndex) public onlyOwner frontendLibraryUnlocked {
+    function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwner frontendLibraryUnlocked {
         _addFrontendVersion(storageBackend, _description);
-
-        if(settingsCopiedFromFrontendVersionIndex >= 0) {
-            if(uint(settingsCopiedFromFrontendVersionIndex) >= frontendVersions.length) {
-                revert FrontendIndexOutOfBounds();
-            }
-            FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
-            FrontendFilesSet storage sourceFrontend = frontendVersions[uint(settingsCopiedFromFrontendVersionIndex)];
-            
-            newFrontend.injectedVariables = sourceFrontend.injectedVariables;
-            newFrontend.proxiedWebsites = sourceFrontend.proxiedWebsites;
-        }
     }
 
     function _addFrontendVersion(IStorageBackend storageBackend, string memory _description) internal {
@@ -67,6 +55,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
 
         newFrontend.viewer = IDecentralizedApp(Clones.clone(address(frontendVersionViewerImplementation)));
         ClonableFrontendVersionViewer(address(newFrontend.viewer)).initialize(IDecentralizedApp(address(this)), frontendVersions.length - 1);
+    }
+
+    /**
+     * Get the number of frontend versions
+     */
+    function getFrontendVersionCount() external view returns (uint) {
+        return frontendVersions.length;
     }
 
     /**
@@ -337,98 +332,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     }
 
     /**
-     * Add an injected variable to a frontend version, which will be served at the /variables.json URL
-     * @param frontendIndex The index of the frontend version
-     * @param key The key of the variable
-     * @param value The value of the variable
-     */
-    function addInjectedVariableToFrontend(uint256 frontendIndex, string memory key, string memory value) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
-            revert FrontendIndexOutOfBounds();
-        }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        if(frontend.locked) {
-            revert FrontendVersionLocked();
-        }
-
-        // Reserved keys
-        if(LibStrings.compare(key, "self")) {
-            revert ContractAddressNameReserved();
-        }
-        // Ensure the key was not used yet
-        for(uint i = 0; i < frontend.injectedVariables.length; i++) {
-            if(LibStrings.compare(frontend.injectedVariables[i].key, key)) {
-                revert ContractAddressNameAlreadyUsed();
-            }
-        }
-
-        frontend.injectedVariables.push(KeyValueVariable(key, value));
-    }
-
-    /**
-     * Remove an injected variable from a frontend version
-     * @param frontendIndex The index of the frontend version
-     * @param index The index of the injected variable to remove
-     */
-    function removeInjectedVariableFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
-            revert FrontendIndexOutOfBounds();
-        }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        if(frontend.locked) {
-            revert FrontendVersionLocked();
-        }
-
-        if(index >= frontend.injectedVariables.length) {
-            revert IndexOutOfBounds();
-        }
-
-        frontend.injectedVariables[index] = frontend.injectedVariables[frontend.injectedVariables.length - 1];
-        frontend.injectedVariables.pop();
-    }
-
-    /**
-     * Add a proxied website to a frontend version
-     * @param frontendIndex The index of the frontend version
-     * @param website The website to proxy
-     * @param localPrefix The proxy behavior will be at our local path /{localPrefix}/...
-     * @param remotePrefix We will call the proxy at the remote path /{remotePrefix}/...
-     */
-    function addProxiedWebsiteToFrontend(uint256 frontendIndex, IDecentralizedApp website, string[] memory localPrefix, string[] memory remotePrefix) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
-            revert FrontendIndexOutOfBounds();
-        }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        if(frontend.locked) {
-            revert FrontendVersionLocked();
-        }
-
-        frontend.proxiedWebsites.push(ProxiedWebsite(website, localPrefix, remotePrefix));
-    }
-
-    /**
-     * Remove a proxied website from a frontend version
-     * @param frontendIndex The index of the frontend version
-     * @param index The index of the proxied website to remove
-     */
-    function removeProxiedWebsiteFromFrontend(uint256 frontendIndex, uint index) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
-            revert FrontendIndexOutOfBounds();
-        }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
-        if(frontend.locked) {
-            revert FrontendVersionLocked();
-        }
-
-        if(index >= frontend.proxiedWebsites.length) {
-            revert IndexOutOfBounds();
-        }
-
-        frontend.proxiedWebsites[index] = frontend.proxiedWebsites[frontend.proxiedWebsites.length - 1];
-        frontend.proxiedWebsites.pop();
-    }
-
-    /**
      * Enable/disable the viewing of a non-live frontend version
      * @param frontendIndex The index of the frontend version
      * @param enable Enable or disable the viewer
@@ -459,8 +362,15 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     /**
      * Lock the whole frontend library
      */
-    function lockFrontendLibrary() public onlyOwner {
+    function lock() public onlyOwner {
         frontendLibraryLocked = true;
+    }
+
+    /**
+     * Is the frontend library locked?
+     */
+    function isLocked() public view returns (bool) {
+        return frontendLibraryLocked;
     }
 
 

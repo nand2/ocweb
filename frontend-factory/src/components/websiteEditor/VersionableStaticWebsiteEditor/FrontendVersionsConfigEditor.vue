@@ -77,7 +77,7 @@ const showGlobalLockForm = ref(false)
 const { isPending: globalLockIsPending, isError: globalLockIsError, error: globalLockError, isSuccess: globalLockIsSuccess, mutate: globalLockMutate, reset: globalLockReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareLockFrontendLibraryTransaction();
+    const transaction = await props.websiteClient.prepareLockTransaction();
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 

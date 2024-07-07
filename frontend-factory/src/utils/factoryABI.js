@@ -2,44 +2,119 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IStorageBackend",
-        name: "firstFrontendVersionStorageBackend",
-        type: "address"
+        internalType: "bytes",
+        name: "font",
+        type: "bytes"
       }
     ],
-    name: "mintWebsite",
-    outputs: [
+    stateMutability: "nonpayable",
+    type: "constructor"
+  },
+  {
+    inputs: [
       {
-        internalType: "contract ClonableOCWebsite",
-        name: "",
+        internalType: "contract OCWebsiteFactory",
+        name: "_websiteFactory",
         type: "address"
       }
     ],
-    stateMutability: "payable",
+    name: "setWebsiteFactory",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function"
   },
   {
-    inputs: [],
-    name: "getStorageBackends",
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      }
+    ],
+    name: "tokenSVG",
     outputs: [
       {
-        components: [
-          {
-            internalType: "contract IStorageBackend",
-            name: "storageBackend",
-            type: "address"
-          },
-          {
-            internalType: "string",
-            name: "name",
-            type: "string"
-          }
-        ],
-        internalType: "struct IStorageBackendLibrary.IStorageBackendWithName[]",
+        internalType: "string",
         name: "",
-        type: "tuple[]"
+        type: "string"
       }
     ],
     stateMutability: "view",
     type: "function"
-  }];
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "addressStrPart1",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "addressStrPart2",
+        type: "string"
+      }
+    ],
+    name: "tokenSVGByVars",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      }
+    ],
+    name: "tokenURI",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      }
+    ],
+    name: "tokenWeb3Address",
+    outputs: [
+      {
+        internalType: "string",
+        name: "web3Address",
+        type: "string"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "websiteFactory",
+    outputs: [
+      {
+        internalType: "contract OCWebsiteFactory",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  }
+];

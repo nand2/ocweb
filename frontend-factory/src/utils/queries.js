@@ -129,5 +129,6 @@ export {
   useVersionableStaticWebsiteClient, 
   useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, 
   invalidateFrontendVersionQuery,
-  useFrontendVersions, invalidateFrontendVersionsQuery}
+  useFrontendVersions, invalidateFrontendVersionsQuery,
+}
 

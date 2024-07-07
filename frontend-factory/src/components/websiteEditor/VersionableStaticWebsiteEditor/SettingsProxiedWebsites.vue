@@ -1,15 +1,17 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
 import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
+import { ProxiedWebsitesPluginClient } from '../../../../../src/plugins/proxiedWebsitesPluginClient.js';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
 
 const props = defineProps({
   frontendVersion: {
-    type: [Object, null],
+    type: Object,
     required: true
   },
   frontendVersionIndex: {
@@ -28,12 +30,31 @@ const props = defineProps({
     type: [Object, null],
     required: true,
   },
+  pluginInfos: {
+    type: Object,
+    required: true,
+  },
 })
 
 const queryClient = useQueryClient()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+const proxiedWebsitesPluginClient = computed(() => {
+  return viemClientLoaded.value ? new ProxiedWebsitesPluginClient(viemClient.value, props.contractAddress, props.pluginInfos.plugin) : null;
+})
+
+// Get proxied websites
+const { data: proxiedWebsites, isLoading: proxiedWebsitesLoading, isFetching: proxiedWebsitesFetching, isError: proxiedWebsitesIsError, error: proxiedWebsitesError, isSuccess: proxiedWebsitesLoaded } = useQuery({
+  queryKey: ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex],
+  queryFn: async () => {
+    const result = await proxiedWebsitesPluginClient.value.getProxiedWebsites(props.frontendVersionIndex);
+    return result;
+  },
+  enabled: computed(() => proxiedWebsitesPluginClient.value != null),
+})
 
 // Add new proxied website
-const showNewProxiedWebsiteForm = ref(false)
+const showForm = ref(false)
 const additionLocalPrefix = ref('')
 const additionRemoteAddress = ref('')
 const additionRemotePrefix = ref('')
@@ -41,20 +62,19 @@ const preAdditionError = ref('')
 const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddProxiedWebsiteToFrontendTransaction(props.frontendVersionIndex, additionLocalPrefix.value, additionRemoteAddress.value, additionRemotePrefix.value);
+    const transaction = await proxiedWebsitesPluginClient.value.prepareAddProxiedWebsiteTransaction(props.frontendVersionIndex, additionLocalPrefix.value, additionRemoteAddress.value, additionRemotePrefix.value);
 
-    const hash = await props.websiteClient.executeTransaction(transaction);
+    const hash = await proxiedWebsitesPluginClient.value.executeTransaction(transaction);
 
-    return await props.websiteClient.waitForTransactionReceipt(hash);
+    return await proxiedWebsitesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
     additionLocalPrefix.value = ""
     additionRemoteAddress.value = ""
     additionRemotePrefix.value = ""
-    showNewProxiedWebsiteForm.value = false
+    showForm.value = false
 
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const additionFile = async () => {
@@ -74,15 +94,14 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
   mutationFn: async (index) => {
 
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareRemoveProxiedWebsiteFromFrontendTransaction(props.frontendVersionIndex, index);
+    const transaction = await proxiedWebsitesPluginClient.value.prepareRemoveProxiedWebsiteTransaction(props.frontendVersionIndex, index);
 
-    const hash = await props.websiteClient.executeTransaction(transaction);
+    const hash = await proxiedWebsitesPluginClient.value.executeTransaction(transaction);
 
-    return await props.websiteClient.waitForTransactionReceipt(hash);
+    return await proxiedWebsitesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const removeItem = async (index) => {
@@ -109,7 +128,7 @@ const removeItem = async (index) => {
       </div>
     </div>
 
-    <div v-if="frontendVersion" v-for="(proxiedWebsite, index) in frontendVersion.proxiedWebsites">
+    <div v-if="proxiedWebsitesLoaded" v-for="(proxiedWebsite, index) in proxiedWebsites">
       <div :class="{'table-row': true, 'delete-pending': removeIsPending && removeVariables == index}">
         <div>
           /{{ proxiedWebsite.localPrefix.join('/') }}
@@ -135,7 +154,7 @@ const removeItem = async (index) => {
       </div>
     </div>
     
-    <div v-if="frontendVersion && frontendVersion.proxiedWebsites.length == 0" class="no-entries">
+    <div v-if="proxiedWebsitesLoaded && proxiedWebsites.length == 0" class="no-entries">
       No mappings
     </div>
 
@@ -143,13 +162,13 @@ const removeItem = async (index) => {
     <div class="operations">
       <div class="op-add-new">
 
-        <div class="button-area" @click="showNewProxiedWebsiteForm = !showNewProxiedWebsiteForm; preAdditionError = ''">
+        <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">
           <span class="button-text">
             <PlusLgIcon />
             Add new mapping
           </span>
         </div>
-        <div class="form-area" v-if="showNewProxiedWebsiteForm">
+        <div class="form-area" v-if="showForm">
           <span style="display: flex; align-items: center; gap: 0.2em;">
             /
             <input type="text" v-model="additionLocalPrefix" placeholder="Local path prefix" />

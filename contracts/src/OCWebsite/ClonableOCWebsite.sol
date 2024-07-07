@@ -29,7 +29,7 @@ contract ClonableOCWebsite is OCWebsite {
      * @param _owner The owner of the website
      * @param _ownershipController The controller of the ownership. Can be null.
      */
-    function initialize(address _owner, address _ownershipController, ClonableFrontendVersionViewer _frontendViewerImplementation, IStorageBackend firstFrontendVersionStorageBackend) public {
+    function initialize(address _owner, address _ownershipController, ClonableFrontendVersionViewer _frontendViewerImplementation, IStorageBackend firstFrontendVersionStorageBackend, IVersionableStaticWebsitePlugin[] memory _preStaticContentplugins, IVersionableStaticWebsitePlugin[] memory _postStaticContentplugins) public {
         if(owner != address(0)) {
             revert AlreadyInitialized();
         }
@@ -43,6 +43,14 @@ contract ClonableOCWebsite is OCWebsite {
         // Add the first frontend version
         if(address(firstFrontendVersionStorageBackend) != address(0)) {
             _addFrontendVersion(firstFrontendVersionStorageBackend, "Initial version");
+
+            // Add the plugins
+            for(uint i = 0; i < _preStaticContentplugins.length; i++) {
+                preStaticContentplugins[0].push(_preStaticContentplugins[i]);
+            }
+            for(uint i = 0; i < _postStaticContentplugins.length; i++) {
+                postStaticContentplugins[0].push(_postStaticContentplugins[i]);
+            }
         }
     }
 
@@ -52,7 +60,7 @@ contract ClonableOCWebsite is OCWebsite {
      * can transfer the ownership.
      * @param _newOwner The new owner of the website
      */
-    function transferOwnership(address _newOwner) public override onlyOwnershipControllerOrOwnerIfNotSet {
+    function transferOwnership(address _newOwner) public override(Ownable, IOwnable) onlyOwnershipControllerOrOwnerIfNotSet {
         if(_newOwner == address(0)) {
             revert InvalidNewOwner();
         }

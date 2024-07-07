@@ -18,7 +18,8 @@ interface IFrontendLibrary {
     error ContractAddressNameAlreadyUsed();
 
     // Add/get/remove frontend versions
-    function addFrontendVersion(IStorageBackend storageBackend, string memory description, int settingsCopiedFromFrontendVersionIndex) external;
+    function addFrontendVersion(IStorageBackend storageBackend, string memory description) external;
+    function getFrontendVersionCount() external view returns (uint);
     function getFrontendVersions(uint startIndex, uint count) external view returns (FrontendFilesSet[] memory, uint totalCount);
     function getFrontendVersion(uint256 frontendIndex) external view returns (FrontendFilesSet memory);
     function renameFrontendVersion(uint256 frontendIndex, string memory newDescription) external;
@@ -55,19 +56,12 @@ interface IFrontendLibrary {
     function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) external;
     function removeAllFilesFromFrontendVersion(uint256 frontendIndex) external;
 
-    // Add/remove variables served at /variables.json 
-    function addInjectedVariableToFrontend(uint256 frontendIndex, string memory key, string memory value) external;
-    function removeInjectedVariableFromFrontend(uint256 frontendIndex, uint index) external;
-
-    // Add/remove proxied websites
-    function addProxiedWebsiteToFrontend(uint256 frontendIndex, IDecentralizedApp website, string[] memory localPrefix, string[] memory remotePrefix) external;
-    function removeProxiedWebsiteFromFrontend(uint256 frontendIndex, uint index) external;
-
     // Enable/disable the viewer, for a frontend version which is not the live one
     function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) external;
 
     // Lock a frontend version: It won't be editable anymore, and cannot be deleted
     function lockFrontendVersion(uint256 frontendIndex) external;
     // Lock the whole frontend library
-    function lockFrontendLibrary() external;
+    function lock() external;
+    function isLocked() external view returns (bool);
 }

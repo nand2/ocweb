@@ -36,18 +36,6 @@ struct FileInfos {
     IStorageBackend storageBackend;
 }
 
-struct ProxiedWebsite {
-    // An web3:// resource request mode website, cf ERC-6944 / ERC-5219
-    IDecentralizedApp website;
-    string[] localPrefix;
-    string[] remotePrefix;
-}
-
-struct KeyValueVariable {
-    string key;
-    string value;
-}
-
 // A set of files making a full frontend, containing static files
 // The whole frontend share the same storage backend
 struct FrontendFilesSet {
@@ -59,14 +47,6 @@ struct FrontendFilesSet {
 
     // Description of the frontend
     string description;
-
-    // A list of injected key/value that can be used by the frontend
-    // which will be served by the /variables.json URL
-    KeyValueVariable[] injectedVariables;
-
-    // A list of websites that can be proxied by this frontend
-    // They will be called once no file is found in the frontend
-    ProxiedWebsite[] proxiedWebsites;
 
     // When not the live version, a frontend version can be viewed by this address,
     // which is a clone of a cheap proxy contract

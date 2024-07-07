@@ -36,6 +36,8 @@ import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
 import { ClonableFrontendVersionViewer } from "../src/OCWebsite/ClonableFrontendVersionViewer.sol";
 import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
 import { LibStrings } from "../src/library/LibStrings.sol";
+import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariablesPlugin.sol";
+import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
 
 contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -85,29 +87,31 @@ contract OCWebsiteFactoryScript is Script {
 
         OCWebsiteFactory factory;
         {
-            // Create the factory token
-            OCWebsiteFactoryToken factoryToken = new OCWebsiteFactoryToken(vm.readFileBinary("assets/IBMPlexMono-Regular-subset.woff2"));
+            {
+                // Create the factory token
+                OCWebsiteFactoryToken factoryToken = new OCWebsiteFactoryToken(vm.readFileBinary("assets/IBMPlexMono-Regular-subset.woff2"));
 
-            // Create the website implementations
-            ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
+                // Create the website implementations
+                ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
 
-            // Create the frontend version viewer implementation
-            ClonableFrontendVersionViewer frontendVersionViewerImplementation = new ClonableFrontendVersionViewer();
+                // Create the frontend version viewer implementation
+                ClonableFrontendVersionViewer frontendVersionViewerImplementation = new ClonableFrontendVersionViewer();
 
-            // Deploying the blog factory
-            // {salt: bytes32(vm.envBytes("CONTRACT_SALT"))}
-            factory = new OCWebsiteFactory(OCWebsiteFactory.ConstructorParams({
-                owner: msg.sender,
-                topdomain: "eth",
-                domain: domain,
-                factoryToken: factoryToken,
-                websiteImplementation: websiteImplementation,
-                frontendVersionViewerImplementation: frontendVersionViewerImplementation
-            }));
+                // Deploying the blog factory
+                // {salt: bytes32(vm.envBytes("CONTRACT_SALT"))}
+                factory = new OCWebsiteFactory(OCWebsiteFactory.ConstructorParams({
+                    owner: msg.sender,
+                    topdomain: "eth",
+                    domain: domain,
+                    factoryToken: factoryToken,
+                    websiteImplementation: websiteImplementation,
+                    frontendVersionViewerImplementation: frontendVersionViewerImplementation
+                }));
 
-            // Transfer the website implementation ownership to the factory
-            // Not strictly necessary, but let's be sure it stays never changed
-            websiteImplementation.transferOwnership(address(factory));
+                // Transfer the website implementation ownership to the factory
+                // Not strictly necessary, but let's be sure it stays never changed
+                websiteImplementation.transferOwnership(address(factory));
+            }
 
             // Add the SSTORE2 storage backend
             {
@@ -115,18 +119,35 @@ contract OCWebsiteFactoryScript is Script {
                 factory.addStorageBackend(storageBackend);
             }
 
+            // Add the plugins
+            InjectedVariablesPlugin injectedVariablesPlugin;
+            {
+                // Injected variables plugin
+                injectedVariablesPlugin = new InjectedVariablesPlugin();
+                factory.addWebsitePlugin(injectedVariablesPlugin, true, false);
+
+                // Proxied websites plugin
+                ProxiedWebsitesPlugin proxiedWebsitesPlugin = new ProxiedWebsitesPlugin();
+                factory.addWebsitePlugin(proxiedWebsitesPlugin, false, true);
+            }
+
             // Create a website from the factory, to use as frontend for the factory itself
             OCWebsite factoryFrontend = factory.mintWebsite(IStorageBackend(address(0)));
+
             // Add the factory contract address to the frontend
-            factoryFrontend.addInjectedVariableToFrontend(0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
+            injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
             // Testing: Add hardcoded factory for sepolia && holesky
-            factoryFrontend.addInjectedVariableToFrontend(0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x051eCAe0901694F59fe55EEFeDbc12699F1192A5), ":", LibStrings.toString(17000)));
-            // factoryFrontend.addStaticContractAddressToFrontend(0, string.concat("factory-", "sep"), 0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07, 11155111);
+            if(targetChain != TargetChain.HOLESKY) {
+                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x333eA93bdeFeB37F806080D726598a47f59F8647), ":", LibStrings.toString(17000)));
+            }
+            // injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07), ":", LibStrings.toString(11155111)));
+
 
             // // Add internal redirect to index.html, for 404 handling, and #/ handling
             // string[] memory internalRedirect = new string[](1);
             // internalRedirect[0] = "index.html";
             // factoryFrontend.setGlobalInternalRedirect(internalRedirect, new KeyValue[](0));
+
             // Set the website as the factory frontend
             factory.setWebsite(factoryFrontend);
 
@@ -134,9 +155,9 @@ contract OCWebsiteFactoryScript is Script {
             
 
             console.log("OCWebsiteFactory: ", address(factory));
-            console.log("OCWebsiteFactoryToken: ", address(factoryToken));
+            // console.log("OCWebsiteFactoryToken: ", address(factoryToken));
             console.log("OCWebsiteFactory frontend: ", address(factoryFrontend));
-            console.log("OCWebsite implementation: ", address(websiteImplementation));
+            // console.log("OCWebsite implementation: ", address(websiteImplementation));
 
             // Printing the web3:// address of the factory frontend
             string memory web3FactoryWebsiteAddress = string.concat("web3://", vm.toString(address(factory.website())));

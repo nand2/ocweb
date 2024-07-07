@@ -130,11 +130,6 @@ export const abi = [
         internalType: "string",
         name: "_description",
         type: "string"
-      },
-      {
-        internalType: "int256",
-        name: "settingsCopiedFromFrontendVersionIndex",
-        type: "int256"
       }
     ],
     name: "addFrontendVersion",
@@ -150,45 +145,17 @@ export const abi = [
         type: "uint256"
       },
       {
-        internalType: "string",
-        name: "key",
-        type: "string"
-      },
-      {
-        internalType: "string",
-        name: "value",
-        type: "string"
-      }
-    ],
-    name: "addInjectedVariableToFrontend",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "frontendIndex",
-        type: "uint256"
-      },
-      {
-        internalType: "contract IDecentralizedApp",
-        name: "website",
+        internalType: "contract IVersionableStaticWebsitePlugin",
+        name: "plugin",
         type: "address"
       },
       {
-        internalType: "string[]",
-        name: "localPrefix",
-        type: "string[]"
-      },
-      {
-        internalType: "string[]",
-        name: "remotePrefix",
-        type: "string[]"
+        internalType: "bool",
+        name: "executeBeforeStaticContent",
+        type: "bool"
       }
     ],
-    name: "addProxiedWebsiteToFrontend",
+    name: "addPlugin",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -326,6 +293,19 @@ export const abi = [
     type: "function"
   },
   {
+    inputs: [],
+    name: "getFrontendLibrary",
+    outputs: [
+      {
+        internalType: "contract IFrontendLibrary",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -375,45 +355,6 @@ export const abi = [
             type: "string"
           },
           {
-            components: [
-              {
-                internalType: "string",
-                name: "key",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "value",
-                type: "string"
-              }
-            ],
-            internalType: "struct KeyValueVariable[]",
-            name: "injectedVariables",
-            type: "tuple[]"
-          },
-          {
-            components: [
-              {
-                internalType: "contract IDecentralizedApp",
-                name: "website",
-                type: "address"
-              },
-              {
-                internalType: "string[]",
-                name: "localPrefix",
-                type: "string[]"
-              },
-              {
-                internalType: "string[]",
-                name: "remotePrefix",
-                type: "string[]"
-              }
-            ],
-            internalType: "struct ProxiedWebsite[]",
-            name: "proxiedWebsites",
-            type: "tuple[]"
-          },
-          {
             internalType: "contract IDecentralizedApp",
             name: "viewer",
             type: "address"
@@ -432,6 +373,19 @@ export const abi = [
         internalType: "struct FrontendFilesSet",
         name: "",
         type: "tuple"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "getFrontendVersionCount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
       }
     ],
     stateMutability: "view",
@@ -492,45 +446,6 @@ export const abi = [
             type: "string"
           },
           {
-            components: [
-              {
-                internalType: "string",
-                name: "key",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "value",
-                type: "string"
-              }
-            ],
-            internalType: "struct KeyValueVariable[]",
-            name: "injectedVariables",
-            type: "tuple[]"
-          },
-          {
-            components: [
-              {
-                internalType: "contract IDecentralizedApp",
-                name: "website",
-                type: "address"
-              },
-              {
-                internalType: "string[]",
-                name: "localPrefix",
-                type: "string[]"
-              },
-              {
-                internalType: "string[]",
-                name: "remotePrefix",
-                type: "string[]"
-              }
-            ],
-            internalType: "struct ProxiedWebsite[]",
-            name: "proxiedWebsites",
-            type: "tuple[]"
-          },
-          {
             internalType: "contract IDecentralizedApp",
             name: "viewer",
             type: "address"
@@ -553,6 +468,19 @@ export const abi = [
       {
         internalType: "uint256",
         name: "totalCount",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "getLiveFrontendIndex",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
         type: "uint256"
       }
     ],
@@ -603,45 +531,6 @@ export const abi = [
             type: "string"
           },
           {
-            components: [
-              {
-                internalType: "string",
-                name: "key",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "value",
-                type: "string"
-              }
-            ],
-            internalType: "struct KeyValueVariable[]",
-            name: "injectedVariables",
-            type: "tuple[]"
-          },
-          {
-            components: [
-              {
-                internalType: "contract IDecentralizedApp",
-                name: "website",
-                type: "address"
-              },
-              {
-                internalType: "string[]",
-                name: "localPrefix",
-                type: "string[]"
-              },
-              {
-                internalType: "string[]",
-                name: "remotePrefix",
-                type: "string[]"
-              }
-            ],
-            internalType: "struct ProxiedWebsite[]",
-            name: "proxiedWebsites",
-            type: "tuple[]"
-          },
-          {
             internalType: "contract IDecentralizedApp",
             name: "viewer",
             type: "address"
@@ -673,6 +562,118 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "frontendIndex",
+        type: "uint256"
+      }
+    ],
+    name: "getPlugins",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "contract IVersionableStaticWebsitePlugin",
+            name: "plugin",
+            type: "address"
+          },
+          {
+            components: [
+              {
+                internalType: "string",
+                name: "name",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "version",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "title",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "subTitle",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "author",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "homepage",
+                type: "string"
+              }
+            ],
+            internalType: "struct IVersionableStaticWebsitePlugin.Infos",
+            name: "infos",
+            type: "tuple"
+          }
+        ],
+        internalType: "struct IVersionableStaticWebsite.IVersionableStaticWebsitePluginWithInfos[]",
+        name: "pluginsExecutedBeforeStaticContent",
+        type: "tuple[]"
+      },
+      {
+        components: [
+          {
+            internalType: "contract IVersionableStaticWebsitePlugin",
+            name: "plugin",
+            type: "address"
+          },
+          {
+            components: [
+              {
+                internalType: "string",
+                name: "name",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "version",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "title",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "subTitle",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "author",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "homepage",
+                type: "string"
+              }
+            ],
+            internalType: "struct IVersionableStaticWebsitePlugin.Infos",
+            name: "infos",
+            type: "tuple"
+          }
+        ],
+        internalType: "struct IVersionableStaticWebsite.IVersionableStaticWebsitePluginWithInfos[]",
+        name: "pluginsExecutedAfterStaticContent",
+        type: "tuple[]"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_owner",
         type: "address"
@@ -691,6 +692,16 @@ export const abi = [
         internalType: "contract IStorageBackend",
         name: "firstFrontendVersionStorageBackend",
         type: "address"
+      },
+      {
+        internalType: "contract IVersionableStaticWebsitePlugin[]",
+        name: "_preStaticContentplugins",
+        type: "address[]"
+      },
+      {
+        internalType: "contract IVersionableStaticWebsitePlugin[]",
+        name: "_postStaticContentplugins",
+        type: "address[]"
       }
     ],
     name: "initialize",
@@ -700,7 +711,20 @@ export const abi = [
   },
   {
     inputs: [],
-    name: "lockFrontendLibrary",
+    name: "isLocked",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "lock",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -737,6 +761,54 @@ export const abi = [
     outputs: [
       {
         internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    name: "postStaticContentplugins",
+    outputs: [
+      {
+        internalType: "contract IVersionableStaticWebsitePlugin",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    name: "preStaticContentplugins",
+    outputs: [
+      {
+        internalType: "contract IVersionableStaticWebsitePlugin",
         name: "",
         type: "address"
       }
@@ -817,30 +889,17 @@ export const abi = [
         type: "uint256"
       },
       {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256"
-      }
-    ],
-    name: "removeInjectedVariableFromFrontend",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "frontendIndex",
-        type: "uint256"
+        internalType: "address",
+        name: "plugin",
+        type: "address"
       },
       {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256"
+        internalType: "bool",
+        name: "removeFromExecutedBeforeStaticContentList",
+        type: "bool"
       }
     ],
-    name: "removeProxiedWebsiteFromFrontend",
+    name: "removePlugin",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

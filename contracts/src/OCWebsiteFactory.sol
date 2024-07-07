@@ -11,6 +11,7 @@ import "./OCWebsite/ClonableFrontendVersionViewer.sol";
 import "./OCWebsiteFactoryToken.sol";
 import "./interfaces/IStorageBackend.sol";
 import "./interfaces/IStorageBackendLibrary.sol";
+import "./interfaces/IVersionableStaticWebsite.sol";
 
 interface IFactoryExtension {
   function getName() external view returns (string memory);
@@ -30,6 +31,11 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
 
     string public topdomain;
     string public domain;
+
+    // VersionableStaticWebsite plugins
+    IVersionableStaticWebsitePlugin[] public websiteAvailablePlugins;
+    IVersionableStaticWebsitePlugin[] public newWebsiteDefaultPreStaticContentPlugins;
+    IVersionableStaticWebsitePlugin[] public newWebsiteDefaultPostStaticContentPlugins;
 
     // Storage backends
     IStorageBackend[] public storageBackends;
@@ -90,7 +96,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
             firstFrontendVersionStorageBackend = storageBackends[0];
         }
 
-        newWebsite.initialize(msg.sender, address(this), frontendVersionViewerImplementation, firstFrontendVersionStorageBackend);
+        newWebsite.initialize(msg.sender, address(this), frontendVersionViewerImplementation, firstFrontendVersionStorageBackend, newWebsiteDefaultPreStaticContentPlugins, newWebsiteDefaultPostStaticContentPlugins);
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
 
@@ -147,6 +153,84 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     }
 
 
+    //
+    // Website plugins
+    //
+
+    function addWebsitePlugin(IVersionableStaticWebsitePlugin plugin, bool addAsNewWebsiteDefaultPreStaticContentPlugin, bool addAsNewWebsiteDefaultPostStaticContentPlugin) public onlyOwner {
+        // Make sure it is not inserted yet
+        for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
+            require(address(websiteAvailablePlugins[i]) != address(plugin), "Plugin already added");
+        }
+
+        websiteAvailablePlugins.push(plugin);
+        if(addAsNewWebsiteDefaultPreStaticContentPlugin) {
+            newWebsiteDefaultPreStaticContentPlugins.push(plugin);
+        }
+        if(addAsNewWebsiteDefaultPostStaticContentPlugin) {
+            newWebsiteDefaultPostStaticContentPlugins.push(plugin);
+        }
+    }
+
+    struct IVersionableStaticWebsitePluginWithInfos {
+        IVersionableStaticWebsitePlugin plugin;
+        IVersionableStaticWebsitePlugin.Infos infos;
+        bool isDefaultPreStaticContentPlugin;
+        bool isDefaultPostStaticContentPlugin;
+    }
+    function getWebsitePlugins() public view returns (IVersionableStaticWebsitePluginWithInfos[] memory) {
+        IVersionableStaticWebsitePluginWithInfos[] memory plugins = new IVersionableStaticWebsitePluginWithInfos[](websiteAvailablePlugins.length);
+        for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
+            plugins[i] = IVersionableStaticWebsitePluginWithInfos({
+                plugin: websiteAvailablePlugins[i],
+                infos: websiteAvailablePlugins[i].infos(),
+                isDefaultPreStaticContentPlugin: false,
+                isDefaultPostStaticContentPlugin: false
+            });
+        }
+
+        for(uint i = 0; i < newWebsiteDefaultPreStaticContentPlugins.length; i++) {
+            for(uint j = 0; j < plugins.length; j++) {
+                if(address(plugins[j].plugin) == address(newWebsiteDefaultPreStaticContentPlugins[i])) {
+                    plugins[j].isDefaultPreStaticContentPlugin = true;
+                }
+            }
+        }
+
+        for(uint i = 0; i < newWebsiteDefaultPostStaticContentPlugins.length; i++) {
+            for(uint j = 0; j < plugins.length; j++) {
+                if(address(plugins[j].plugin) == address(newWebsiteDefaultPostStaticContentPlugins[i])) {
+                    plugins[j].isDefaultPostStaticContentPlugin = true;
+                }
+            }
+        }
+
+        return plugins;
+    }
+
+    function removeWebsitePlugin(IVersionableStaticWebsitePlugin plugin) public onlyOwner {
+        for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
+            if(address(websiteAvailablePlugins[i]) == address(plugin)) {
+                websiteAvailablePlugins[i] = websiteAvailablePlugins[websiteAvailablePlugins.length - 1];
+                websiteAvailablePlugins.pop();
+                return;
+            }
+        }
+        for(uint i = 0; i < newWebsiteDefaultPreStaticContentPlugins.length; i++) {
+            if(address(newWebsiteDefaultPreStaticContentPlugins[i]) == address(plugin)) {
+                newWebsiteDefaultPreStaticContentPlugins[i] = newWebsiteDefaultPreStaticContentPlugins[newWebsiteDefaultPreStaticContentPlugins.length - 1];
+                newWebsiteDefaultPreStaticContentPlugins.pop();
+                return;
+            }
+        }
+        for(uint i = 0; i < newWebsiteDefaultPostStaticContentPlugins.length; i++) {
+            if(address(newWebsiteDefaultPostStaticContentPlugins[i]) == address(plugin)) {
+                newWebsiteDefaultPostStaticContentPlugins[i] = newWebsiteDefaultPostStaticContentPlugins[newWebsiteDefaultPostStaticContentPlugins.length - 1];
+                newWebsiteDefaultPostStaticContentPlugins.pop();
+                return;
+            }
+        }
+    }
 
 
     //
