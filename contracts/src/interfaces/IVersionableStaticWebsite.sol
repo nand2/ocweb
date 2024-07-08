@@ -36,6 +36,8 @@ interface IVersionableStaticWebsitePlugin {
     }
     function infos() external view returns (Infos memory);
 
+    function rewriteWeb3Request(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams);
+
     function processWeb3RequestBeforeStaticContent(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
 
     function processWeb3RequestAfterStaticContent(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);

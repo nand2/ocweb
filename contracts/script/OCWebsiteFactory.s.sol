@@ -38,6 +38,7 @@ import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageB
 import { LibStrings } from "../src/library/LibStrings.sol";
 import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariablesPlugin.sol";
 import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
+import { FragmentRequestRewriterPlugin } from "../src/OCWebsite/plugins/FragmentRequestRewriterPlugin.sol";
 
 contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -143,10 +144,11 @@ contract OCWebsiteFactoryScript is Script {
             // injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07), ":", LibStrings.toString(11155111)));
 
 
-            // // Add internal redirect to index.html, for 404 handling, and #/ handling
-            // string[] memory internalRedirect = new string[](1);
-            // internalRedirect[0] = "index.html";
-            // factoryFrontend.setGlobalInternalRedirect(internalRedirect, new KeyValue[](0));
+            // Temporary, untill the fragment situaton is resolved
+            { 
+                FragmentRequestRewriterPlugin fragmentRequestRewriterPlugin = new FragmentRequestRewriterPlugin();
+                factoryFrontend.addPlugin(0, fragmentRequestRewriterPlugin);
+            }
 
             // Set the website as the factory frontend
             factory.setWebsite(factoryFrontend);

@@ -120,9 +120,21 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
             }
         }
 
-        // Process the pre-static-content plugins
+        // Plugins: rewrite the request
         for(uint i = 0; i < plugins[frontendIndex].length; i++) {
-            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestBeforeStaticContent(this, getLiveFrontendIndex(), resource, params);
+            bool rewritten;
+            string[] memory newResource;
+            KeyValue[] memory newParams;
+            (rewritten, newResource, newParams) = plugins[frontendIndex][i].rewriteWeb3Request(this, frontendIndex, resource, params);
+            if(rewritten) {
+                resource = newResource;
+                params = newParams;
+            }
+        }
+
+        // Plugins: return content before the static content
+        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
+            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestBeforeStaticContent(this, frontendIndex, resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }
@@ -208,9 +220,9 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
             }
         }
 
-        // Process the post-static-content plugins
+        // Plugins: return content after the static content
         for(uint i = 0; i < plugins[frontendIndex].length; i++) {
-            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestAfterStaticContent(this, getLiveFrontendIndex(), resource, params);
+            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestAfterStaticContent(this, frontendIndex, resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }
