@@ -151,7 +151,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "copyPluginsFromFrontendIndex",
+        name: "frontendVersionIndexToCopyFrom",
         type: "uint256"
       }
     ],
@@ -171,11 +171,6 @@ export const abi = [
         internalType: "contract IVersionableStaticWebsitePlugin",
         name: "plugin",
         type: "address"
-      },
-      {
-        internalType: "bool",
-        name: "executeBeforeStaticContent",
-        type: "bool"
       }
     ],
     name: "addPlugin",
@@ -638,56 +633,7 @@ export const abi = [
           }
         ],
         internalType: "struct IVersionableStaticWebsite.IVersionableStaticWebsitePluginWithInfos[]",
-        name: "pluginsExecutedBeforeStaticContent",
-        type: "tuple[]"
-      },
-      {
-        components: [
-          {
-            internalType: "contract IVersionableStaticWebsitePlugin",
-            name: "plugin",
-            type: "address"
-          },
-          {
-            components: [
-              {
-                internalType: "string",
-                name: "name",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "version",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "title",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "subTitle",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "author",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "homepage",
-                type: "string"
-              }
-            ],
-            internalType: "struct IVersionableStaticWebsitePlugin.Infos",
-            name: "infos",
-            type: "tuple"
-          }
-        ],
-        internalType: "struct IVersionableStaticWebsite.IVersionableStaticWebsitePluginWithInfos[]",
-        name: "pluginsExecutedAfterStaticContent",
+        name: "pluginWithInfos",
         type: "tuple[]"
       }
     ],
@@ -718,12 +664,7 @@ export const abi = [
       },
       {
         internalType: "contract IVersionableStaticWebsitePlugin[]",
-        name: "_preStaticContentplugins",
-        type: "address[]"
-      },
-      {
-        internalType: "contract IVersionableStaticWebsitePlugin[]",
-        name: "_postStaticContentplugins",
+        name: "_plugins",
         type: "address[]"
       }
     ],
@@ -804,31 +745,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "postStaticContentplugins",
-    outputs: [
-      {
-        internalType: "contract IVersionableStaticWebsitePlugin",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    name: "preStaticContentplugins",
+    name: "plugins",
     outputs: [
       {
         internalType: "contract IVersionableStaticWebsitePlugin",
@@ -915,11 +832,6 @@ export const abi = [
         internalType: "address",
         name: "plugin",
         type: "address"
-      },
-      {
-        internalType: "bool",
-        name: "removeFromExecutedBeforeStaticContentList",
-        type: "bool"
       }
     ],
     name: "removePlugin",

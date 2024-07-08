@@ -301,10 +301,7 @@ class VersionableStaticWebsiteClient {
 
   async getFrontendVersionPlugins(frontendIndex) {
     const result = await this.#viemWebsiteContract.read.getPlugins([frontendIndex])
-    return {
-      preStaticContentPlugins: result[0],
-      postStaticContentPlugins: result[1],
-    }
+    return result;     
   }
 
   /**

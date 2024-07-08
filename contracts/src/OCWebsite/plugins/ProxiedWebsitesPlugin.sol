@@ -25,7 +25,18 @@ contract ProxiedWebsitesPlugin is IVersionableStaticWebsitePlugin {
             });
     }
 
-    function processWeb3Request(
+    function processWeb3RequestBeforeStaticContent(
+        IVersionableStaticWebsite website,
+        uint frontendIndex,
+        string[] memory resource,
+        KeyValue[] memory params
+    )
+        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+    {
+        return (0, "", new KeyValue[](0));
+    }
+
+    function processWeb3RequestAfterStaticContent(
         IVersionableStaticWebsite website,
         uint frontendIndex,
         string[] memory resource,

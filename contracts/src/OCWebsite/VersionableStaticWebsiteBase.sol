@@ -15,9 +15,8 @@ import './ResourceRequestWebsite.sol';
 import './FrontendLibrary.sol';
 
 abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, ResourceRequestWebsite, Ownable {
-    // For each frontend version, the list of plugins to execute before and after the static content
-    mapping(uint => IVersionableStaticWebsitePlugin[]) public preStaticContentplugins;
-    mapping(uint => IVersionableStaticWebsitePlugin[]) public postStaticContentplugins;
+    // For each frontend version, the list of plugins
+    mapping(uint => IVersionableStaticWebsitePlugin[]) public plugins;
 
     
     function getLiveFrontendIndex() public view virtual returns (uint256);
@@ -47,13 +46,9 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         
         // Copy the plugins
         uint newFrontendIndex = getFrontendLibrary().getFrontendVersionCount() - 1;
-        for(uint i = 0; i < preStaticContentplugins[frontendVersionIndexToCopyFrom].length; i++) {
-            preStaticContentplugins[newFrontendIndex].push(preStaticContentplugins[frontendVersionIndexToCopyFrom][i]);
-            preStaticContentplugins[newFrontendIndex][i].copyFrontendSettings(this, frontendVersionIndexToCopyFrom, newFrontendIndex);
-        }
-        for(uint i = 0; i < postStaticContentplugins[frontendVersionIndexToCopyFrom].length; i++) {
-            postStaticContentplugins[newFrontendIndex].push(postStaticContentplugins[frontendVersionIndexToCopyFrom][i]);
-            postStaticContentplugins[newFrontendIndex][i].copyFrontendSettings(this, frontendVersionIndexToCopyFrom, newFrontendIndex);
+        for(uint i = 0; i < plugins[frontendVersionIndexToCopyFrom].length; i++) {
+            plugins[newFrontendIndex].push(plugins[frontendVersionIndexToCopyFrom][i]);
+            plugins[newFrontendIndex][i].copyFrontendSettings(this, frontendVersionIndexToCopyFrom, newFrontendIndex);
         }
     }
 
@@ -61,35 +56,24 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
     // Plugins
     // 
 
-    function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin, bool executeBeforeStaticContent) public override onlyOwner {
-        if(executeBeforeStaticContent) {
-            preStaticContentplugins[frontendIndex].push(plugin);
-        }
-        else {
-            postStaticContentplugins[frontendIndex].push(plugin);
+    function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin) public override onlyOwner {
+        plugins[frontendIndex].push(plugin);
+    }
+
+    function getPlugins(uint frontendIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginWithInfos) {
+        pluginWithInfos = new IVersionableStaticWebsitePluginWithInfos[](plugins[frontendIndex].length);
+        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
+            pluginWithInfos[i].plugin = plugins[frontendIndex][i];
+            pluginWithInfos[i].infos = plugins[frontendIndex][i].infos();
         }
     }
 
-    function getPlugins(uint frontendIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginsExecutedBeforeStaticContent, IVersionableStaticWebsitePluginWithInfos[] memory pluginsExecutedAfterStaticContent) {
-        pluginsExecutedBeforeStaticContent = new IVersionableStaticWebsitePluginWithInfos[](preStaticContentplugins[frontendIndex].length);
-        for(uint i = 0; i < preStaticContentplugins[frontendIndex].length; i++) {
-            pluginsExecutedBeforeStaticContent[i].plugin = preStaticContentplugins[frontendIndex][i];
-            pluginsExecutedBeforeStaticContent[i].infos = preStaticContentplugins[frontendIndex][i].infos();
-        }
-
-        pluginsExecutedAfterStaticContent = new IVersionableStaticWebsitePluginWithInfos[](postStaticContentplugins[frontendIndex].length);
-        for(uint i = 0; i < postStaticContentplugins[frontendIndex].length; i++) {
-            pluginsExecutedAfterStaticContent[i].plugin = postStaticContentplugins[frontendIndex][i];
-            pluginsExecutedAfterStaticContent[i].infos = postStaticContentplugins[frontendIndex][i].infos();
-        }
-    }
-
-    function removePlugin(uint frontendIndex, address plugin, bool removeFromExecutedBeforeStaticContentList) public onlyOwner {
-        IVersionableStaticWebsitePlugin[] storage plugins = removeFromExecutedBeforeStaticContentList ? preStaticContentplugins[frontendIndex] : postStaticContentplugins[frontendIndex];
-        for(uint i = 0; i < plugins.length; i++) {
-            if(address(plugins[i]) == plugin) {
-                plugins[i] = plugins[plugins.length - 1];
-                plugins.pop();
+    function removePlugin(uint frontendIndex, address plugin) public onlyOwner {
+        IVersionableStaticWebsitePlugin[] storage _plugins = plugins[frontendIndex];
+        for(uint i = 0; i < _plugins.length; i++) {
+            if(address(_plugins[i]) == plugin) {
+                _plugins[i] = _plugins[_plugins.length - 1];
+                _plugins.pop();
                 return;
             }
         }
@@ -137,8 +121,8 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         }
 
         // Process the pre-static-content plugins
-        for(uint i = 0; i < preStaticContentplugins[frontendIndex].length; i++) {
-            (statusCode, body, headers) = preStaticContentplugins[frontendIndex][i].processWeb3Request(this, getLiveFrontendIndex(), resource, params);
+        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
+            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestBeforeStaticContent(this, getLiveFrontendIndex(), resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }
@@ -225,8 +209,8 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         }
 
         // Process the post-static-content plugins
-        for(uint i = 0; i < postStaticContentplugins[frontendIndex].length; i++) {
-            (statusCode, body, headers) = postStaticContentplugins[frontendIndex][i].processWeb3Request(this, getLiveFrontendIndex(), resource, params);
+        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
+            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestAfterStaticContent(this, getLiveFrontendIndex(), resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }

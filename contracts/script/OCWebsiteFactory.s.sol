@@ -124,11 +124,11 @@ contract OCWebsiteFactoryScript is Script {
             {
                 // Injected variables plugin
                 injectedVariablesPlugin = new InjectedVariablesPlugin();
-                factory.addWebsitePlugin(injectedVariablesPlugin, true, false);
+                factory.addWebsitePlugin(injectedVariablesPlugin, true);
 
                 // Proxied websites plugin
                 ProxiedWebsitesPlugin proxiedWebsitesPlugin = new ProxiedWebsitesPlugin();
-                factory.addWebsitePlugin(proxiedWebsitesPlugin, false, true);
+                factory.addWebsitePlugin(proxiedWebsitesPlugin, true);
             }
 
             // Create a website from the factory, to use as frontend for the factory itself
@@ -138,7 +138,7 @@ contract OCWebsiteFactoryScript is Script {
             injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
             // Testing: Add hardcoded factory for sepolia && holesky
             if(targetChain != TargetChain.HOLESKY) {
-                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x333eA93bdeFeB37F806080D726598a47f59F8647), ":", LibStrings.toString(17000)));
+                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x33d2f729c8f693462003b27818187561b0a020bb), ":", LibStrings.toString(17000)));
             }
             // injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07), ":", LibStrings.toString(11155111)));
 

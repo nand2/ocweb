@@ -34,7 +34,7 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 
 
-const { data: frontendVersionPluginsData, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useQuery({
+const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useQuery({
     queryKey: ['OCWebsiteFrontendVersionPlugins', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
     queryFn: async () => {
       // Switch chain if necessary
@@ -61,17 +61,7 @@ const { data: frontendVersionPluginsData, isLoading: frontendVersionPluginsLoadi
     </div>
     <div v-else-if="frontendVersionPluginsLoaded" class="settings">
 
-      <div v-for="pluginInfos in frontendVersionPluginsData.preStaticContentPlugins" :key="pluginInfos.plugin" class="settings-item">
-        <SettingsPlugin
-          :frontendVersion
-          :frontendVersionIndex
-          :contractAddress
-          :chainId
-          :websiteClient 
-          :pluginInfos="pluginInfos" />
-      </div>
-
-      <div v-for="pluginInfos in frontendVersionPluginsData.postStaticContentPlugins" :key="pluginInfos.plugin" class="settings-item">
+      <div v-for="pluginInfos in frontendVersionPlugins" :key="pluginInfos.plugin" class="settings-item">
         <SettingsPlugin
           :frontendVersion
           :frontendVersionIndex

@@ -34,8 +34,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
 
     // VersionableStaticWebsite plugins
     IVersionableStaticWebsitePlugin[] public websiteAvailablePlugins;
-    IVersionableStaticWebsitePlugin[] public newWebsiteDefaultPreStaticContentPlugins;
-    IVersionableStaticWebsitePlugin[] public newWebsiteDefaultPostStaticContentPlugins;
+    IVersionableStaticWebsitePlugin[] public newWebsiteDefaultPlugins;
 
     // Storage backends
     IStorageBackend[] public storageBackends;
@@ -96,7 +95,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
             firstFrontendVersionStorageBackend = storageBackends[0];
         }
 
-        newWebsite.initialize(msg.sender, address(this), frontendVersionViewerImplementation, firstFrontendVersionStorageBackend, newWebsiteDefaultPreStaticContentPlugins, newWebsiteDefaultPostStaticContentPlugins);
+        newWebsite.initialize(msg.sender, address(this), frontendVersionViewerImplementation, firstFrontendVersionStorageBackend, newWebsiteDefaultPlugins);
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
 
@@ -157,26 +156,22 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     // Website plugins
     //
 
-    function addWebsitePlugin(IVersionableStaticWebsitePlugin plugin, bool addAsNewWebsiteDefaultPreStaticContentPlugin, bool addAsNewWebsiteDefaultPostStaticContentPlugin) public onlyOwner {
+    function addWebsitePlugin(IVersionableStaticWebsitePlugin plugin, bool addAsNewWebsiteDefaultPlugin) public onlyOwner {
         // Make sure it is not inserted yet
         for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
             require(address(websiteAvailablePlugins[i]) != address(plugin), "Plugin already added");
         }
 
         websiteAvailablePlugins.push(plugin);
-        if(addAsNewWebsiteDefaultPreStaticContentPlugin) {
-            newWebsiteDefaultPreStaticContentPlugins.push(plugin);
-        }
-        if(addAsNewWebsiteDefaultPostStaticContentPlugin) {
-            newWebsiteDefaultPostStaticContentPlugins.push(plugin);
+        if(addAsNewWebsiteDefaultPlugin) {
+            newWebsiteDefaultPlugins.push(plugin);
         }
     }
 
     struct IVersionableStaticWebsitePluginWithInfos {
         IVersionableStaticWebsitePlugin plugin;
         IVersionableStaticWebsitePlugin.Infos infos;
-        bool isDefaultPreStaticContentPlugin;
-        bool isDefaultPostStaticContentPlugin;
+        bool isDefaultPlugin;
     }
     function getWebsitePlugins() public view returns (IVersionableStaticWebsitePluginWithInfos[] memory) {
         IVersionableStaticWebsitePluginWithInfos[] memory plugins = new IVersionableStaticWebsitePluginWithInfos[](websiteAvailablePlugins.length);
@@ -184,23 +179,14 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
             plugins[i] = IVersionableStaticWebsitePluginWithInfos({
                 plugin: websiteAvailablePlugins[i],
                 infos: websiteAvailablePlugins[i].infos(),
-                isDefaultPreStaticContentPlugin: false,
-                isDefaultPostStaticContentPlugin: false
+                isDefaultPlugin: false
             });
         }
 
-        for(uint i = 0; i < newWebsiteDefaultPreStaticContentPlugins.length; i++) {
+        for(uint i = 0; i < newWebsiteDefaultPlugins.length; i++) {
             for(uint j = 0; j < plugins.length; j++) {
-                if(address(plugins[j].plugin) == address(newWebsiteDefaultPreStaticContentPlugins[i])) {
-                    plugins[j].isDefaultPreStaticContentPlugin = true;
-                }
-            }
-        }
-
-        for(uint i = 0; i < newWebsiteDefaultPostStaticContentPlugins.length; i++) {
-            for(uint j = 0; j < plugins.length; j++) {
-                if(address(plugins[j].plugin) == address(newWebsiteDefaultPostStaticContentPlugins[i])) {
-                    plugins[j].isDefaultPostStaticContentPlugin = true;
+                if(address(plugins[j].plugin) == address(newWebsiteDefaultPlugins[i])) {
+                    plugins[j].isDefaultPlugin = true;
                 }
             }
         }
@@ -216,17 +202,10 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
                 return;
             }
         }
-        for(uint i = 0; i < newWebsiteDefaultPreStaticContentPlugins.length; i++) {
-            if(address(newWebsiteDefaultPreStaticContentPlugins[i]) == address(plugin)) {
-                newWebsiteDefaultPreStaticContentPlugins[i] = newWebsiteDefaultPreStaticContentPlugins[newWebsiteDefaultPreStaticContentPlugins.length - 1];
-                newWebsiteDefaultPreStaticContentPlugins.pop();
-                return;
-            }
-        }
-        for(uint i = 0; i < newWebsiteDefaultPostStaticContentPlugins.length; i++) {
-            if(address(newWebsiteDefaultPostStaticContentPlugins[i]) == address(plugin)) {
-                newWebsiteDefaultPostStaticContentPlugins[i] = newWebsiteDefaultPostStaticContentPlugins[newWebsiteDefaultPostStaticContentPlugins.length - 1];
-                newWebsiteDefaultPostStaticContentPlugins.pop();
+        for(uint i = 0; i < newWebsiteDefaultPlugins.length; i++) {
+            if(address(newWebsiteDefaultPlugins[i]) == address(plugin)) {
+                newWebsiteDefaultPlugins[i] = newWebsiteDefaultPlugins[newWebsiteDefaultPlugins.length - 1];
+                newWebsiteDefaultPlugins.pop();
                 return;
             }
         }

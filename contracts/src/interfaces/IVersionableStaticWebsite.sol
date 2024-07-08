@@ -11,13 +11,13 @@ interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
     // Shortcut for frontends
     function getLiveFrontendVersion() external view returns (FrontendFilesSet memory frontendVersion, uint256 frontendIndex);
 
-    function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin, bool executeBeforeStaticContent) external;
+    function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin) external;
     struct IVersionableStaticWebsitePluginWithInfos {
         IVersionableStaticWebsitePlugin plugin;
         IVersionableStaticWebsitePlugin.Infos infos;
     }
-    function getPlugins(uint frontendIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginsExecutedBeforeStaticContent, IVersionableStaticWebsitePluginWithInfos[] memory pluginsExecutedAfterStaticContent);
-    function removePlugin(uint frontendIndex, address plugin, bool removeFromExecutedBeforeStaticContentList) external;
+    function getPlugins(uint frontendIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginWithInfos);
+    function removePlugin(uint frontendIndex, address plugin) external;
 }
 
 interface IVersionableStaticWebsitePlugin {
@@ -36,7 +36,9 @@ interface IVersionableStaticWebsitePlugin {
     }
     function infos() external view returns (Infos memory);
 
-    function processWeb3Request(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
+    function processWeb3RequestBeforeStaticContent(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
+
+    function processWeb3RequestAfterStaticContent(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
 
     function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) external;
 }
