@@ -21,7 +21,7 @@ contract FragmentRequestRewriterPlugin is IVersionableStaticWebsitePlugin {
                 title: "Fragment request rewriter",
                 subTitle: "Temporary: Serve index.html on /#/",
                 author: "nand",
-                homepage: "web3://ocweb.eth"
+                homepage: ""
             });
     }
 
