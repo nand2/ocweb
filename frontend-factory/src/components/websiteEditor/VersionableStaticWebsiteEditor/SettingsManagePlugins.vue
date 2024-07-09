@@ -138,7 +138,7 @@ const removeItem = async (pluginAddress) => {
           Installed plugins
         </div>
 
-        <div v-if="frontendVersionPluginsIsError" class="text-danger text-90" style="text-align: center; margin: 1em;">
+        <div v-if="frontendVersionPluginsIsError" class="text-danger text-90" style="text-align: center; padding: 1em;">
           Error loading the installed plugins: {{ frontendVersionPluginsError.shortMessage || frontendVersionPluginsError.message }}
         </div>
         <div v-else-if="frontendVersionPluginsLoaded && frontendVersionPlugins.length == 0" class="no-entries">
@@ -190,7 +190,7 @@ const removeItem = async (pluginAddress) => {
           Available plugins
         </div>
 
-        <div v-if="availablePluginsIsError" class="text-danger text-90" style="text-align: center; margin: 1em;">
+        <div v-if="availablePluginsIsError" class="text-danger text-90" style="text-align: center; padding: 1em;">
           Error loading the available plugins: {{ availablePluginsError.shortMessage || availablePluginsError.message }}
         </div>
         <div v-else-if="availablePluginsLoaded && frontendVersionPluginsLoaded && availablePluginsNotInstalled.length == 0" class="no-entries">
@@ -239,16 +239,20 @@ const removeItem = async (pluginAddress) => {
         <div class="operations">
           <div class="op-add-new">
 
-            <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">
+            <div class="button-area" @click="showForm = !showForm">
               <span class="button-text">
                 <PlusLgIcon />
-                Add custom plugin
+                Install custom plugin
               </span>
             </div>
             <div class="form-area" v-if="showForm">
+              <div class="text-danger text-90">
+                The plugin must implement the <code>IVersionableStaticWebsitePlugin</code> interface, or the website will become unresponsive.
+              </div>
+
               <input type="text" v-model="additionAddress" placeholder="Plugin address" />
 
-              <button @click="additionItem(additionAddress)" :disabled="additionAddress == '' || additionIsPending">Add custom plugin</button>
+              <button @click="additionItem(additionAddress)" :disabled="additionAddress == '' || additionIsPending">Install custom plugin</button>
 
               <div v-if="additionIsError && additionVariables == additionAddress" class="text-danger text-90">
                 Error adding the custom plugin: {{ additionError.shortMessage || additionError.message }}
@@ -338,47 +342,4 @@ const removeItem = async (pluginAddress) => {
 }
 
 
-.operations {
-  display: flex;
-  gap: 1em;
-  margin-top: 1em;
-  align-items: flex-start;
-}
-@media (max-width: 700px) {
-  .operations {
-    flex-direction: column;
-  }
-}
-
-.operations .button-area {
-  text-align: center;
-  position: relative;
-  background-color: var(--color-input-bg);
-  border: 1px solid #555;
-  padding: 0.5em 1em;
-  cursor: pointer;
-}
-
-.operations .button-area .button-text {
-  display: flex;
-  gap: 0.5em;
-  align-items: center;
-  justify-content: center;
-}
-
-.operations .form-area {
-  border-left: 1px solid #555;
-  border-right: 1px solid #555;
-  border-bottom: 1px solid #555;
-  background-color: var(--color-popup-bg);
-  font-size: 0.9em;
-  padding: 0.75em 1em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-
-.operations input {
-  max-width: 150px;
-}
 </style>

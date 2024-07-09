@@ -186,43 +186,7 @@ const activateGlobalLock = async () => {
 }
 
 .operations {
-  display: flex;
-  gap: 1em;
   margin: 0em 1em 1em 1em;
-  align-items: flex-start;
-}
-@media (max-width: 700px) {
-  .operations {
-    flex-direction: column;
-  }
-}
-
-.operations .button-area {
-  text-align: center;
-  position: relative;
-  background-color: var(--color-input-bg);
-  border: 1px solid #555;
-  padding: 0.5em 1em;
-  cursor: pointer;
-}
-
-.operations .button-area .button-text {
-  display: flex;
-  gap: 0.5em;
-  align-items: center;
-  justify-content: center;
-}
-
-.operations .form-area {
-  border-left: 1px solid #555;
-  border-right: 1px solid #555;
-  border-bottom: 1px solid #555;
-  background-color: var(--color-popup-bg);
-  font-size: 0.9em;
-  padding: 0.75em 1em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
 }
 
 </style>
