@@ -128,6 +128,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     function getStorageBackends(bytes4[] memory interfaceFilters) public view returns (IStorageBackendWithInfos[] memory) {
         IStorageBackendWithInfos[] memory backends = new IStorageBackendWithInfos[](storageBackends.length);
         for(uint i = 0; i < storageBackends.length; i++) {
+            // Is interface supported?
             bool interfaceValid = (interfaceFilters.length == 0);
             for(uint j = 0; j < interfaceFilters.length; j++) {
                 if(storageBackends[i].supportsInterface(interfaceFilters[j])) {
@@ -182,24 +183,37 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     struct IVersionableStaticWebsitePluginWithInfos {
         IVersionableStaticWebsitePlugin plugin;
         IVersionableStaticWebsitePlugin.Infos infos;
+        bool interfaceValid;
         bool isDefaultPlugin;
     }
-    function getWebsitePlugins() public view returns (IVersionableStaticWebsitePluginWithInfos[] memory) {
+    function getWebsitePlugins(bytes4[] memory interfaceFilters) public view returns (IVersionableStaticWebsitePluginWithInfos[] memory) {
         IVersionableStaticWebsitePluginWithInfos[] memory plugins = new IVersionableStaticWebsitePluginWithInfos[](websiteAvailablePlugins.length);
+
         for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
+            // Is interface supported?
+            bool interfaceValid = (interfaceFilters.length == 0);
+            for(uint j = 0; j < interfaceFilters.length; j++) {
+                if(websiteAvailablePlugins[i].supportsInterface(interfaceFilters[j])) {
+                    interfaceValid = true;
+                    break;
+                }
+            }
+
+            // Is it a default plugin?
+            bool isDefaultPlugin = false;
+            for(uint j = 0; j < newWebsiteDefaultPlugins.length; j++) {
+                if(address(websiteAvailablePlugins[i]) == address(newWebsiteDefaultPlugins[j])) {
+                    isDefaultPlugin = true;
+                    break;
+                }
+            }
+
             plugins[i] = IVersionableStaticWebsitePluginWithInfos({
                 plugin: websiteAvailablePlugins[i],
                 infos: websiteAvailablePlugins[i].infos(),
-                isDefaultPlugin: false
+                interfaceValid: interfaceValid,
+                isDefaultPlugin: isDefaultPlugin
             });
-        }
-
-        for(uint i = 0; i < newWebsiteDefaultPlugins.length; i++) {
-            for(uint j = 0; j < plugins.length; j++) {
-                if(address(plugins[j].plugin) == address(newWebsiteDefaultPlugins[i])) {
-                    plugins[j].isDefaultPlugin = true;
-                }
-            }
         }
 
         return plugins;

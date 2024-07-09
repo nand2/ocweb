@@ -1,15 +1,17 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import { useSwitchChain, useAccount } from '@wagmi/vue'
+import { useSwitchChain, useAccount, useConnectorClient } from '@wagmi/vue'
+import { getContract, publicActions } from 'viem'
 
-import { useContractAddresses, invalidateFrontendVersionQuery, useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionQuery, useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery, useSupportedPluginInterfaces } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
+import { abi as factoryABI } from '../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
   frontendVersion: {
@@ -36,39 +38,41 @@ const props = defineProps({
 
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+// Prepare a contract client for the factory
+const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
+const factoryContractClient = computed(() => {
+  if(viemClientLoaded.value == false || contractAddressesLoaded.valuye == false) {
+    return null;
+  }
+
+  const factoryAddress = contractAddresses.value.factories.find(f => f.chainId === props.chainId)?.address
+
+  return getContract({
+    address: factoryAddress,
+    abi: factoryABI,
+    client: viemClient.value,
+  })
+})
 
 // Get the list of installed plugins
 const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useFrontendVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
 
+// Fetch the list of supported plugin interfaces
+const { data: supportedPluginInterfaces, isLoading: supportedPluginInterfacesLoading, isFetching: supportedPluginInterfacesFetching, isError: supportedPluginInterfacesIsError, error: supportedPluginInterfacesError, isSuccess: supportedPluginInterfacesLoaded } = useSupportedPluginInterfaces(props.contractAddress, props.chainId)
+
 // Fetch the list of available plugins from the factory
-const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 const { data: availablePlugins, isLoading: availablePluginsLoading, isFetching: availablePluginsFetching, isError: availablePluginsIsError, error: availablePluginsError, isSuccess: availablePluginsLoaded } = useQuery({
   queryKey: ['availablePlugins', props.contractAddress, props.chainId],
   queryFn: async () => {
-    const factoryAddress = contractAddresses.value.factories.find(f => f.chainId === props.chainId)?.address
-
-    const response = await fetch(`web3://${factoryAddress}:${props.chainId}/getWebsitePlugins?returns=((address,(string,string,string,string,string,string),bool)[])`)
-    if (!response.ok) {
-      throw new Error('Network response was not ok')
-    }
-    const decodedResponse = await response.json()
-    const result = decodedResponse[0].map(([plugin, infos, isDefault]) => ({ 
-      plugin, 
-        infos: { 
-          name: infos[0], 
-          version: infos[1],
-          title: infos[2],
-          subTitle: infos[3],
-          author: infos[4],
-          homepage: infos[5]
-        }, 
-        isDefault 
-      }))
-
+    let result = await factoryContractClient.value.read.getWebsitePlugins([supportedPluginInterfaces.value]);
+    // Filter out the ones with interfaceValid == false
+    result = result.filter(backend => backend.interfaceValid)
     return result
   },
   staleTime: 3600 * 1000,
-  enabled: contractAddressesLoaded,
+  enabled: computed(() => factoryContractClient.value != null && supportedPluginInterfacesLoaded.value),
 })
 
 // Compute the list of availabe plugins not yet installed

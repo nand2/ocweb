@@ -416,7 +416,13 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "bytes4[]",
+        name: "interfaceFilters",
+        type: "bytes4[]"
+      }
+    ],
     name: "getWebsitePlugins",
     outputs: [
       {
@@ -462,6 +468,11 @@ export const abi = [
             internalType: "struct IVersionableStaticWebsitePlugin.Infos",
             name: "infos",
             type: "tuple"
+          },
+          {
+            internalType: "bool",
+            name: "interfaceValid",
+            type: "bool"
           },
           {
             internalType: "bool",

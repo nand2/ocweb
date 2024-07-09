@@ -189,6 +189,24 @@ function useSupportedStorageBackendInterfaces(contractAddress, chainId) {
   })
 }
 
+function useSupportedPluginInterfaces(contractAddress, chainId) {
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { switchChainAsync } = useSwitchChain()
+
+  return useQuery({
+    queryKey: ['OCWebsiteSupportedPluginInterfaces', contractAddress, chainId],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+
+      const result = await websiteClient.value.getSupportedPluginInterfaces()
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: websiteClientLoaded,
+  })
+}
+
 export { 
   useInjectedVariables,
   useContractAddresses, 
@@ -198,6 +216,7 @@ export {
   useFrontendVersions, invalidateFrontendVersionsQuery,
   useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery,
   useFrontendVersionsViewer, invalidateFrontendVersionsViewerQuery,
-  useSupportedStorageBackendInterfaces
+  useSupportedStorageBackendInterfaces,
+  useSupportedPluginInterfaces
 }
 
