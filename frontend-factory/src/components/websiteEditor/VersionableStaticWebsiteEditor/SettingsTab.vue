@@ -3,10 +3,11 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
-import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionQuery, useFrontendVersionPlugins } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
+import SettingsManagePlugins from './SettingsManagePlugins.vue';
 
 const props = defineProps({
   frontendVersion: {
@@ -34,18 +35,7 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 
 
-const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useQuery({
-    queryKey: ['OCWebsiteFrontendVersionPlugins', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
-    queryFn: async () => {
-      // Switch chain if necessary
-      await switchChainAsync({ chainId: props.chainId })
-
-      const result = await props.websiteClient.getFrontendVersionPlugins(props.frontendVersionIndex)
-      return result;
-    },
-    staleTime: 3600 * 1000,
-    enabled: computed(() => props.websiteClient != null && props.frontendVersionIndex >= 0),
-  })
+const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useFrontendVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
 
 </script>
 
@@ -69,6 +59,17 @@ const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, 
           :chainId
           :websiteClient 
           :pluginInfos="pluginInfos" />
+      </div>
+
+      <div class="settings-item">
+
+        <SettingsManagePlugins
+          :frontendVersion
+          :frontendVersionIndex
+          :contractAddress
+          :chainId
+          :websiteClient />
+
       </div>
 
     </div>
@@ -113,4 +114,5 @@ const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, 
   text-align: center;
   color: var(--color-text-muted);
 }
+
 </style>

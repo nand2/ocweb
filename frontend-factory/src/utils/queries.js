@@ -126,6 +126,29 @@ function invalidateFrontendVersionsQuery(queryClient, contractAddress, chainId) 
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', contractAddress, chainId] })
 }
 
+// FrontendIndex is a computed value
+function useFrontendVersionPlugins(contractAddress, chainId, frontendIndex) {
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { switchChainAsync } = useSwitchChain()
+
+  return useQuery({
+    queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+
+      const result = await websiteClient.value.getFrontendVersionPlugins(frontendIndex.value)
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: computed(() => websiteClientLoaded.value != null && frontendIndex.value >= 0),
+  })
+}
+
+function invalidateFrontendVersionPluginsQuery(queryClient, contractAddress, chainId, frontendIndex) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex] })
+}
+
 export { 
   useInjectedVariables,
   useContractAddresses, 
@@ -133,5 +156,6 @@ export {
   useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, 
   invalidateFrontendVersionQuery,
   useFrontendVersions, invalidateFrontendVersionsQuery,
+  useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery
 }
 

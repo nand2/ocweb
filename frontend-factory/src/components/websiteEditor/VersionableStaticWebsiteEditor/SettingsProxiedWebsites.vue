@@ -154,7 +154,7 @@ const removeItem = async (index) => {
 
       <div v-if="removeIsError && removeVariables == index" class="mutation-error">
         <span>
-          Error renaming the version: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
+          Error removing the mapping: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
         </span>
       </div>
     </div>

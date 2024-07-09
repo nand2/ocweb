@@ -27,7 +27,7 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 
-// Fetch the list of storage backends
+// Fetch the list of storage backends from the factory
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching: storageBackendsFetching, isError: storageBackendsIsError, error: storageBackendsError, isSuccess: storageBackendsLoaded } = useQuery({
   queryKey: ['storageBackends', props.contractAddress, props.chainId],

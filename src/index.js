@@ -314,6 +314,20 @@ class VersionableStaticWebsiteClient {
     }
   }
 
+  async prepareAddPluginTransaction(frontendIndex, pluginAddress) {
+    return {
+      functionName: 'addPlugin',
+      args: [frontendIndex, pluginAddress],
+    }
+  }
+
+  async prepareRemovePluginTransaction(frontendIndex, pluginAddress) {
+    return {
+      functionName: 'removePlugin',
+      args: [frontendIndex, pluginAddress],
+    }
+  }
+
   /**
    * Execute a transaction prepared by one of the prepare* methods
    */

@@ -172,7 +172,7 @@ const removeItem = async (key) => {
 
       <div v-if="removeIsError && removeVariables == injectedVariable.key" class="mutation-error">
         <span>
-          Error removing the version: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
+          Error removing the variable: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
         </span>
       </div>
     </div>
@@ -197,10 +197,10 @@ const removeItem = async (key) => {
             </span>
           </div>
 
-          <button @click="additionFile" :disabled="additionName == '' || additionValue == '' || additionIsPending">Add mapping</button>
+          <button @click="additionFile" :disabled="additionName == '' || additionValue == '' || additionIsPending">Add variable</button>
 
           <div v-if="additionIsError" class="text-danger text-90">
-            Error adding the mapping: {{ additionError.shortMessage || additionError.message }}
+            Error adding the variable: {{ additionError.shortMessage || additionError.message }}
             <a @click.stop.prevent="additionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
           </div>
         </div>
