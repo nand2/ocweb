@@ -282,7 +282,6 @@ const addNewFolder = async () => {
                         (chunk 1 / {{ transaction.metadata.files[index].chunksCount }})
                       </span>
                     </span>
-                    {{ txIndex }}
                     <span v-if="(txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'success') == false && props.folderChildren.some(child => child.filePath === file.filePath)" class="text-warning filename-details">
                       <ExclamationTriangleIcon style="width: 1.2em; height: 0.9em;" />Overwrite existing file
                     </span>

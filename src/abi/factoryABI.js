@@ -370,7 +370,13 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "bytes4[]",
+        name: "interfaceFilters",
+        type: "bytes4[]"
+      }
+    ],
     name: "getStorageBackends",
     outputs: [
       {
@@ -384,9 +390,24 @@ export const abi = [
             internalType: "string",
             name: "name",
             type: "string"
+          },
+          {
+            internalType: "string",
+            name: "title",
+            type: "string"
+          },
+          {
+            internalType: "string",
+            name: "version",
+            type: "string"
+          },
+          {
+            internalType: "bool",
+            name: "interfaceValid",
+            type: "bool"
           }
         ],
-        internalType: "struct IStorageBackendLibrary.IStorageBackendWithName[]",
+        internalType: "struct IStorageBackendLibrary.IStorageBackendWithInfos[]",
         name: "",
         type: "tuple[]"
       }

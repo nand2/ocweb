@@ -27,7 +27,7 @@ contract UploadSstore2Frontend is Script {
         IStorageBackend storageBackend;
         {
             IStorageBackendLibrary storageBackendLibrary = IStorageBackendLibrary(vm.envAddress("ISTORAGE_BACKEND_LIBRARY_CONTRACT_ADDRESS"));
-            storageBackend = storageBackendLibrary.getStorageBackendByName("SSTORE2");
+            storageBackend = storageBackendLibrary.getStorageBackendByName("sstore2");
         }
 
         // If there is already a frontend version which is unlocked, we wipe it and replace it

@@ -2,12 +2,14 @@
 pragma solidity ^0.8.13;
 
 import { IStorageBackend } from "../../interfaces/IStorageBackend.sol";
+import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 // Solady
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 import { LibString } from "solady/utils/LibString.sol";
 
-contract StorageBackendSSTORE2 is IStorageBackend {
+contract StorageBackendSSTORE2 is ERC165, IStorageBackend {
 
     struct File {
         address[] chunks;
@@ -20,7 +22,21 @@ contract StorageBackendSSTORE2 is IStorageBackend {
     uint public constant MAX_CHUNK_SIZE = 0x6000 - 1;
     
     function name() public pure returns (string memory) {
+        return "sstore2";
+    }
+
+    function title() public pure returns (string memory) {
         return "SSTORE2";
+    }
+
+    function version() public pure returns (string memory) {
+        return "0.1.0";
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return
+            interfaceId == type(IStorageBackend).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**

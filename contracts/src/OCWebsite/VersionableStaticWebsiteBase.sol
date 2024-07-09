@@ -111,6 +111,18 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         }
     }
 
+    /**
+     * Get th elist of supported plugins interfaces
+     * Unfortunately constant arrays are not supported...
+     */
+    function getSupportedPluginInterfaces() public pure returns (bytes4[] memory) {
+        unchecked {
+            bytes4[] memory supportedInterfaces = new bytes4[](1);
+            supportedInterfaces[0] = type(IVersionableStaticWebsitePlugin).interfaceId;
+            return supportedInterfaces;
+        }
+    }
+
     
     //
     // Frontend version viewer

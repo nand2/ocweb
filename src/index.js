@@ -57,6 +57,10 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getFrontendVersionsViewer()
   }
 
+  async getSupportedStorageBackendInterfaces() {
+    return await this.#viemWebsiteContract.read.getSupportedStorageBackendInterfaces()
+  }
+
   async prepareSetDefaultFrontendIndexTransaction(frontendIndex) {
     return {
       functionName: 'setDefaultFrontendIndex',
@@ -180,7 +184,7 @@ class VersionableStaticWebsiteClient {
     let currentFileUploadInfosMetadata = []
     for (const fileInfo of compressedFilesInfos) {
       // SSTORE2 handling
-      if (storageBackendName.startsWith('SSTORE2')) {
+      if (storageBackendName.startsWith('sstore2')) {
         // Determine how much bytes do we already have in the current addFilesToFrontendVersion batch
         let currentBatchSize = 0
         for (const fileUploadInfos of currentFileUploadInfos) {

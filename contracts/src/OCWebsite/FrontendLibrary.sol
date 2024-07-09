@@ -43,6 +43,9 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param _description A description of the frontend version
      */
     function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwnerOrSelf frontendLibraryUnlocked {
+        // Ensure storageBackend implement the IStorageBackend interface
+        require(storageBackend.supportsInterface(type(IStorageBackend).interfaceId), "Invalid plugin");
+
         frontendVersions.push();
         FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
         newFrontend.storageBackend = storageBackend;
@@ -350,6 +353,18 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      */
     function isLocked() public view returns (bool) {
         return frontendLibraryLocked;
+    }
+
+    /**
+     * Get the list of supported storage backend interfaces
+     * Unfortunately constant arrays are not supported...
+     */
+    function getSupportedStorageBackendInterfaces() public pure returns (bytes4[] memory) {
+        unchecked {
+            bytes4[] memory supportedInterfaces = new bytes4[](1);
+            supportedInterfaces[0] = type(IStorageBackend).interfaceId;
+            return supportedInterfaces;
+        }
     }
 
 

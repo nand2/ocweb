@@ -2,13 +2,16 @@
 import { ref, shallowRef, computed, defineProps } from 'vue';
 import { useQuery, useMutation } from '@tanstack/vue-query'
 import { useQueryClient } from '@tanstack/vue-query'
+import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
+import { getContract, publicActions } from 'viem'
 
 import FrontendVersionList from './FrontendVersionList.vue';
 import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions, invalidateFrontendVersionsViewerQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions, invalidateFrontendVersionsViewerQuery, useSupportedStorageBackendInterfaces } from '../../../utils/queries';
+import { abi as factoryABI } from '../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
   contractAddress: {
@@ -26,25 +29,41 @@ const props = defineProps({
 })
 
 const queryClient = useQueryClient()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+// Prepare a contract client for the factory
+const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
+const factoryContractClient = computed(() => {
+  if(viemClientLoaded.value == false || contractAddressesLoaded.valuye == false) {
+    return null;
+  }
+
+  const factoryAddress = contractAddresses.value.factories.find(f => f.chainId === props.chainId)?.address
+
+  return getContract({
+    address: factoryAddress,
+    abi: factoryABI,
+    client: viemClient.value,
+  })
+})
+
+// Fetch the list of supported storage backend interfaces
+const { data: supportedStorageBackendInterfaces, isLoading: supportedStorageBackendInterfacesLoading, isFetching: supportedStorageBackendInterfacesFetching, isError: supportedStorageBackendInterfacesIsError, error: supportedStorageBackendInterfacesError, isSuccess: supportedStorageBackendInterfacesLoaded } = useSupportedStorageBackendInterfaces(props.contractAddress, props.chainId)
 
 // Fetch the list of storage backends from the factory
-const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching: storageBackendsFetching, isError: storageBackendsIsError, error: storageBackendsError, isSuccess: storageBackendsLoaded } = useQuery({
-  queryKey: ['storageBackends', props.contractAddress, props.chainId],
+  queryKey: ['storageBackends', props.contractAddress, props.chainId, supportedStorageBackendInterfaces],
   queryFn: async () => {
     const factoryAddress = contractAddresses.value.factories.find(f => f.chainId === props.chainId)?.address
 
-    const response = await fetch(`web3://${factoryAddress}:${props.chainId}/getStorageBackends?returns=((address,string)[])`)
-    if (!response.ok) {
-      throw new Error('Network response was not ok')
-    }
-    const decodedResponse = await response.json()
-    const result = decodedResponse[0].map(([address, name]) => ({ address, name }))
+    let result = await factoryContractClient.value.read.getStorageBackends([supportedStorageBackendInterfaces.value]);
+    // Filter out the ones with interfaceValid == false
+    result = result.filter(backend => backend.interfaceValid)
 
     return result
   },
   staleTime: 3600 * 1000,
-  enabled: contractAddressesLoaded,
+  enabled: computed(() => factoryContractClient.value != null && supportedStorageBackendInterfacesLoaded.value),
 })
 
 // Get the list of frontend versions
@@ -124,8 +143,8 @@ const activateGlobalLock = async () => {
 
           <select v-model="newFrontendVersionStorageBackend">
             <option :value="null">- Select a storage backend -</option>
-            <option v-for="storageBackend in storageBackendsData" :key="storageBackend.address" :value="storageBackend.address">
-              {{ storageBackend.name }}
+            <option v-for="storageBackendInfo in storageBackendsData" :key="storageBackendInfo.storageBackend" :value="storageBackendInfo.storageBackend">
+              {{ storageBackendInfo.title }} ({{ storageBackendInfo.version }})
             </option>
           </select>
           <div v-if="storageBackendsIsError" class="text-danger text-90">

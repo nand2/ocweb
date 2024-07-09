@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
 import { useQueryClient } from '@tanstack/vue-query'
 
-import { abi as FactoryABI } from '../utils/factoryABI.js';
+import { abi as factoryABI } from '../../../src/abi/factoryABI.js';
 import { useContractAddresses } from '../utils/queries.js';
 import { useSupportedChains } from '../utils/ethereum.js';
 
@@ -26,7 +26,7 @@ async function mint() {
   await switchChainAsync({ chainId: mintChainId.value })
 
   writeContract({ 
-    abi: FactoryABI,
+    abi: factoryABI,
     address: factoryAddress.value,
     functionName: 'mintWebsite',
     args: ["0x0000000000000000000000000000000000000000"],

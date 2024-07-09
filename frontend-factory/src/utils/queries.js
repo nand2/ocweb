@@ -171,6 +171,24 @@ function invalidateFrontendVersionsViewerQuery(queryClient, contractAddress, cha
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionsViewer', contractAddress, chainId] })
 }
 
+function useSupportedStorageBackendInterfaces(contractAddress, chainId) {
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { switchChainAsync } = useSwitchChain()
+
+  return useQuery({
+    queryKey: ['OCWebsiteSupportedStorageBackendInterfaces', contractAddress, chainId],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+
+      const result = await websiteClient.value.getSupportedStorageBackendInterfaces()
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: websiteClientLoaded,
+  })
+}
+
 export { 
   useInjectedVariables,
   useContractAddresses, 
@@ -180,5 +198,6 @@ export {
   useFrontendVersions, invalidateFrontendVersionsQuery,
   useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery,
   useFrontendVersionsViewer, invalidateFrontendVersionsViewerQuery,
+  useSupportedStorageBackendInterfaces
 }
 

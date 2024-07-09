@@ -31,7 +31,6 @@ interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
     function removePlugin(uint frontendIndex, address plugin) external;
 }
 
-// ERC-165 interface ID: 0x9fb48d91
 interface IVersionableStaticWebsitePlugin is IERC165 {
     struct Infos {
         // Technical name

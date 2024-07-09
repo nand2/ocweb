@@ -125,12 +125,23 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         storageBackends.push(storageBackend);
     }
 
-    function getStorageBackends() public view returns (IStorageBackendWithName[] memory) {
-        IStorageBackendWithName[] memory backends = new IStorageBackendWithName[](storageBackends.length);
+    function getStorageBackends(bytes4[] memory interfaceFilters) public view returns (IStorageBackendWithInfos[] memory) {
+        IStorageBackendWithInfos[] memory backends = new IStorageBackendWithInfos[](storageBackends.length);
         for(uint i = 0; i < storageBackends.length; i++) {
-            backends[i] = IStorageBackendWithName({
+            bool interfaceValid = (interfaceFilters.length == 0);
+            for(uint j = 0; j < interfaceFilters.length; j++) {
+                if(storageBackends[i].supportsInterface(interfaceFilters[j])) {
+                    interfaceValid = true;
+                    break;
+                }
+            }
+
+            backends[i] = IStorageBackendWithInfos({
                 storageBackend: storageBackends[i],
-                name: storageBackends[i].name()
+                name: storageBackends[i].name(),
+                title: storageBackends[i].title(),
+                version: storageBackends[i].version(),
+                interfaceValid: interfaceValid
             });
         }
 

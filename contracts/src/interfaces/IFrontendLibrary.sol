@@ -61,4 +61,7 @@ interface IFrontendLibrary {
     // Lock the whole frontend library
     function lock() external;
     function isLocked() external view returns (bool);
+
+    // Get the list of supported storage backend interfaces
+    function getSupportedStorageBackendInterfaces() external view returns (bytes4[] memory);
 }

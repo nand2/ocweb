@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-interface IStorageBackend {
+import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+
+interface IStorageBackend is IERC165 {
+    // Technical name
     function name() external view returns (string memory);
+    // Human title
+    function title() external view returns (string memory);
+    function version() external view returns (string memory);
 
     // Create a new file of a specified size
     // data can be either the actual data, or an abi-encoded struct

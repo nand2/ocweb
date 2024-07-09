@@ -2,12 +2,14 @@
 pragma solidity ^0.8.13;
 
 import { IStorageBackend } from "../../interfaces/IStorageBackend.sol";
+import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 // EthStorage
 import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageContractKZG.sol";
 import { DecentralizedKV } from "storage-contracts-v1/DecentralizedKV.sol";
 
-contract StorageBackendEthStorage is IStorageBackend {
+contract StorageBackendEthStorage is ERC165, IStorageBackend {
 
     struct File {
         bytes32[] chunkIds;
@@ -32,7 +34,21 @@ contract StorageBackendEthStorage is IStorageBackend {
     }
 
     function name() public pure returns (string memory) {
+        return "ethstorage";
+    }
+
+    function title() public pure returns (string memory) {
         return "EthStorage";
+    }
+
+    function version() public pure returns (string memory) {
+        return "0.1.0";
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return
+            interfaceId == type(IStorageBackend).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**
