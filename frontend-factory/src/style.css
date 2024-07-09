@@ -11,6 +11,7 @@
   --color-text: #fafafa;
   --color-text-muted: #888;
   --color-text-danger: #ff4d4d;
+  --color-text-warning: #ffcc00;
   --color-text-success: #0dbe0d;
   --color-link: var(--color-primary);
   --color-link-hover: #be8b32;
@@ -119,6 +120,11 @@ button.sm {
 
 .text-danger {
   color: var(--color-text-danger);
+}
+
+.text-warning {
+  color: var(--color-text-warning);
+
 }
 
 .text-success {

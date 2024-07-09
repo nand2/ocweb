@@ -260,9 +260,6 @@ const addNewFolder = async () => {
                     Add data to file
                   </span>
                 </div>
-                <div v-if="txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'error' && addFileTransactionResults[txIndex].error" class="transaction-error text-danger">
-                  {{ addFileTransactionResults[txIndex].error.shortMessage || addFileTransactionResults[txIndex].error.message }}
-                </div>
                 <div v-if="transaction.functionName == 'addFilesToFrontendVersion'" class="transaction-details">
                   <div v-for="(file, index) in transaction.args[1]" :key="index">
                     <code class="filename">{{ file.filePath }}</code>
@@ -279,6 +276,9 @@ const addNewFolder = async () => {
                         (chunk 1 / {{ transaction.metadata.files[index].chunksCount }})
                       </span>
                     </span>
+                    <span v-if="addFileTransactionBeingExecutedIndex <= txIndex && props.folderChildren.some(child => child.filePath === file.filePath)" class="text-warning filename-details">
+                      <ExclamationTriangleIcon style="width: 1.2em; height: 0.9em;" />Overwrite existing file
+                    </span>
                   </div>
                 </div>
                 <div v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'" class="transaction-details">
@@ -289,6 +289,10 @@ const addNewFolder = async () => {
                       (chunk {{ transaction.metadata.chunkId + 1 }} / {{ transaction.metadata.chunksCount }})
                     </span>
                   </div>
+                </div>
+
+                <div v-if="txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'error' && addFileTransactionResults[txIndex].error" class="transaction-error text-danger">
+                  Error uploading files: {{ addFileTransactionResults[txIndex].error.shortMessage || addFileTransactionResults[txIndex].error.message }}
                 </div>
               </div>
             </div>
@@ -392,7 +396,7 @@ const addNewFolder = async () => {
 .transaction-error {
   line-height: 1.2em;
   font-size: 0.9em;
-  margin-bottom: 0.3em;
+  margin-top: 0.3em;
 }
 
 /**

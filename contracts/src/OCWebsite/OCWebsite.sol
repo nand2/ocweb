@@ -12,6 +12,7 @@ import "./ContractAddressesWebsite.sol";
 import "./ProxyWebsite.sol";
 
 contract OCWebsite is VersionableStaticWebsite {
+    uint public constant VERSION = 1;
 
     constructor(ClonableFrontendVersionViewer _frontendVersionViewerImplementation) VersionableStaticWebsite(_frontendVersionViewerImplementation) {
     }

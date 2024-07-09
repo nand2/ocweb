@@ -9,6 +9,7 @@ import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
+import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
 
 const props = defineProps({
   frontendVersion: {
@@ -194,8 +195,9 @@ const removeItem = async (pluginAddress) => {
               </span>
             </div>
             <div class="form-area" v-if="showForm">
-              <div class="text-danger text-90">
-                The plugin must implement the <code>IVersionableStaticWebsitePlugin</code> interface, or the website will become unresponsive.
+              <div class="text-warning text-90">
+                <ExclamationTriangleIcon />
+                The plugin must implement the <code>IVersionableStaticWebsitePlugin</code> interface.
               </div>
 
               <input type="text" v-model="additionAddress" placeholder="Plugin address" />
