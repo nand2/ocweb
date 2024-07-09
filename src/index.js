@@ -53,6 +53,10 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getFrontendVersion([frontendIndex])
   }
 
+  async getFrontendVersionsViewer() {
+    return await this.#viemWebsiteContract.read.getFrontendVersionsViewer()
+  }
+
   async prepareSetDefaultFrontendIndexTransaction(frontendIndex) {
     return {
       functionName: 'setDefaultFrontendIndex',

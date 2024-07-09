@@ -14,7 +14,7 @@ import './FrontendLibrary.sol';
 
 abstract contract VersionableStaticWebsite is VersionableStaticWebsiteBase, FrontendLibrary {
 
-    constructor(ClonableFrontendVersionViewer _frontendVersionViewerImplementation) VersionableStaticWebsiteBase() FrontendLibrary(_frontendVersionViewerImplementation) {
+    constructor(ClonableFrontendVersionViewer _frontendVersionViewerImplementation) VersionableStaticWebsiteBase(_frontendVersionViewerImplementation) FrontendLibrary() {
     }
 
     function getLiveFrontendIndex() public view override returns (uint256) {

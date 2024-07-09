@@ -8,7 +8,7 @@ import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions, invalidateFrontendVersionsViewerQuery } from '../../../utils/queries';
 
 const props = defineProps({
   contractAddress: {
@@ -47,7 +47,7 @@ const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching
   enabled: contractAddressesLoaded,
 })
 
-// Get the list frontend versions
+// Get the list of frontend versions
 const showEditedFrontendVersionSelector = ref(false)
 const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId)
 
@@ -68,8 +68,8 @@ const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsErr
     newFrontendVersionDescription.value = ""
     showNewFrontendVersionForm.value = false
 
-    // Refresh the frontend version
-    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+    await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateFrontendVersionsViewerQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const newfrontendversionFile = async () => {

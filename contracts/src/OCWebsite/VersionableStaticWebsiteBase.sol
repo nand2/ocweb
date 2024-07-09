@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 import { LibStrings } from "../library/LibStrings.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
@@ -13,10 +14,21 @@ import "../interfaces/IVersionableStaticWebsite.sol";
 import '../library/Ownable.sol';
 import './ResourceRequestWebsite.sol';
 import './FrontendLibrary.sol';
+import "./ClonableFrontendVersionViewer.sol";
 
 abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, ResourceRequestWebsite, Ownable {
     // For each frontend version, the list of plugins
     mapping(uint => IVersionableStaticWebsitePlugin[]) public plugins;
+
+    // When not the live version, a frontend version can be viewed by this address,
+    // which is a clone of a cheap proxy contract
+    ClonableFrontendVersionViewer public frontendVersionViewerImplementation;
+    mapping(uint => FrontendVersionViewer) public frontendVersionsViewer;
+
+
+    constructor(ClonableFrontendVersionViewer _viewerImplementation) {
+        frontendVersionViewerImplementation = _viewerImplementation;
+    }
 
     
     function getLiveFrontendIndex() public view virtual returns (uint256);
@@ -60,6 +72,9 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         // Ensure that the plugin has the IVersionableStaticWebsitePlugin interface
         require(plugin.supportsInterface(type(IVersionableStaticWebsitePlugin).interfaceId), "Invalid plugin");
 
+        // Ensure that the frontendIndex is within bounds
+        require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
+
         // Ensure that the frontend is not locked
         require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
 
@@ -80,6 +95,9 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
     }
 
     function removePlugin(uint frontendIndex, address plugin) public onlyOwner {
+        // Ensure that the frontendIndex is within bounds
+        require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
+
         // Ensure that the frontend is not locked
         require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
 
@@ -94,6 +112,45 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
     }
 
     
+    //
+    // Frontend version viewer
+    //
+
+    /**
+     * Enable/disable the viewing of a non-live frontend version
+     * @param frontendIndex The index of the frontend version
+     * @param enable Enable or disable the viewer
+     */
+    function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) public onlyOwner {
+        // Ensure that the frontend is not locked
+        require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
+
+        // Ensure that the frontendIndex is within bounds
+        require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
+
+        FrontendVersionViewer memory modifiedValue = frontendVersionsViewer[frontendIndex];
+        // Create the viewer if not done so yet
+        if(enable && address(frontendVersionsViewer[frontendIndex].viewer) == address(0)) {
+            ClonableFrontendVersionViewer viewer = ClonableFrontendVersionViewer(Clones.clone(address(frontendVersionViewerImplementation)));
+            viewer.initialize(IDecentralizedApp(address(this)), frontendIndex);
+            modifiedValue.viewer = IDecentralizedApp(viewer);
+        }
+        modifiedValue.isViewable = enable;
+        frontendVersionsViewer[frontendIndex] = modifiedValue;
+    }
+
+    function getFrontendVersionsViewer() public view returns (FrontendVersionViewer[] memory) {
+        FrontendVersionViewer[] memory viewers = new FrontendVersionViewer[](getFrontendLibrary().getFrontendVersionCount());
+        for(uint i = 0; i < viewers.length; i++) {
+            viewers[i] = frontendVersionsViewer[i];
+        }
+        return viewers;
+    }
+
+
+    //
+    // web3://
+    //
 
     /**
      * Return an answer to a web3:// request after the static frontend is served
@@ -128,7 +185,7 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
             // Get the frontend version
             frontend = frontendLibrary.getFrontendVersion(frontendIndex);
             // If we are serving a non-live, non-viewable frontend, we return a 404
-            if(frontendIndex != liveFrontendIndex && frontend.isViewable == false) {
+            if(frontendIndex != liveFrontendIndex && frontendVersionsViewer[frontendIndex].isViewable == false) {
                 statusCode = 404;
                 return (statusCode, body, headers);
             }

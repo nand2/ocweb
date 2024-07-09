@@ -75,6 +75,19 @@ export const abi = [
     type: "error"
   },
   {
+    inputs: [],
+    name: "VERSION",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -266,6 +279,30 @@ export const abi = [
         type: "uint256"
       }
     ],
+    name: "frontendVersionViewers",
+    outputs: [
+      {
+        internalType: "contract IDecentralizedApp",
+        name: "viewer",
+        type: "address"
+      },
+      {
+        internalType: "bool",
+        name: "isViewable",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
     name: "frontendVersions",
     outputs: [
       {
@@ -277,16 +314,6 @@ export const abi = [
         internalType: "string",
         name: "description",
         type: "string"
-      },
-      {
-        internalType: "contract IDecentralizedApp",
-        name: "viewer",
-        type: "address"
-      },
-      {
-        internalType: "bool",
-        name: "isViewable",
-        type: "bool"
       },
       {
         internalType: "bool",
@@ -373,16 +400,6 @@ export const abi = [
             type: "string"
           },
           {
-            internalType: "contract IDecentralizedApp",
-            name: "viewer",
-            type: "address"
-          },
-          {
-            internalType: "bool",
-            name: "isViewable",
-            type: "bool"
-          },
-          {
             internalType: "bool",
             name: "locked",
             type: "bool"
@@ -404,6 +421,31 @@ export const abi = [
         internalType: "uint256",
         name: "",
         type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "getFrontendVersionsViewer",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "contract IDecentralizedApp",
+            name: "viewer",
+            type: "address"
+          },
+          {
+            internalType: "bool",
+            name: "isViewable",
+            type: "bool"
+          }
+        ],
+        internalType: "struct IVersionableStaticWebsite.FrontendVersionViewer[]",
+        name: "",
+        type: "tuple[]"
       }
     ],
     stateMutability: "view",
@@ -462,16 +504,6 @@ export const abi = [
             internalType: "string",
             name: "description",
             type: "string"
-          },
-          {
-            internalType: "contract IDecentralizedApp",
-            name: "viewer",
-            type: "address"
-          },
-          {
-            internalType: "bool",
-            name: "isViewable",
-            type: "bool"
           },
           {
             internalType: "bool",
@@ -547,16 +579,6 @@ export const abi = [
             internalType: "string",
             name: "description",
             type: "string"
-          },
-          {
-            internalType: "contract IDecentralizedApp",
-            name: "viewer",
-            type: "address"
-          },
-          {
-            internalType: "bool",
-            name: "isViewable",
-            type: "bool"
           },
           {
             internalType: "bool",

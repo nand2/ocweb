@@ -48,11 +48,6 @@ struct FrontendFilesSet {
     // Description of the frontend
     string description;
 
-    // When not the live version, a frontend version can be viewed by this address,
-    // which is a clone of a cheap proxy contract
-    IDecentralizedApp viewer;
-    bool isViewable;
-
     // When locked, the frontend version cannot be modified any longer
     bool locked;
 }

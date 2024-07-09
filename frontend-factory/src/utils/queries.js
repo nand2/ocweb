@@ -149,6 +149,28 @@ function invalidateFrontendVersionPluginsQuery(queryClient, contractAddress, cha
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex] })
 }
 
+function useFrontendVersionsViewer(contractAddress, chainId) {
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { switchChainAsync } = useSwitchChain()
+
+  return useQuery({
+    queryKey: ['OCWebsiteFrontendVersionsViewer', contractAddress, chainId],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+
+      const result = await websiteClient.value.getFrontendVersionsViewer()
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: websiteClientLoaded,
+  })
+}
+
+function invalidateFrontendVersionsViewerQuery(queryClient, contractAddress, chainId) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionsViewer', contractAddress, chainId] })
+}
+
 export { 
   useInjectedVariables,
   useContractAddresses, 
@@ -156,6 +178,7 @@ export {
   useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, 
   invalidateFrontendVersionQuery,
   useFrontendVersions, invalidateFrontendVersionsQuery,
-  useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery
+  useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery,
+  useFrontendVersionsViewer, invalidateFrontendVersionsViewerQuery,
 }
 

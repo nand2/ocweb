@@ -4,13 +4,11 @@ pragma solidity ^0.8.13;
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 import { LibStrings } from "../library/LibStrings.sol";
 import { Ownable } from "../library/Ownable.sol";
-import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IFrontendLibrary.sol";
 import "../interfaces/IStorageBackend.sol";
-import "./ClonableFrontendVersionViewer.sol";
 
 contract FrontendLibrary is IFrontendLibrary, Ownable {
 
@@ -19,8 +17,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     uint256 public defaultFrontendIndex;
     // Is the frontend library locked?
     bool public frontendLibraryLocked;
-
-    ClonableFrontendVersionViewer public frontendVersionViewerImplementation;
 
     modifier onlyOwnerOrSelf() {
         if(msg.sender != owner && msg.sender != address(this)) {
@@ -41,10 +37,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         _;
     }
 
-    constructor(ClonableFrontendVersionViewer _viewerImplementation) {
-        frontendVersionViewerImplementation = _viewerImplementation;
-    }
-
     /**
      * Add a new frontend version
      * @param storageBackend Address of the storage backend
@@ -55,9 +47,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
         newFrontend.storageBackend = storageBackend;
         newFrontend.description = _description;
-
-        newFrontend.viewer = IDecentralizedApp(Clones.clone(address(frontendVersionViewerImplementation)));
-        ClonableFrontendVersionViewer(address(newFrontend.viewer)).initialize(IDecentralizedApp(address(this)), frontendVersions.length - 1);
     }
 
     /**
@@ -332,19 +321,6 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             frontend.storageBackend.remove(frontend.files[i].contentKey);
             frontend.files.pop();
         }
-    }
-
-    /**
-     * Enable/disable the viewing of a non-live frontend version
-     * @param frontendIndex The index of the frontend version
-     * @param enable Enable or disable the viewer
-     */
-    function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
-            revert FrontendIndexOutOfBounds();
-        }
-
-        frontendVersions[frontendIndex].isViewable = enable;
     }
 
     /**
