@@ -184,6 +184,32 @@ const removeItem = async (pluginAddress) => {
           </div>
         </div>
 
+        <div class="operations">
+          <div class="op-add-new">
+
+            <div class="button-area" @click="showForm = !showForm">
+              <span class="button-text">
+                <PlusLgIcon />
+                Install custom plugin
+              </span>
+            </div>
+            <div class="form-area" v-if="showForm">
+              <div class="text-danger text-90">
+                The plugin must implement the <code>IVersionableStaticWebsitePlugin</code> interface, or the website will become unresponsive.
+              </div>
+
+              <input type="text" v-model="additionAddress" placeholder="Plugin address" />
+
+              <button @click="additionItem(additionAddress)" :disabled="additionAddress == '' || additionIsPending">Install custom plugin</button>
+
+              <div v-if="additionIsError && additionVariables == additionAddress" class="text-danger text-90">
+                Error adding the custom plugin: {{ additionError.shortMessage || additionError.message }}
+                <a @click.stop.prevent="additionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="plugins-list">
         <div class="title2">
@@ -235,33 +261,6 @@ const removeItem = async (pluginAddress) => {
 
           </div>
         </div>
-
-        <div class="operations">
-          <div class="op-add-new">
-
-            <div class="button-area" @click="showForm = !showForm">
-              <span class="button-text">
-                <PlusLgIcon />
-                Install custom plugin
-              </span>
-            </div>
-            <div class="form-area" v-if="showForm">
-              <div class="text-danger text-90">
-                The plugin must implement the <code>IVersionableStaticWebsitePlugin</code> interface, or the website will become unresponsive.
-              </div>
-
-              <input type="text" v-model="additionAddress" placeholder="Plugin address" />
-
-              <button @click="additionItem(additionAddress)" :disabled="additionAddress == '' || additionIsPending">Install custom plugin</button>
-
-              <div v-if="additionIsError && additionVariables == additionAddress" class="text-danger text-90">
-                Error adding the custom plugin: {{ additionError.shortMessage || additionError.message }}
-                <a @click.stop.prevent="additionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
 
       </div>
     </div>

@@ -3,13 +3,20 @@ pragma solidity ^0.8.13;
 
 import "../../interfaces/IVersionableStaticWebsite.sol";
 import "../../library/LibStrings.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract InjectedVariablesPlugin is IVersionableStaticWebsitePlugin {
+contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
     struct KeyValueVariable {
         string key;
         string value;
     }
     mapping(IVersionableStaticWebsite => mapping(uint => KeyValueVariable[])) public variables;
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return
+            interfaceId == type(IVersionableStaticWebsitePlugin).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
 
     function infos() external view returns (Infos memory) {
         return

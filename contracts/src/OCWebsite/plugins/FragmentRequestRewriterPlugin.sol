@@ -3,8 +3,9 @@ pragma solidity ^0.8.13;
 
 import "../../interfaces/IVersionableStaticWebsite.sol";
 import "../../library/LibStrings.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract FragmentRequestRewriterPlugin is IVersionableStaticWebsitePlugin {
+contract FragmentRequestRewriterPlugin is ERC165, IVersionableStaticWebsitePlugin {
     struct ProxiedWebsite {
         // An web3:// resource request mode website, cf ERC-6944 / ERC-5219
         IDecentralizedApp website;
@@ -12,6 +13,12 @@ contract FragmentRequestRewriterPlugin is IVersionableStaticWebsitePlugin {
         string[] remotePrefix;
     }
     mapping(IVersionableStaticWebsite => mapping(uint => ProxiedWebsite[])) public proxiedWebsites;
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return
+            interfaceId == type(IVersionableStaticWebsitePlugin).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
 
     function infos() external view returns (Infos memory) {
         return

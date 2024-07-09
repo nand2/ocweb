@@ -57,6 +57,14 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
     // 
 
     function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin) public override onlyOwner {
+        // Ensure that the plugin has the IVersionableStaticWebsitePlugin interface
+        require(plugin.supportsInterface(type(IVersionableStaticWebsitePlugin).interfaceId), "Invalid plugin");
+
+        // Ensure that the plugin is not already added
+        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
+            require(address(plugins[frontendIndex][i]) != address(plugin), "Plugin already added");
+        }
+
         plugins[frontendIndex].push(plugin);
     }
 

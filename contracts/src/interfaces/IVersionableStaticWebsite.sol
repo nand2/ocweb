@@ -4,8 +4,11 @@ pragma solidity ^0.8.13;
 import { IDecentralizedApp, KeyValue } from "./IDecentralizedApp.sol";
 import { IFrontendLibrary, FrontendFilesSet } from "./IFrontendLibrary.sol";
 import { IOwnable } from "./IOwnable.sol";
+import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
+
+
     function getLiveFrontendIndex() external view returns (uint256);
     function getFrontendLibrary() external view returns (IFrontendLibrary);
     // Shortcut for frontends
@@ -20,7 +23,8 @@ interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
     function removePlugin(uint frontendIndex, address plugin) external;
 }
 
-interface IVersionableStaticWebsitePlugin {
+// ERC-165 interface ID: 0x9fb48d91
+interface IVersionableStaticWebsitePlugin is IERC165 {
     struct Infos {
         // Technical name
         string name;
