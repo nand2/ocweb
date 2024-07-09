@@ -97,8 +97,8 @@ const setIsViewable = async () => {
 
 <template>
   <div>
-    <div class="url-bar">
-      <span v-if="frontendVersion != null && liveFrontendVersionLoaded && frontendIsLiveVersion == false && frontendVersion.isViewable == false" class="text-muted">
+    <div class="url-bar" v-if="frontendIsLiveVersion == false">
+      <span v-if="frontendVersion != null && liveFrontendVersionLoaded && frontendVersion.isViewable == false" class="text-muted" style="display: block; padding: 0.5em 1em;">
         Version not viewable
       </span>
       <div v-else class="url-bar-with-url">
