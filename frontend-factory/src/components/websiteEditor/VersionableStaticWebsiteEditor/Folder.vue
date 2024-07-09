@@ -14,6 +14,10 @@ const props = defineProps({
     type: Array,
     default: [],
   },
+  locked: {
+    type: Boolean,
+    required: true,
+  },
   contractAddress: {
     type: String,
     required: true,
@@ -55,6 +59,7 @@ const paddingLeftForCSS = computed(() => {
     <FolderChildren 
       :folderChildren="folder.children" 
       :folderParents 
+      :locked
       :contractAddress
       :chainId
       :frontendVersionIndex

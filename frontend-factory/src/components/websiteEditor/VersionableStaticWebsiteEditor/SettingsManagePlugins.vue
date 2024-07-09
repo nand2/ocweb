@@ -176,7 +176,7 @@ const removeItem = async (pluginAddress) => {
             </div>
 
             <div class="plugin-operations">
-              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="removeIsPending == false">
+              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
                 <TrashIcon />
               </a>
               <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == pluginInfos.plugin" />
@@ -185,7 +185,7 @@ const removeItem = async (pluginAddress) => {
           </div>
         </div>
 
-        <div class="operations">
+        <div class="operations" v-if="frontendVersion != null && frontendVersion.locked == false">
           <div class="op-add-new">
 
             <div class="button-area" @click="showForm = !showForm">
@@ -255,7 +255,7 @@ const removeItem = async (pluginAddress) => {
             </div>
 
             <div class="plugin-operations">
-              <a @click.stop.prevent="additionItem(pluginInfos.plugin)" class="white" v-if="additionIsPending == false">
+              <a @click.stop.prevent="additionItem(pluginInfos.plugin)" class="white" v-if="frontendVersion != null && frontendVersion.locked == false && additionIsPending == false">
                 <PlusLgIcon />
               </a>
               <PlusLgIcon class="anim-pulse" v-if="additionIsPending && additionVariables == pluginInfos.plugin" />

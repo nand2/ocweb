@@ -18,6 +18,10 @@ const props = defineProps({
     type: Array,
     default: [],
   },
+  locked: {
+    type: Boolean,
+    required: true,
+  },
   contractAddress: {
     type: String,
     required: true,
@@ -172,10 +176,10 @@ const deleteFile = async () => {
         </span>
       </div>
       <div class="actions">
-        <a @click.stop.prevent="showRenameForm = !showRenameForm; preRenameError = ''; newFileName = file.name" class="white" v-if="renameIsPending == false && deleteIsPending == false">
+        <a @click.stop.prevent="showRenameForm = !showRenameForm; preRenameError = ''; newFileName = file.name" class="white" v-if="locked == false && renameIsPending == false && deleteIsPending == false">
           <PencilSquareIcon />
         </a>
-        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="renameIsPending == false && deleteIsPending == false">
+        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="locked == false && renameIsPending == false && deleteIsPending == false">
           <TrashIcon />
         </a>
       </div>

@@ -163,7 +163,7 @@ const removeItem = async (key) => {
           </code>
         </div>
         <div style="text-align: right">
-          <a @click.stop.prevent="removeItem(injectedVariable.key)" class="white" v-if="removeIsPending == false">
+          <a @click.stop.prevent="removeItem(injectedVariable.key)" class="white" v-if="frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
             <TrashIcon />
           </a>
           <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == injectedVariable.key" />
@@ -178,7 +178,7 @@ const removeItem = async (key) => {
     </div>
 
 
-    <div class="operations">
+    <div class="operations" v-if="frontendVersion != null && frontendVersion.locked == false">
       <div class="op-add-new">
 
         <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">

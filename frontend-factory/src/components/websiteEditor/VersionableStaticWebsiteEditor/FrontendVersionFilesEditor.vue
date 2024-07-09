@@ -157,6 +157,7 @@ const rootFolderChildren = computed(() => {
 
       <FolderChildren 
         :folderChildren="rootFolderChildren" 
+        :locked="frontendVersion.locked"
         :contractAddress :chainId :frontendVersionIndex :websiteClient :globalEmptyFolders />
 
     </div>

@@ -12,7 +12,7 @@ import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
 import EyeSlashIcon from '../../../icons/EyeSlashIcon.vue';
 
-import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionsQuery } from '../../../utils/queries.js';
+import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionsQuery, invalidateFrontendVersionQuery } from '../../../utils/queries.js';
 
 const props = defineProps({
   frontendVersion: {
@@ -115,11 +115,12 @@ const { isPending: lockIsPending, isError: lockIsError, error: lockError, isSucc
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
+    await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
     return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const lock = async () => {
-  if(confirm("WARNING: You are about to lock this version *permanently*. You will no longer be able to edit it (edit files, ...). Continue?") == false) {
+  if(confirm("WARNING: You are about to lock this version *permanently*. \n\n- You will no longer be able to add/remove files and configure plugins for this version.\n- You will keep the ability to set/unset this version as the live version. \n- You will keep the ability to activate/desactivate the viewer of this version.\n\nContinue?") == false) {
     return
   }
 

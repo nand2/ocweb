@@ -21,6 +21,10 @@ const props = defineProps({
     type: Array,
     default: [],
   },
+  locked: {
+    type: Boolean,
+    required: true,
+  },
   contractAddress: {
     type: String,
     required: true,
@@ -193,6 +197,7 @@ const addNewFolder = async () => {
         <Folder 
           :folder="child" 
           :folderParents="folderParents.concat([child.name])" 
+          :locked
           :contractAddress
           :chainId
           :frontendVersionIndex
@@ -202,6 +207,7 @@ const addNewFolder = async () => {
         <File 
           :file="child" 
           :folderParents 
+          :locked
           :contractAddress
           :chainId
           :frontendVersionIndex
@@ -211,7 +217,7 @@ const addNewFolder = async () => {
 
       </div>
     </div>
-    <div class="operations">
+    <div class="operations" v-if="locked == false">
       <div class="op-upload">
         <div class="button-area">
           <span class="button-text">
@@ -276,7 +282,8 @@ const addNewFolder = async () => {
                         (chunk 1 / {{ transaction.metadata.files[index].chunksCount }})
                       </span>
                     </span>
-                    <span v-if="addFileTransactionBeingExecutedIndex <= txIndex && props.folderChildren.some(child => child.filePath === file.filePath)" class="text-warning filename-details">
+                    {{ txIndex }}
+                    <span v-if="(txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'success') == false && props.folderChildren.some(child => child.filePath === file.filePath)" class="text-warning filename-details">
                       <ExclamationTriangleIcon style="width: 1.2em; height: 0.9em;" />Overwrite existing file
                     </span>
                   </div>

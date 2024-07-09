@@ -60,6 +60,9 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         // Ensure that the plugin has the IVersionableStaticWebsitePlugin interface
         require(plugin.supportsInterface(type(IVersionableStaticWebsitePlugin).interfaceId), "Invalid plugin");
 
+        // Ensure that the frontend is not locked
+        require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
+
         // Ensure that the plugin is not already added
         for(uint i = 0; i < plugins[frontendIndex].length; i++) {
             require(address(plugins[frontendIndex][i]) != address(plugin), "Plugin already added");
@@ -77,6 +80,9 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
     }
 
     function removePlugin(uint frontendIndex, address plugin) public onlyOwner {
+        // Ensure that the frontend is not locked
+        require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
+
         IVersionableStaticWebsitePlugin[] storage _plugins = plugins[frontendIndex];
         for(uint i = 0; i < _plugins.length; i++) {
             if(address(_plugins[i]) == plugin) {

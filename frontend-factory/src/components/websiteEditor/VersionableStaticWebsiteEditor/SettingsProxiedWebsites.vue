@@ -145,7 +145,7 @@ const removeItem = async (index) => {
           web3://{{ proxiedWebsite.website }}{{ chainId > 1 ? ':' + chainId : '' }}/{{ proxiedWebsite.remotePrefix.join('/') }}
         </div>
         <div style="text-align: right">
-          <a @click.stop.prevent="removeItem(index)" class="white" v-if="removeIsPending == false">
+          <a @click.stop.prevent="removeItem(index)" class="white" v-if="frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
             <TrashIcon />
           </a>
           <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == index" />
@@ -164,7 +164,7 @@ const removeItem = async (index) => {
     </div>
 
 
-    <div class="operations">
+    <div class="operations" v-if="frontendVersion != null && frontendVersion.locked == false">
       <div class="op-add-new">
 
         <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">
