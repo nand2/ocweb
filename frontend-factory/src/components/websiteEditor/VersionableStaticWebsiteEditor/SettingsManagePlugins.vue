@@ -81,6 +81,8 @@ const availablePluginsNotInstalled = computed(() => {
 })
 
 // Add item
+const showForm = ref(false)
+const additionAddress = ref('')
 const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset, variables: additionVariables } = useMutation({
   mutationFn: async (pluginAddress) => {
 
@@ -92,6 +94,9 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
+    additionAddress.value = ''
+    showForm.value = false
+
     return await invalidateFrontendVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex);
   }
 })
@@ -161,6 +166,9 @@ const removeItem = async (pluginAddress) => {
                     Not provided
                   </span>
               </div>
+              <div class="plugin-description-others">
+                Address: <small>{{ pluginInfos.plugin }}</small>
+              </div>
               <div v-if="removeIsError && removeVariables == pluginInfos.plugin" class="mutation-error">
                 Error removing the plugin: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
               </div>
@@ -210,6 +218,9 @@ const removeItem = async (pluginAddress) => {
                     Not provided
                   </span>
               </div>
+              <div class="plugin-description-others">
+                Address: <small>{{ pluginInfos.plugin }}</small>
+              </div>
               <div v-if="additionIsError && additionVariables == pluginInfos.plugin" class="mutation-error">
                 Error adding the plugin: {{ additionError.shortMessage || additionError.message }} <a @click.stop.prevent="additionReset()">Hide</a>
               </div>
@@ -224,6 +235,29 @@ const removeItem = async (pluginAddress) => {
 
           </div>
         </div>
+
+        <div class="operations">
+          <div class="op-add-new">
+
+            <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">
+              <span class="button-text">
+                <PlusLgIcon />
+                Add custom plugin
+              </span>
+            </div>
+            <div class="form-area" v-if="showForm">
+              <input type="text" v-model="additionAddress" placeholder="Plugin address" />
+
+              <button @click="additionItem(additionAddress)" :disabled="additionAddress == '' || additionIsPending">Add custom plugin</button>
+
+              <div v-if="additionIsError && additionVariables == additionAddress" class="text-danger text-90">
+                Error adding the custom plugin: {{ additionError.shortMessage || additionError.message }}
+                <a @click.stop.prevent="additionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
       </div>
     </div>
@@ -301,5 +335,50 @@ const removeItem = async (pluginAddress) => {
 .mutation-error a {
   color: var(--color-text-danger);
   text-decoration: underline;
+}
+
+
+.operations {
+  display: flex;
+  gap: 1em;
+  margin-top: 1em;
+  align-items: flex-start;
+}
+@media (max-width: 700px) {
+  .operations {
+    flex-direction: column;
+  }
+}
+
+.operations .button-area {
+  text-align: center;
+  position: relative;
+  background-color: var(--color-input-bg);
+  border: 1px solid #555;
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+.operations .button-area .button-text {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  justify-content: center;
+}
+
+.operations .form-area {
+  border-left: 1px solid #555;
+  border-right: 1px solid #555;
+  border-bottom: 1px solid #555;
+  background-color: var(--color-popup-bg);
+  font-size: 0.9em;
+  padding: 0.75em 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.operations input {
+  max-width: 150px;
 }
 </style>
