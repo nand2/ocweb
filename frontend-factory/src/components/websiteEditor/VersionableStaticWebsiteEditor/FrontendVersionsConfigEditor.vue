@@ -54,8 +54,6 @@ const { data: supportedStorageBackendInterfaces, isLoading: supportedStorageBack
 const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching: storageBackendsFetching, isError: storageBackendsIsError, error: storageBackendsError, isSuccess: storageBackendsLoaded } = useQuery({
   queryKey: ['storageBackends', props.contractAddress, props.chainId, supportedStorageBackendInterfaces],
   queryFn: async () => {
-    const factoryAddress = contractAddresses.value.factories.find(f => f.chainId === props.chainId)?.address
-
     let result = await factoryContractClient.value.read.getStorageBackends([supportedStorageBackendInterfaces.value]);
     // Filter out the ones with interfaceValid == false
     result = result.filter(backend => backend.interfaceValid)

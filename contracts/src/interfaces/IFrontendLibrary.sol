@@ -6,6 +6,7 @@ import "./IStorageBackend.sol";
 
 interface IFrontendLibrary {
     error IndexOutOfBounds();
+    error UnsupportedStorageBackendInterface();
     error FrontendLibraryLocked();
     error FrontendIndexOutOfBounds();
     error FrontendVersionLocked();

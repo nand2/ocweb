@@ -43,8 +43,18 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param _description A description of the frontend version
      */
     function addFrontendVersion(IStorageBackend storageBackend, string memory _description) public onlyOwnerOrSelf frontendLibraryUnlocked {
-        // Ensure storageBackend implement the IStorageBackend interface
-        require(storageBackend.supportsInterface(type(IStorageBackend).interfaceId), "Invalid plugin");
+        // Ensure that the plugin support one of the requested interfaces
+        bool supported = false;
+        bytes4[] memory supportedInterfaces = getSupportedStorageBackendInterfaces();
+        for(uint i = 0; i < supportedInterfaces.length; i++) {
+            if(supportedInterfaces[i] == type(IStorageBackend).interfaceId) {
+                supported = true;
+                break;
+            }
+        }
+        if(supported == false) {
+            revert UnsupportedStorageBackendInterface();
+        }
 
         frontendVersions.push();
         FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];

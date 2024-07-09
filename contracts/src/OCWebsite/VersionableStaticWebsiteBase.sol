@@ -69,8 +69,16 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
     // 
 
     function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin) public override onlyOwner {
-        // Ensure that the plugin has the IVersionableStaticWebsitePlugin interface
-        require(plugin.supportsInterface(type(IVersionableStaticWebsitePlugin).interfaceId), "Invalid plugin");
+        // Ensure that the plugin support one of the requested interfaces
+        bytes4[] memory supportedInterfaces = getSupportedPluginInterfaces();
+        bool supported = false;
+        for(uint i = 0; i < supportedInterfaces.length; i++) {
+            if(plugin.supportsInterface(supportedInterfaces[i])) {
+                supported = true;
+                break;
+            }
+        }
+        require(supported, "Plugin does not support any of the required interfaces");
 
         // Ensure that the frontendIndex is within bounds
         require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
