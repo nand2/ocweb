@@ -201,7 +201,8 @@ const removeItem = async (pluginAddress) => {
             <div class="form-area" v-if="showForm">
               <div class="text-warning text-90">
                 <ExclamationTriangleIcon />
-                The plugin must implement the <code>IVersionableStaticWebsitePlugin</code> interface.
+                The plugin must implement one of the following interfaces: 
+                <code v-for="itf in supportedPluginInterfaces"> {{ itf }} </code>
               </div>
 
               <input type="text" v-model="additionAddress" placeholder="Plugin address" />
