@@ -211,7 +211,7 @@ const viewerAddress = computed(() => {
           </span>
           <BoxArrowUpRightIcon style="flex: 0 0 auto; margin-left: 0.5em" />
         </a>
-        <span v-else-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && frontendVersion.isViewable == false" style="margin:auto;">
+        <span v-else-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && (frontendVersionViewer != null && frontendVersionViewer.isViewable == false)" style="margin:auto;">
           <EyeSlashIcon class="text-muted" />
         </span>
       </div>

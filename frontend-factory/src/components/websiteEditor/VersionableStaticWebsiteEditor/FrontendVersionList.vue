@@ -42,7 +42,7 @@ const { data: frontendVersionsViewer, isLoading: frontendVersionsViewerLoading, 
         <FrontendVersionListLine
           :frontendVersion="frontendVersion"
           :frontendVersionIndex="index"
-          :frontendVersionViewer="frontendVersionsViewerLoaded ? frontendVersionsViewer[index] : null"
+          :frontendVersionViewer="frontendVersionsViewerLoaded && index < frontendVersionsViewer.length ? frontendVersionsViewer[index] : null"
           :contractAddress
           :chainId
           :websiteClient />
