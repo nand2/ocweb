@@ -139,7 +139,7 @@ contract OCWebsiteFactoryScript is Script {
             injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
             // Testing: Add hardcoded factory for sepolia && holesky
             if(targetChain != TargetChain.HOLESKY) {
-                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0xc741aa20093c4ded08348c1626335759fadbc236), ":", LibStrings.toString(17000)));
+                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0xc741aa20093C4DEd08348c1626335759fadBc236), ":", LibStrings.toString(17000)));
             }
             // injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07), ":", LibStrings.toString(11155111)));
 

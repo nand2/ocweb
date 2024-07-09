@@ -35,8 +35,15 @@ const props = defineProps({
   },
 })
 
-const openHomepage = () => {
-  window.open(props.pluginInfos.infos.homepage, '_blank');
+const openHomepageWithArgs = () => {
+  let url = props.pluginInfos.infos.homepage;
+  // If we count only 2 slashes, we assume there is no / after the domain name
+  // We need to add a / after the domain name before adding the args
+  if (url.split('/').length == 3) {
+    url += '/';
+  }
+  url += '?websiteAddress=' + props.contractAddress + '&websiteChainId=' + props.chainId;
+  window.open(url, '_blank');
 }
 
 </script>
@@ -70,7 +77,7 @@ const openHomepage = () => {
 
     <div v-else>
       <div v-if="pluginInfos.infos.homepage">
-        <button @click="openHomepage()" class="sm">Configure <BoxArrowUpRightIcon /></button>
+        <button @click="openHomepageWithArgs()" class="sm">Configure <BoxArrowUpRightIcon /></button>
       </div>
       <div v-else>
         <div class="text-muted text-90">
