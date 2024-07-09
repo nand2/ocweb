@@ -45,9 +45,6 @@ const openHomepage = () => {
   <div>
     <div class="title">
       {{ pluginInfos.infos.title }}
-      <small v-if="pluginInfos.infos.version" style="font-size: 0.8em; margin-right: 0.25em">
-        {{ pluginInfos.infos.version }}
-      </small>
       <small v-if="pluginInfos.infos.subTitle" class="text-muted" style="font-weight: normal; font-size:0.7em;">
         {{ pluginInfos.infos.subTitle }}
       </small>
