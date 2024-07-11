@@ -23,16 +23,15 @@ contract UploadSstore2Frontend is Script {
     function run() public {
         vm.startBroadcast();
 
-        IFrontendLibrary frontendLibrary = IFrontendLibrary(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
         IVersionableStaticWebsite versionableStaticWebsite = IVersionableStaticWebsite(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
 
         StaticFrontendPlugin staticFrontendPlugin = StaticFrontendPlugin(vm.envAddress("STATIC_FRONTEND_PLUGIN_ADDRESS"));
 
         // If there is already a frontend version which is unlocked, we wipe it and replace it
-        (,uint256 frontendVersionCount) = frontendLibrary.getFrontendVersions(0, 0);
-        if(frontendVersionCount > 0 && frontendLibrary.getFrontendVersion(frontendVersionCount - 1).locked == false) {
+        (,uint256 websiteVersionCount) = versionableStaticWebsite.getWebsiteVersions(0, 0);
+        if(websiteVersionCount > 0 && versionableStaticWebsite.getWebsiteVersion(websiteVersionCount - 1).locked == false) {
             console.log("Resetting and replacing latest frontend version");
-            frontendLibrary.removeAllFiles(frontendVersionCount - 1);
+            staticFrontendPlugin.removeAllFiles(versionableStaticWebsite, websiteVersionCount - 1);
         }
         // Otherwise we add a new version
         else {
@@ -51,7 +50,7 @@ contract UploadSstore2Frontend is Script {
                 require(address(storageBackend) != address(0), "SSTORE2 storage backend not found");
             }
 
-            frontendLibrary.addFrontendVersion(storageBackend, "Initial version");
+            versionableStaticWebsite.addWebsiteVersion("Initial version", 0);
         }
 
         // Get the files to upload
@@ -74,7 +73,7 @@ contract UploadSstore2Frontend is Script {
                 chunksCount++;
             }
 
-            (,uint256 frontendVersionCount) = frontendLibrary.getFrontendVersions(0, 0);
+            (,websiteVersionCount) = versionableStaticWebsite.getWebsiteVersions(0, 0);
             for(uint256 j = 0; j < chunksCount; j++) {
                 bytes memory chunk;
                 {
@@ -87,34 +86,19 @@ contract UploadSstore2Frontend is Script {
                 }
                 console.log("    - Uploading chunk", j, "of size", chunk.length);
                 if(j == 0) {
-                    {
-                        IFrontendLibrary.FileUploadInfos[] memory fileUploadInfosOld = new IFrontendLibrary.FileUploadInfos[](1);
-                        fileUploadInfosOld[0] = IFrontendLibrary.FileUploadInfos({
-                            filePath: string.concat(files[i].subFolder, files[i].filename),
-                            fileSize: fileContents.length,
-                            contentType: files[i].mimeType,
-                            compressionAlgorithm: CompressionAlgorithm.GZIP,
-                            data: chunk
-                        });
-                        frontendLibrary.addFiles(frontendVersionCount - 1, fileUploadInfosOld);
-                    }
-
-                    {
-                        StaticFrontendPlugin.FileUploadInfos[] memory fileUploadInfos = new StaticFrontendPlugin.FileUploadInfos[](1);
-                        fileUploadInfos[0] = StaticFrontendPlugin.FileUploadInfos({
-                            filePath: string.concat(files[i].subFolder, files[i].filename),
-                            fileSize: fileContents.length,
-                            contentType: files[i].mimeType,
-                            compressionAlgorithm: CompressionAlgorithm.GZIP,
-                            data: chunk
-                        });
-                        staticFrontendPlugin.addFiles(versionableStaticWebsite, frontendVersionCount - 1, fileUploadInfos);
-                    }
+                    StaticFrontendPlugin.FileUploadInfos[] memory fileUploadInfos = new StaticFrontendPlugin.FileUploadInfos[](1);
+                    fileUploadInfos[0] = StaticFrontendPlugin.FileUploadInfos({
+                        filePath: string.concat(files[i].subFolder, files[i].filename),
+                        fileSize: fileContents.length,
+                        contentType: files[i].mimeType,
+                        compressionAlgorithm: CompressionAlgorithm.GZIP,
+                        data: chunk
+                    });
+                    staticFrontendPlugin.addFiles(versionableStaticWebsite, websiteVersionCount - 1, fileUploadInfos);
                 }
                 else {
-                    frontendLibrary.appendToFile(frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
 
-                    staticFrontendPlugin.appendToFile(versionableStaticWebsite, frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
+                    staticFrontendPlugin.appendToFile(versionableStaticWebsite, websiteVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
                 }
             }
         }

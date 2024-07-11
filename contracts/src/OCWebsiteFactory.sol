@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import { LibStrings } from "./library/LibStrings.sol";
 import "./OCWebsite/OCWebsite.sol";
 import "./OCWebsite/ClonableOCWebsite.sol";
-import "./OCWebsite/ClonableFrontendVersionViewer.sol";
+import "./OCWebsite/ClonableWebsiteVersionViewer.sol";
 import "./OCWebsiteFactoryToken.sol";
 import "./interfaces/IStorageBackend.sol";
 import "./interfaces/IStorageBackendLibrary.sol";
@@ -27,7 +27,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     mapping(OCWebsite=> uint) public websiteToIndex;
     event WebsiteCreated(uint indexed websiteId, address website);
     
-    ClonableFrontendVersionViewer public websiteVersionViewerImplementation;
+    ClonableWebsiteVersionViewer public websiteVersionViewerImplementation;
 
     string public topdomain;
     string public domain;
@@ -63,7 +63,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         string domain;
         OCWebsiteFactoryToken factoryToken;
         ClonableOCWebsite websiteImplementation;
-        ClonableFrontendVersionViewer websiteVersionViewerImplementation;
+        ClonableWebsiteVersionViewer websiteVersionViewerImplementation;
     }
     constructor(ConstructorParams memory _params) ERC721("OCWebsite", "OCW") {
         owner = _params.owner;

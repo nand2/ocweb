@@ -8,7 +8,7 @@ import "../library/LibStrings.sol";
  * Simple proxy to view non-live frontend versions (which need to be authorized
  * by the owner of the target contract). 
  */
-contract ClonableFrontendVersionViewer is ResourceRequestWebsite {
+contract ClonableWebsiteVersionViewer is ResourceRequestWebsite {
     IDecentralizedApp public target;
     uint public frontendVersionIndex;
 

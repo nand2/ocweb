@@ -294,9 +294,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
      * @return nextChunkId The next chunk ID to read. 0 if none.
      */
     function readFile(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-
 
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
         

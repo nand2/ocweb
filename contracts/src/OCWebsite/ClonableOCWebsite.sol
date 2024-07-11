@@ -6,7 +6,7 @@ import "./OCWebsite.sol";
 contract ClonableOCWebsite is OCWebsite {
     error AlreadyInitialized();
 
-    constructor() OCWebsite(ClonableFrontendVersionViewer(address(0))) {
+    constructor() OCWebsite(ClonableWebsiteVersionViewer(address(0))) {
     }
 
     // An optional controller for the ownership. 
@@ -29,7 +29,7 @@ contract ClonableOCWebsite is OCWebsite {
      * @param _owner The owner of the website
      * @param _ownershipController The controller of the ownership. Can be null.
      */
-    function initialize(address _owner, address _ownershipController, ClonableFrontendVersionViewer _frontendViewerImplementation, IStorageBackend firstFrontendVersionStorageBackend, IVersionableStaticWebsitePlugin[] memory _plugins) public {
+    function initialize(address _owner, address _ownershipController, ClonableWebsiteVersionViewer _frontendViewerImplementation, IStorageBackend firstFrontendVersionStorageBackend, IVersionableStaticWebsitePlugin[] memory _plugins) public {
         if(owner != address(0)) {
             revert AlreadyInitialized();
         }
@@ -47,11 +47,6 @@ contract ClonableOCWebsite is OCWebsite {
         WebsiteVersion storage websiteVersion = websiteVersions[0];
         for(uint i = 0; i < _plugins.length; i++) {
             websiteVersion.plugins.push(_plugins[i]);
-        }
-
-        // Add the first frontend version
-        if(address(firstFrontendVersionStorageBackend) != address(0)) {
-            getFrontendLibrary().addFrontendVersion(firstFrontendVersionStorageBackend, "Initial version");
         }
     }
 

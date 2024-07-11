@@ -14,7 +14,7 @@ import "./ProxyWebsite.sol";
 contract OCWebsite is VersionableStaticWebsite {
     uint public constant VERSION = 1;
 
-    constructor(ClonableFrontendVersionViewer _websiteVersionViewerImplementation) VersionableStaticWebsite(_websiteVersionViewerImplementation) {
+    constructor(ClonableWebsiteVersionViewer _websiteVersionViewerImplementation) VersionableStaticWebsite(_websiteVersionViewerImplementation) {
     }
 
     

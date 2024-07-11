@@ -8,15 +8,13 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
-import "../interfaces/IFrontendLibrary.sol";
 import "../interfaces/IVersionableStaticWebsite.sol";
 
 import '../library/Ownable.sol';
 import './ResourceRequestWebsite.sol';
-import './FrontendLibrary.sol';
-import "./ClonableFrontendVersionViewer.sol";
+import "./ClonableWebsiteVersionViewer.sol";
 
-contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestWebsite, Ownable, FrontendLibrary {
+contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestWebsite, Ownable {
 
     // The list of website versions
     WebsiteVersion[] public websiteVersions;
@@ -29,35 +27,15 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
     // When not the live version, a frontend version can be viewed by this address,
     // which is a clone of a cheap proxy contract
     // This is the implementation of the viewer
-    ClonableFrontendVersionViewer public websiteVersionViewerImplementation;
+    ClonableWebsiteVersionViewer public websiteVersionViewerImplementation;
     
 
 
-    constructor(ClonableFrontendVersionViewer _viewerImplementation) FrontendLibrary()  {
+    constructor(ClonableWebsiteVersionViewer _viewerImplementation)  {
         websiteVersionViewerImplementation = _viewerImplementation;
     }
 
 
-
-    function getFrontendLibrary() public view returns (IFrontendLibrary) {
-        return this;
-    }
-
-    /**
-     * Set the live website version index
-     */
-    function setLiveWebsiteVersionIndex(uint256 index) public onlyOwner {
-        require(index < websiteVersions.length, "Invalid index");
-        liveWebsiteVersionIndex = index;
-    }
-
-    /**
-     * Get the current live frontend version, and its index
-     */
-    function getLiveWebsiteVersion() public view returns (WebsiteVersion memory websiteVersion, uint256 websiteVersionIndex) {
-        websiteVersionIndex = liveWebsiteVersionIndex;
-        websiteVersion = websiteVersions[websiteVersionIndex];
-    }
 
 
     function addWebsiteVersion(string memory _description, uint copyPluginsFromWebsiteVersionIndex) public onlyOwner {
@@ -118,6 +96,22 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         return websiteVersions[websiteVersionIndex];
     }
 
+    /**
+     * Set the live website version index
+     */
+    function setLiveWebsiteVersionIndex(uint256 index) public onlyOwner {
+        require(index < websiteVersions.length, "Invalid index");
+        liveWebsiteVersionIndex = index;
+    }
+
+    /**
+     * Get the current live frontend version, and its index
+     */
+    function getLiveWebsiteVersion() public view returns (WebsiteVersion memory websiteVersion, uint256 websiteVersionIndex) {
+        websiteVersionIndex = liveWebsiteVersionIndex;
+        websiteVersion = websiteVersions[websiteVersionIndex];
+    }
+
     function renameWebsiteVersion(uint256 websiteVersionIndex, string memory newDescription) public onlyOwner {
         require(websiteVersionIndex < websiteVersions.length, "Index out of bounds");
         websiteVersions[websiteVersionIndex].description = newDescription;
@@ -127,6 +121,11 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         require(websiteVersionIndex < websiteVersions.length, "Index out of bounds");
         websiteVersions[websiteVersionIndex].locked = true;
     }
+
+
+    //
+    // Global lock
+    // 
 
     function lock() public onlyOwner {
         require(lockedAt == 0, "Already locked");
@@ -240,7 +239,7 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         WebsiteVersion storage version = websiteVersions[websiteVersionIndex];
         // Create the viewer if not done so yet
         if(enable && address(version.viewer) == address(0)) {
-            ClonableFrontendVersionViewer viewer = ClonableFrontendVersionViewer(Clones.clone(address(websiteVersionViewerImplementation)));
+            ClonableWebsiteVersionViewer viewer = ClonableWebsiteVersionViewer(Clones.clone(address(websiteVersionViewerImplementation)));
             viewer.initialize(IDecentralizedApp(address(this)), websiteVersionIndex);
             version.viewer = IDecentralizedApp(viewer);
         }

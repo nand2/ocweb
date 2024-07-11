@@ -30,13 +30,13 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
             });
     }
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableStaticWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
     function processWeb3RequestBeforeStaticContent(
         IVersionableStaticWebsite website,
-        uint frontendIndex,
+        uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
     )
@@ -48,7 +48,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
             body = string.concat('{'
                 '"self":"', LibStrings.toHexString(address(website)), ':', LibStrings.toString(block.chainid), '"');
 
-            KeyValueVariable[] memory injectedVariables = variables[website][frontendIndex];
+            KeyValueVariable[] memory injectedVariables = variables[website][websiteVersionIndex];
             for(uint i = 0; i < injectedVariables.length; i++) {
                 body = string.concat(body, ','
                 '"', injectedVariables[i].key, '":"', injectedVariables[i].value, '"');
@@ -65,7 +65,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
 
     function processWeb3RequestAfterStaticContent(
         IVersionableStaticWebsite website,
-        uint frontendIndex,
+        uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
     )
@@ -83,20 +83,19 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         }
     }
 
-    function addVariable(IVersionableStaticWebsite website, uint frontendIndex, string memory key, string memory value) public {
+    function addVariable(IVersionableStaticWebsite website, uint websiteVersionIndex, string memory key, string memory value) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(frontendIndex < frontendLibrary.getFrontendVersionCount(), "Frontend index out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(frontendIndex);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
         // Reserved keys: "self"
         require(LibStrings.compare(key, "self") == false, "Key reserved");
         // Ensure the key is not used yet
-        KeyValueVariable[] storage vars = variables[website][frontendIndex];
+        KeyValueVariable[] storage vars = variables[website][websiteVersionIndex];
         for (uint i = 0; i < vars.length; i++) {
             require(LibStrings.compare(vars[i].key, key) == false, "Key already used");
         }
@@ -104,21 +103,20 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         vars.push(KeyValueVariable({key: key, value: value}));
     }
 
-    function getVariables(IVersionableStaticWebsite website, uint frontendIndex) public view returns (KeyValueVariable[] memory) {
-        return variables[website][frontendIndex];
+    function getVariables(IVersionableStaticWebsite website, uint websiteVersionIndex) public view returns (KeyValueVariable[] memory) {
+        return variables[website][websiteVersionIndex];
     }
 
-    function removeVariable(IVersionableStaticWebsite website, uint frontendIndex, string memory key) public {
+    function removeVariable(IVersionableStaticWebsite website, uint websiteVersionIndex, string memory key) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(frontendIndex < frontendLibrary.getFrontendVersionCount(), "Frontend index out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(frontendIndex);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
-        KeyValueVariable[] storage vars = variables[website][frontendIndex];
+        KeyValueVariable[] storage vars = variables[website][websiteVersionIndex];
         for (uint i = 0; i < vars.length; i++) {
             if(LibStrings.compare(vars[i].key, key)) {
                 vars[i] = vars[vars.length - 1];

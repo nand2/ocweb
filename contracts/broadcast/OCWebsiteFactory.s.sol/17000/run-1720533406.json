@@ -47,7 +47,7 @@
     {
       "hash": "0x2d9e1898d77275c3dd53584553f12e20ff9e07ba67b2b5024cfa96af21b8f5f2",
       "transactionType": "CREATE",
-      "contractName": "ClonableFrontendVersionViewer",
+      "contractName": "ClonableWebsiteVersionViewer",
       "contractAddress": "0x33c3c2f94c09d315c5e696354755b3483d8ac905",
       "function": null,
       "arguments": null,

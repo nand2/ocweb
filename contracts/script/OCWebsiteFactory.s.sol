@@ -33,7 +33,7 @@ import { OCWebsiteFactory } from "../src/OCWebsiteFactory.sol";
 import { OCWebsiteFactoryToken } from "../src/OCWebsiteFactoryToken.sol";
 import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
 import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
-import { ClonableFrontendVersionViewer } from "../src/OCWebsite/ClonableFrontendVersionViewer.sol";
+import { ClonableWebsiteVersionViewer } from "../src/OCWebsite/ClonableWebsiteVersionViewer.sol";
 import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
 import { LibStrings } from "../src/library/LibStrings.sol";
 import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariablesPlugin.sol";
@@ -97,7 +97,7 @@ contract OCWebsiteFactoryScript is Script {
                 ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
 
                 // Create the frontend version viewer implementation
-                ClonableFrontendVersionViewer websiteVersionViewerImplementation = new ClonableFrontendVersionViewer();
+                ClonableWebsiteVersionViewer websiteVersionViewerImplementation = new ClonableWebsiteVersionViewer();
 
                 // Deploying the blog factory
                 // {salt: bytes32(vm.envBytes("CONTRACT_SALT"))}

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import { IDecentralizedApp, KeyValue } from "./IDecentralizedApp.sol";
-import { IFrontendLibrary, FrontendFilesSet } from "./IFrontendLibrary.sol";
 import { IOwnable } from "./IOwnable.sol";
 import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
@@ -40,8 +39,6 @@ interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
     function lock() external;
     function isLocked() external view returns (bool);
 
-
-    function getFrontendLibrary() external view returns (IFrontendLibrary);
 
     // Enable/disable the viewer, for a frontend version which is not the live one
     function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) external;

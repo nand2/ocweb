@@ -32,13 +32,13 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
             });
     }
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableStaticWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
     function processWeb3RequestBeforeStaticContent(
         IVersionableStaticWebsite website,
-        uint frontendIndex,
+        uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
     )
@@ -49,13 +49,13 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
 
     function processWeb3RequestAfterStaticContent(
         IVersionableStaticWebsite website,
-        uint frontendIndex,
+        uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
     )
         public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][frontendIndex];
+        ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][websiteVersionIndex];
 
         for(uint i = 0; i < frontendProxiedWebsites.length; i++) {
             ProxiedWebsite memory proxiedWebsite = frontendProxiedWebsites[i];
@@ -98,18 +98,17 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         }
     }
 
-    function addProxiedWebsite(IVersionableStaticWebsite website, uint frontendIndex, IDecentralizedApp proxiedWebsite, string[] memory localPrefix, string[] memory remotePrefix) public {
+    function addProxiedWebsite(IVersionableStaticWebsite website, uint websiteVersionIndex, IDecentralizedApp proxiedWebsite, string[] memory localPrefix, string[] memory remotePrefix) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(frontendIndex < frontendLibrary.getFrontendVersionCount(), "Frontend index out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(frontendIndex);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
         // Ensure the localPrefix is not used yet
-        ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][frontendIndex];
+        ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][websiteVersionIndex];
         for (uint i = 0; i < frontendProxiedWebsites.length; i++) {
             if(frontendProxiedWebsites[i].localPrefix.length == localPrefix.length) {
                 bool matched = true;
@@ -126,21 +125,20 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         frontendProxiedWebsites.push(ProxiedWebsite({website: proxiedWebsite, localPrefix: localPrefix, remotePrefix: remotePrefix}));
     }
 
-    function getProxiedWebsites(IVersionableStaticWebsite website, uint frontendIndex) public view returns (ProxiedWebsite[] memory) {
-        return proxiedWebsites[website][frontendIndex];
+    function getProxiedWebsites(IVersionableStaticWebsite website, uint websiteVersionIndex) public view returns (ProxiedWebsite[] memory) {
+        return proxiedWebsites[website][websiteVersionIndex];
     }
 
-    function removeProxiedWebsite(IVersionableStaticWebsite website, uint frontendIndex, uint index) public {
+    function removeProxiedWebsite(IVersionableStaticWebsite website, uint websiteVersionIndex, uint index) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(frontendIndex < frontendLibrary.getFrontendVersionCount(), "Frontend index out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(frontendIndex);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
-        ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][frontendIndex];
+        ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][websiteVersionIndex];
         require(index < frontendProxiedWebsites.length, "Index out of bounds");
 
         frontendProxiedWebsites[index] = frontendProxiedWebsites[frontendProxiedWebsites.length - 1];
