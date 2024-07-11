@@ -10,7 +10,7 @@ import SendIcon from '../../../icons/SendIcon.vue';
 import CheckLgIcon from '../../../icons/ChecLgkIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
 import XCircleIcon from '../../../icons/XCircleIcon.vue';
-import { invalidateFrontendVersionQuery } from '../../../utils/queries.js';
+import { invalidateWebsiteVersionQuery } from '../../../utils/queries.js';
 
 const props = defineProps({
   folderChildren: {

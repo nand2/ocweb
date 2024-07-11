@@ -12,7 +12,7 @@ import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
 import EyeSlashIcon from '../../../icons/EyeSlashIcon.vue';
 
-import { useLiveWebsiteVersion, invalidateLiveFrontendVersionQuery, invalidateWebsiteVersionsQuery, invalidateFrontendVersionQuery, useIsLocked } from '../../../utils/queries.js';
+import { useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, invalidateWebsiteVersionsQuery, invalidateWebsiteVersionQuery, useIsLocked } from '../../../utils/queries.js';
 
 const props = defineProps({
   frontendVersion: {
@@ -87,14 +87,14 @@ const { isPending: setLiveIsPending, isError: setLiveIsError, error: setLiveErro
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    const transaction = await props.websiteClient.prepareSetDefaultFrontendIndexTransaction(props.frontendVersionIndex);
+    const transaction = await props.websiteClient.prepareSetLiveWebsiteVersionIndexTransaction(props.frontendVersionIndex);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return await invalidateLiveFrontendVersionQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateLiveWebsiteVersionQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const setLive = async () => {
@@ -111,14 +111,14 @@ const { isPending: lockIsPending, isError: lockIsError, error: lockError, isSucc
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    const transaction = await props.websiteClient.prepareLockFrontendVersionTransaction(props.frontendVersionIndex);
+    const transaction = await props.websiteClient.prepareLockWebsiteVersionTransaction(props.frontendVersionIndex);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    await invalidateWebsiteVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
     return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
@@ -143,7 +143,7 @@ const { isPending: toggleIsViewableIsPending, isError: toggleIsViewableIsError, 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    await invalidateWebsiteVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
     return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })

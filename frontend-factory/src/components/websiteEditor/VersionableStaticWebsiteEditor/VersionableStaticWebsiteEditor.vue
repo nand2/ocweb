@@ -10,7 +10,7 @@ import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
 import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
-import { useVersionableStaticWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useFrontendVersionPlugins } from '../../../utils/queries.js';
+import { useVersionableStaticWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
 
@@ -66,7 +66,7 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
 })
 
 // Get the list of installed plugins of the version being edited
-const { data: frontendVersionBeingEditedPlugins, isLoading: frontendVersionBeingEditedPluginsLoading, isFetching: frontendVersionBeingEditedPluginsFetching, isError: frontendVersionBeingEditedPluginsIsError, error: frontendVersionBeingEditedPluginsError, isSuccess: frontendVersionBeingEditedPluginsLoaded } = useFrontendVersionPlugins(props.contractAddress, props.chainId, frontendVersionBeingEditedIndex) 
+const { data: frontendVersionBeingEditedPlugins, isLoading: frontendVersionBeingEditedPluginsLoading, isFetching: frontendVersionBeingEditedPluginsFetching, isError: frontendVersionBeingEditedPluginsIsError, error: frontendVersionBeingEditedPluginsError, isSuccess: frontendVersionBeingEditedPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, frontendVersionBeingEditedIndex) 
 
 const staticFrontendInstalledPlugin = computed(() => {
   if(frontendVersionBeingEditedPluginsLoaded.value) {
@@ -77,6 +77,10 @@ const staticFrontendInstalledPlugin = computed(() => {
 
 // When the plugins are loaded, now set the default tab
 watch(frontendVersionBeingEditedPluginsLoaded, () => {
+  if(activeTab.value != '') {
+    return;
+  }
+
   if(staticFrontendInstalledPlugin.value) {
     activeTab.value = 'files'
   }

@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
-import { useLiveWebsiteVersion, invalidateFrontendVersionQuery, invalidateWebsiteVersionsQuery,useIsLocked } from '../../../utils/queries';
+import { useLiveWebsiteVersion, invalidateWebsiteVersionQuery, invalidateWebsiteVersionsQuery,useIsLocked } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
@@ -90,7 +90,7 @@ const { isPending: setIsViewableIsPending, isError: setIsViewableIsError, error:
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    await invalidateWebsiteVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
     return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })

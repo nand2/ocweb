@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount, useConnectorClient } from '@wagmi/vue'
 import { getContract, publicActions } from 'viem'
 
-import { useContractAddresses, invalidateFrontendVersionQuery, useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../utils/queries';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
@@ -60,7 +60,7 @@ const factoryContractClient = computed(() => {
 })
 
 // Get the list of installed plugins
-const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useFrontendVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
+const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
 
 // Fetch the list of supported plugin interfaces
 const { data: supportedPluginInterfaces, isLoading: supportedPluginInterfacesLoading, isFetching: supportedPluginInterfacesFetching, isError: supportedPluginInterfacesIsError, error: supportedPluginInterfacesError, isSuccess: supportedPluginInterfacesLoaded } = useSupportedPluginInterfaces(props.contractAddress, props.chainId)
@@ -105,7 +105,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
     additionAddress.value = ''
     showForm.value = false
 
-    return await invalidateFrontendVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex);
+    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex);
   }
 })
 const additionItem = async (pluginAddress) => {
@@ -124,7 +124,7 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return await invalidateFrontendVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex);
+    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex);
   }
 })
 const removeItem = async (pluginAddress) => {

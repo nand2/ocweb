@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
-import { useContractAddresses, invalidateFrontendVersionQuery, useFrontendVersionPlugins } from '../../../utils/queries';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
@@ -35,7 +35,7 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 
 
-const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useFrontendVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
+const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
 
 </script>
 

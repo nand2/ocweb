@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
-import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateWebsiteVersionQuery } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';

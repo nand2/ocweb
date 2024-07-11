@@ -70,7 +70,7 @@ function useVersionableStaticWebsiteClient(websiteContractAddress) {
 }
 
 // FrontendIndex is a reactive value
-function useFrontendVersionPlugins(contractAddress, chainId, frontendIndex) {
+function useWebsiteVersionPlugins(contractAddress, chainId, frontendIndex) {
   const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
@@ -88,7 +88,7 @@ function useFrontendVersionPlugins(contractAddress, chainId, frontendIndex) {
   })
 }
 
-function invalidateFrontendVersionPluginsQuery(queryClient, contractAddress, chainId, frontendIndex) {
+function invalidateWebsiteVersionPluginsQuery(queryClient, contractAddress, chainId, frontendIndex) {
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPlugins', contractAddress, chainId, frontendIndex] })
 }
 
@@ -138,11 +138,11 @@ function useLiveWebsiteVersion(queryClient,contractAddress, chainId) {
   });
 }
 
-function invalidateLiveFrontendVersionQuery(queryClient, contractAddress, chainId) {
+function invalidateLiveWebsiteVersionQuery(queryClient, contractAddress, chainId) {
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteLiveFrontend', contractAddress, chainId] })
 }
 
-function invalidateFrontendVersionQuery(queryClient, contractAddress, chainId, version) {
+function invalidateWebsiteVersionQuery(queryClient, contractAddress, chainId, version) {
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersion', contractAddress, chainId, version] })
 }
 
@@ -235,10 +235,10 @@ export {
   useContractAddresses, 
   useVersionableStaticWebsiteClient, 
   useStaticFrontendPluginClient,
-  useLiveWebsiteVersion, invalidateLiveFrontendVersionQuery, 
-  invalidateFrontendVersionQuery,
+  useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, 
+  invalidateWebsiteVersionQuery,
   useWebsiteVersions, invalidateWebsiteVersionsQuery,
-  useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery,
+  useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery,
   useSupportedStorageBackendInterfaces,
   useSupportedPluginInterfaces,
   useIsLocked, invalidateIsLockedQuery

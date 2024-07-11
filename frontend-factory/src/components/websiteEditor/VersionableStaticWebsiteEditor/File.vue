@@ -7,7 +7,7 @@ import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
 import TrashIcon from '../../../icons/TrashIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
-import { invalidateFrontendVersionQuery } from '../../../utils/queries.js';
+import { invalidateWebsiteVersionQuery } from '../../../utils/queries.js';
 
 const props = defineProps({
   file: {

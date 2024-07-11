@@ -59,16 +59,16 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.isLocked()
   }
 
-  async prepareSetDefaultFrontendIndexTransaction(frontendIndex) {
+  async prepareSetLiveWebsiteVersionIndexTransaction(frontendIndex) {
     return {
-      functionName: 'setDefaultFrontendIndex',
+      functionName: 'setLiveWebsiteVersionIndex',
       args: [frontendIndex],
     }
   }
 
-  async prepareLockFrontendVersionTransaction(frontendIndex) {
+  async prepareLockWebsiteVersionTransaction(frontendIndex) {
     return {
-      functionName: 'lockFrontendVersion',
+      functionName: 'lockWebsiteVersion',
       args: [frontendIndex],
     }
   }
