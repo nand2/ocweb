@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
-import { useLiveFrontendVersion, invalidateFrontendVersionQuery, useFrontendVersionsViewer, invalidateFrontendVersionsViewerQuery } from '../../../utils/queries';
+import { useLiveFrontendVersion, invalidateFrontendVersionQuery, useFrontendVersionsViewer, invalidateFrontendVersionsViewerQuery, useIsLocked } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
@@ -35,6 +35,9 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 const { switchChainAsync } = useSwitchChain()
+
+// Get the lock status
+const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
 
 // Fetch the live frontend infos
 const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(queryClient, props.contractAddress, props.chainId)
@@ -122,22 +125,29 @@ const setIsViewable = async () => {
         <div style="font-weight: bold; margin-bottom: 0.5em;">
           Version not viewable
         </div>
-        <div class="text-90">
-          You need to make this version publicly viewable in order to preview it.
+        <div v-if="isLockedLoaded && isLocked == false">
+          <div class="text-90">
+            You need to make this version publicly viewable in order to preview it.
+          </div>
+          <div class="text-90">
+            It will have its own separate web3:// URL, and you can disable it later anytime (unless you activate the global lock).
+          </div>
+          <div style="margin-top: 1em;">
+            <button @click="setIsViewable" :disabled="setIsViewableIsPending">
+              <EyeIcon :class="{'anim-pulse': setIsViewableIsPending}" />
+              Make it viewable
+            </button>
+            <div v-if="setIsViewableIsError" class="mutation-error">
+              <span>
+                Error enabling visibility: {{ setIsViewableError.shortMessage || setIsViewableError.message }} <a @click.stop.prevent="setIsViewableReset()">Hide</a>
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="text-90">
-          It will have its own separate web3:// URL, and you can disable it later anytime (unless you activate the global lock).
-        </div>
-        <div style="margin-top: 1em;">
-          <button @click="setIsViewable" :disabled="setIsViewableIsPending">
-            <EyeIcon :class="{'anim-pulse': setIsViewableIsPending}" />
-            Make it viewable
-          </button>
-          <div v-if="setIsViewableIsError" class="mutation-error">
-          <span>
-            Error enabling visibility: {{ setIsViewableError.shortMessage || setIsViewableError.message }} <a @click.stop.prevent="setIsViewableReset()">Hide</a>
-          </span>
-        </div>
+        <div v-else-if="isLockedLoaded && isLocked == true">
+          <div class="text-90">
+            The website is locked and thus this version cannot be made viewable.
+          </div>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
-import { useContractAddresses, invalidateFrontendVersionQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionQuery, useIsLocked } from '../../../utils/queries';
 import { InjectedVariablesPluginClient } from '../../../../../src/plugins/injectedVariablesPluginClient.js';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
@@ -38,6 +38,9 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+// Get the lock status
+const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
 
 const injectedVariablesPluginClient = computed(() => {
   return viemClientLoaded.value ? new InjectedVariablesPluginClient(viemClient.value, props.contractAddress, props.pluginInfos.plugin) : null;
@@ -163,7 +166,7 @@ const removeItem = async (key) => {
           </code>
         </div>
         <div style="text-align: right">
-          <a @click.stop.prevent="removeItem(injectedVariable.key)" class="white" v-if="frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
+          <a @click.stop.prevent="removeItem(injectedVariable.key)" class="white" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
             <TrashIcon />
           </a>
           <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == injectedVariable.key" />
@@ -178,7 +181,7 @@ const removeItem = async (key) => {
     </div>
 
 
-    <div class="operations" v-if="frontendVersion != null && frontendVersion.locked == false">
+    <div class="operations" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false">
       <div class="op-add-new">
 
         <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">

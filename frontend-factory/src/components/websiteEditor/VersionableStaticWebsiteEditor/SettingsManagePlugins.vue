@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount, useConnectorClient } from '@wagmi/vue'
 import { getContract, publicActions } from 'viem'
 
-import { useContractAddresses, invalidateFrontendVersionQuery, useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery, useSupportedPluginInterfaces } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionQuery, useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
@@ -39,6 +39,9 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+// Get the lock status
+const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
 
 // Prepare a contract client for the factory
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
@@ -180,7 +183,7 @@ const removeItem = async (pluginAddress) => {
             </div>
 
             <div class="plugin-operations">
-              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
+              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
                 <TrashIcon />
               </a>
               <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == pluginInfos.plugin" />
@@ -189,7 +192,7 @@ const removeItem = async (pluginAddress) => {
           </div>
         </div>
 
-        <div class="operations" v-if="frontendVersion != null && frontendVersion.locked == false">
+        <div class="operations" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false">
           <div class="op-add-new">
 
             <div class="button-area" @click="showForm = !showForm">
@@ -260,7 +263,7 @@ const removeItem = async (pluginAddress) => {
             </div>
 
             <div class="plugin-operations">
-              <a @click.stop.prevent="additionItem(pluginInfos.plugin)" class="white" v-if="frontendVersion != null && frontendVersion.locked == false && additionIsPending == false">
+              <a @click.stop.prevent="additionItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false && additionIsPending == false">
                 <PlusLgIcon />
               </a>
               <PlusLgIcon class="anim-pulse" v-if="additionIsPending && additionVariables == pluginInfos.plugin" />

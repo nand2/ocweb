@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { useConnectorClient } from '@wagmi/vue'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
+import { useIsLocked  } from '../../../utils/queries';
 
 import FolderChildren from './FolderChildren.vue';
 import { size } from 'viem';
@@ -37,6 +38,9 @@ const props = defineProps({
 
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
+
+// Get the lock status
+const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
 
 // Folders are not stored in the backend, like git
 // We keep track of the empty folders to display them
@@ -157,7 +161,7 @@ const rootFolderChildren = computed(() => {
 
       <FolderChildren 
         :folderChildren="rootFolderChildren" 
-        :locked="frontendVersion.locked"
+        :locked="isLockedLoaded && isLocked || frontendVersion.locked"
         :contractAddress :chainId :frontendVersionIndex :websiteClient :globalEmptyFolders />
 
     </div>

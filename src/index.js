@@ -65,6 +65,10 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getSupportedPluginInterfaces()
   }
 
+  async isLocked() {
+    return await this.#viemWebsiteContract.read.isLocked()
+  }
+
   async prepareSetDefaultFrontendIndexTransaction(frontendIndex) {
     return {
       functionName: 'setDefaultFrontendIndex',

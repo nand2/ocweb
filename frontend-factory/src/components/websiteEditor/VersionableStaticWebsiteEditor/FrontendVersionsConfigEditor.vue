@@ -10,7 +10,7 @@ import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions, invalidateFrontendVersionsViewerQuery, useSupportedStorageBackendInterfaces } from '../../../utils/queries';
+import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions, invalidateFrontendVersionsViewerQuery, useSupportedStorageBackendInterfaces, useIsLocked, invalidateIsLockedQuery } from '../../../utils/queries';
 import { abi as factoryABI } from '../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
@@ -30,6 +30,14 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+
+// Get the list of frontend versions
+const showEditedFrontendVersionSelector = ref(false)
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId)
+
+// Get the lock status
+const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
 
 // Prepare a contract client for the factory
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
@@ -64,9 +72,6 @@ const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching
   enabled: computed(() => factoryContractClient.value != null && supportedStorageBackendInterfacesLoaded.value),
 })
 
-// Get the list of frontend versions
-const showEditedFrontendVersionSelector = ref(false)
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId)
 
 // Create frontendVersion
 const showNewFrontendVersionForm = ref(false)
@@ -93,9 +98,9 @@ const newfrontendversionFile = async () => {
   newfrontendversionMutate()
 }
 
-// Global lock
-const showGlobalLockForm = ref(false)
-const { isPending: globalLockIsPending, isError: globalLockIsError, error: globalLockError, isSuccess: globalLockIsSuccess, mutate: globalLockMutate, reset: globalLockReset } = useMutation({
+// Lock
+const showLocklForm = ref(false)
+const { isPending: locklIsPending, isError: locklIsError, error: locklError, isSuccess: locklIsSuccess, mutate: locklMutate, reset: locklReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
     const transaction = await props.websiteClient.prepareLockTransaction();
@@ -105,20 +110,17 @@ const { isPending: globalLockIsPending, isError: globalLockIsError, error: globa
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    showGlobalLockForm.value = false
-
-    // Refresh the frontend version
-    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+    showLocklForm.value = false
+    return await invalidateIsLockedQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
-const activateGlobalLock = async () => {
-  globalLockMutate()
+const activateLockl = async () => {
+  locklMutate()
 }
 </script>
 
 <template>
   <div class="versions-body">
-        
     <div class="list">
       <FrontendVersionList 
         :contractAddress
@@ -127,7 +129,7 @@ const activateGlobalLock = async () => {
         />
     </div>
 
-    <div class="operations">
+    <div class="operations" v-if="isLockedLoaded && isLocked == false">
       <div class="op-add-new">
 
         <div class="button-area" @click="showNewFrontendVersionForm = !showNewFrontendVersionForm; newFolderErrorLabel = ''">
@@ -159,16 +161,16 @@ const activateGlobalLock = async () => {
       </div>
       <div class="op-global-lock">
 
-        <div class="button-area" @click="showGlobalLockForm = !showGlobalLockForm; newFolderErrorLabel = ''">
+        <div class="button-area" @click="showLocklForm = !showLocklForm; newFolderErrorLabel = ''">
           <span class="button-text">
             <LockFillIcon />
             Global lock
           </span>
         </div>
-        <div class="form-area" v-if="showGlobalLockForm">
+        <div class="form-area" v-if="showLocklForm">
           <div class="text-danger" style="display: flex; align-items: center; gap: 1em;">
             <div>
-              <LockFillIcon v-if="globalLockIsPending" style="scale: 2; margin: 0em 1em;" class="anim-pulse" />
+              <LockFillIcon v-if="locklIsPending" style="scale: 2; margin: 0em 1em;" class="anim-pulse" />
               <ExclamationTriangleIcon v-else style="scale: 2; margin: 0em 1em;" />
             </div>
             <div>
@@ -177,14 +179,23 @@ const activateGlobalLock = async () => {
             </div>
           </div>
           <div>
-            <button type="button" style="width: 100%" @click="activateGlobalLock"><LockFillIcon /> Lock everything permanently</button>
+            <button type="button" style="width: 100%" @click="activateLockl"><LockFillIcon /> Lock everything permanently</button>
           </div>
-          <div v-if="globalLockIsError" class="text-danger" style="font-size: 0.9em">
-            Error activating the global lock: {{ globalLockError.shortMessage || globalLockError.message }} <a @click.stop.prevent="globalLockReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+          <div v-if="locklIsError" class="text-danger" style="font-size: 0.9em">
+            Error activating the global lock: {{ locklError.shortMessage || locklError.message }} <a @click.stop.prevent="locklReset()" style="color: inherit; text-decoration: underline;">Hide</a>
           </div>
 
         </div>
       </div>
+    </div>
+
+    <div v-else-if="isLockedLoaded && isLocked" class="text-danger" style="display: flex; align-items: center; gap: 1em; margin: 0em 1em 1em 1em;">
+        <div>
+          <LockFillIcon style="height: 1.5em; width: 1.5em;" />
+        </div>
+        <div>
+          The website is locked. No further changes can be made.
+        </div>
     </div>
 
   </div>
@@ -199,7 +210,7 @@ const activateGlobalLock = async () => {
 }
 
 .list {
-  flex: 1;
+  padding-top: 0.25em;
 }
 
 .operations {

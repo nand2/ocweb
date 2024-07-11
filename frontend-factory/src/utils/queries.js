@@ -207,6 +207,28 @@ function useSupportedPluginInterfaces(contractAddress, chainId) {
   })
 }
 
+function useIsLocked(contractAddress, chainId) {
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { switchChainAsync } = useSwitchChain()
+
+  return useQuery({
+    queryKey: ['OCWebsiteIsLocked', contractAddress, chainId],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+
+      const result = await websiteClient.value.isLocked()
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: websiteClientLoaded,
+  })
+}
+
+function invalidateIsLockedQuery(queryClient, contractAddress, chainId) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteIsLocked', contractAddress, chainId] })
+}
+
 export { 
   useInjectedVariables,
   useContractAddresses, 
@@ -217,6 +239,7 @@ export {
   useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery,
   useFrontendVersionsViewer, invalidateFrontendVersionsViewerQuery,
   useSupportedStorageBackendInterfaces,
-  useSupportedPluginInterfaces
+  useSupportedPluginInterfaces,
+  useIsLocked, invalidateIsLockedQuery
 }
 

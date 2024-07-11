@@ -12,7 +12,7 @@ import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
 import EyeSlashIcon from '../../../icons/EyeSlashIcon.vue';
 
-import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionsQuery, invalidateFrontendVersionQuery, invalidateFrontendVersionsViewerQuery } from '../../../utils/queries.js';
+import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionsQuery, invalidateFrontendVersionQuery, invalidateFrontendVersionsViewerQuery, useIsLocked } from '../../../utils/queries.js';
 
 const props = defineProps({
   frontendVersion: {
@@ -46,6 +46,9 @@ const { switchChainAsync } = useSwitchChain()
 
 // Fetch the live frontend infos
 const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(queryClient, props.contractAddress, props.chainId)
+
+// Get the lock status
+const { data: isGlobalLocked, isLoading: isGlobalLockedLoading, isFetching: isGlobalLockedFetching, isError: isGlobalLockedIsError, error: isGlobalLockedError, isSuccess: isGlobalLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
 
 
 // Rename version
@@ -216,17 +219,17 @@ const viewerAddress = computed(() => {
         </span>
       </div>
       <div style="justify-content: right">
-        <a @click.stop.prevent="showRenameForm = !showRenameForm; newDescription = frontendVersion.description" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
+        <a @click.stop.prevent="showRenameForm = !showRenameForm; newDescription = frontendVersion.description" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <PencilSquareIcon />
         </a>
-        <a @click.stop.prevent="setLive()" class="white" v-if="liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
+        <a @click.stop.prevent="setLive()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <PlayCircleIcon />
         </a>
-        <a @click.stop.prevent="toggleIsViewable()" class="white" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
+        <a @click.stop.prevent="toggleIsViewable()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && (liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <EyeIcon v-if="frontendVersionViewer != null && frontendVersionViewer.isViewable == false" />
           <EyeSlashIcon v-else-if="frontendVersionViewer != null && frontendVersionViewer.isViewable == true" />
         </a>
-        <a @click.stop.prevent="lock()" class="white" v-if="frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
+        <a @click.stop.prevent="lock()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <LockFillIcon />
         </a>
       </div>
