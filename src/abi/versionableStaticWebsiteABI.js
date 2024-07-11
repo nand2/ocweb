@@ -127,7 +127,7 @@ export const abi = [
         type: "tuple[]"
       }
     ],
-    name: "addFilesToFrontendVersion",
+    name: "addFiles",
     outputs: [],
     stateMutability: "payable",
     type: "function"
@@ -209,7 +209,7 @@ export const abi = [
         type: "bytes"
       }
     ],
-    name: "appendToFileInFrontendVersion",
+    name: "appendToFile",
     outputs: [],
     stateMutability: "payable",
     type: "function"
@@ -822,7 +822,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "readFileFromFrontendVersion",
+    name: "readFile",
     outputs: [
       {
         internalType: "bytes",
@@ -846,7 +846,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "removeAllFilesFromFrontendVersion",
+    name: "removeAllFiles",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -864,7 +864,7 @@ export const abi = [
         type: "string[]"
       }
     ],
-    name: "removeFilesFromFrontendVersion",
+    name: "removeFiles",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -905,7 +905,7 @@ export const abi = [
         type: "string[]"
       }
     ],
-    name: "renameFilesInFrontendVersion",
+    name: "renameFiles",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

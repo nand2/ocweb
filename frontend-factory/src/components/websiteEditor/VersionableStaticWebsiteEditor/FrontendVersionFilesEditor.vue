@@ -73,7 +73,7 @@ const { data: frontendFilesSizes, isLoading: frontendFilesSizesLoading, isError:
   queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
   queryFn: async () => {
 
-    return await staticFrontendPluginClient.value.getFrontendFilesSizesFromStorageBackend(staticFrontend.value)
+    return await staticFrontendPluginClient.value.getStaticFrontendFilesSizesFromStorageBackend(staticFrontend.value)
   },
   staleTime: 3600 * 1000,
   enabled: computed(() => props.frontendVersion != null && staticFrontendPluginClient.value != null && staticFrontendLoaded.value == true && staticFrontendFetching.value == false),
@@ -168,7 +168,7 @@ const rootFolderChildren = computed(() => {
       </div>
     </div>
 
-    <div v-if="frontendVersion == null || staticFrontendPluginClientLoading == true">
+    <div v-if="frontendVersion == null || staticFrontendPluginClientLoading || staticFrontendLoading">
       Loading...
     </div>
 <!-- 
@@ -176,8 +176,8 @@ const rootFolderChildren = computed(() => {
       Error loading the files: {{ error.shortMessage || error.message }}
     </div> -->
 
-    <div v-else-if="staticFrontendPluginClientLoaded">
-      <div v-if="frontendVersion.files.length == 0" class="no-files">
+    <div v-else-if="staticFrontendPluginClientLoaded && staticFrontendLoaded">
+      <div v-if="staticFrontend.files.length == 0" class="no-files">
         No files
       </div>
 
@@ -187,7 +187,6 @@ const rootFolderChildren = computed(() => {
         :contractAddress 
         :chainId 
         :frontendVersionIndex 
-        :websiteClient 
         :staticFrontendPluginClient
         :globalEmptyFolders />
 

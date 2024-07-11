@@ -140,7 +140,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      * @param fileUploadInfos The files to add
      */
-    function addFilesToFrontendVersion(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) public payable onlyOwner frontendLibraryUnlocked {
+    function addFiles(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) public payable onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
@@ -172,7 +172,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
                 }
             }
             // Search if the file already exists
-            (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, fileUploadInfos[i].filePath);
+            (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, fileUploadInfos[i].filePath);
             // If it does, remove it from the storage backend
             // (we do it before the create, as remove() may free a slot for the new file in the
             // storage backend)
@@ -213,7 +213,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param filePath The path of the file to read
      * @param data The data to give to the storage backend
      */
-    function appendToFileInFrontendVersion(uint256 frontendIndex, string memory filePath, bytes memory data) public payable onlyOwner frontendLibraryUnlocked {
+    function appendToFile(uint256 frontendIndex, string memory filePath, bytes memory data) public payable onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
@@ -222,7 +222,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             revert FrontendVersionLocked();
         }
 
-        (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, filePath);
+        (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePath);
         if(fileFound == false) {
             revert FileNotFound();
         }
@@ -243,13 +243,13 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @return data The read data
      * @return nextChunkId The next chunk ID to read. 0 if none.
      */
-    function readFileFromFrontendVersion(uint256 frontendIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
+    function readFile(uint256 frontendIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
         FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
         
-        (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, filePath);
+        (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePath);
         if(fileFound == false) {
             revert FileNotFound();
         }
@@ -263,7 +263,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param oldFilePaths The old path of the file
      * @param newFilePaths The new path of the file
      */
-    function renameFilesInFrontendVersion(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public onlyOwner frontendLibraryUnlocked {
+    function renameFiles(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
@@ -277,12 +277,12 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         }
 
         for(uint i = 0; i < oldFilePaths.length; i++) {
-            (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, oldFilePaths[i]);
+            (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, oldFilePaths[i]);
             if(fileFound == false) {
                 revert FileNotFound();
             }
             
-            (bool fileFoundAtNewLocation,) = _findFileIndexByNameInFrontendVersion(frontend, newFilePaths[i]);
+            (bool fileFoundAtNewLocation,) = _findFileIndexByName(frontend, newFilePaths[i]);
             if(fileFoundAtNewLocation) {
                 revert FileAlreadyExistsAtNewLocation();
             }
@@ -296,7 +296,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      * @param filePaths The paths of the files to remove
      */
-    function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) public onlyOwner frontendLibraryUnlocked {
+    function removeFiles(uint256 frontendIndex, string[] memory filePaths) public onlyOwner frontendLibraryUnlocked {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
@@ -306,7 +306,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         }
 
         for(uint i = 0; i < filePaths.length; i++) {
-            (bool fileFound, uint fileIndex) = _findFileIndexByNameInFrontendVersion(frontend, filePaths[i]);
+            (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePaths[i]);
             if(fileFound == false) {
                 revert FileNotFound();
             }
@@ -321,7 +321,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Remove all files from a frontend version
      * @param frontendIndex The index of the frontend version
      */
-    function removeAllFilesFromFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked  {
+    function removeAllFiles(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked  {
         if(frontendIndex >= frontendVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
@@ -378,7 +378,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
     }
 
 
-    function _findFileIndexByNameInFrontendVersion(FrontendFilesSet storage frontend, string memory filePath) internal view returns (bool, uint) {
+    function _findFileIndexByName(FrontendFilesSet storage frontend, string memory filePath) internal view returns (bool, uint) {
         for(uint i = 0; i < frontend.files.length; i++) {
             if(LibStrings.compare(filePath, frontend.files[i].filePath)) {
                 return (true, i);

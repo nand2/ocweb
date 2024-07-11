@@ -37,10 +37,6 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  websiteClient: {
-    type: [Object, null],
-    required: true,
-  },
   staticFrontendPluginClient: {
     type: Object,
     required: true,
@@ -109,7 +105,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     fileInfos.sort((a, b) => a.size - b.size);
   
     // Prepare the transaction to upload the files
-    const transactions = await props.staticFrontendPluginClient.prepareAddFilesToFrontendVersionTransactions(props.frontendVersionIndex, fileInfos);
+    const transactions = await props.staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(props.frontendVersionIndex, fileInfos);
     console.log(transactions);
 
     return transactions;
@@ -139,7 +135,7 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
   },
   scope: {
     // This scope will make the mutations run serially
-    id: 'addFilesToFrontendVersion'
+    id: 'addFiles'
   },
   onSuccess: async (data) => {
     // Mark the transaction as successful
@@ -205,7 +201,6 @@ const addNewFolder = async () => {
           :contractAddress
           :chainId
           :frontendVersionIndex
-          :websiteClient
           :staticFrontendPluginClient
           :globalEmptyFolders
           v-if="child.type == 'folder'" />
@@ -216,7 +211,6 @@ const addNewFolder = async () => {
           :contractAddress
           :chainId
           :frontendVersionIndex
-          :websiteClient
           :staticFrontendPluginClient
           :folderParentChildren="folderChildren"
           v-else-if="child.type == 'file'" />
@@ -265,14 +259,14 @@ const addNewFolder = async () => {
               <div class="transaction-inner">
                 <div class="transaction-title">
                   Transaction #{{ txIndex + 1 }}: 
-                  <span v-if="transaction.functionName == 'addFilesToFrontendVersion'">
+                  <span v-if="transaction.functionName == 'addFiles'">
                     Uploading files
                   </span>
-                  <span v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'">
+                  <span v-else-if="transaction.functionName == 'appendToFile'">
                     Add data to file
                   </span>
                 </div>
-                <div v-if="transaction.functionName == 'addFilesToFrontendVersion'" class="transaction-details">
+                <div v-if="transaction.functionName == 'addFiles'" class="transaction-details">
                   <div v-for="(file, index) in transaction.args[2]" :key="index">
                     <code class="filename">{{ file.filePath }}</code>
                     <span class="text-muted filename-details">
@@ -293,7 +287,7 @@ const addNewFolder = async () => {
                     </span>
                   </div>
                 </div>
-                <div v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'" class="transaction-details">
+                <div v-else-if="transaction.functionName == 'appendToFile'" class="transaction-details">
                   <div>
                     <code class="filename">{{ transaction.args[2] }}</code>
                     <span class="text-muted  filename-details">

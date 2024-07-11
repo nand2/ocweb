@@ -26,7 +26,7 @@ class StaticFrontendPluginClient {
     return await this.#viemWebsiteContract.read.getStaticFrontend([this.#websiteContractAddress, version])
   }
 
-  async getFrontendFilesSizesFromStorageBackend(staticFrontend) {
+  async getStaticFrontendFilesSizesFromStorageBackend(staticFrontend) {
     // Gather the filename and content keys
     const fileInfos = staticFrontend.files.map(file => {
       return {
@@ -71,7 +71,7 @@ class StaticFrontendPluginClient {
    *          Exception: "metadata", which is data meant to be displayed to the user to review
    *          the transactions before executing them
    */
-  async prepareAddFilesToFrontendVersionTransactions(version, fileInfos) {
+  async prepareAddFilesToStaticFrontendTransactions(version, fileInfos) {
     // Fetch the staticFrontend for this version
     const staticFrontend = await this.getStaticFrontend(version)
 
@@ -129,7 +129,7 @@ class StaticFrontendPluginClient {
     for (const fileInfo of compressedFilesInfos) {
       // SSTORE2 handling
       if (storageBackendName.startsWith('sstore2')) {
-        // Determine how much bytes do we already have in the current addFilesToFrontendVersion batch
+        // Determine how much bytes do we already have in the current addFiles batch
         let currentBatchSize = 0
         for (const fileUploadInfos of currentFileUploadInfos) {
           // The data is stored in hex, so we divide by 2
@@ -149,7 +149,7 @@ class StaticFrontendPluginClient {
         // If no more room in the current batch, start a new one
         if (initialChunkSize == 0) {
           transactions.push({
-            functionName: 'addFilesToFrontendVersion',
+            functionName: 'addFiles',
             args: [this.#websiteContractAddress, version, currentFileUploadInfos],
             metadata: { files: currentFileUploadInfosMetadata },
           })
@@ -189,10 +189,10 @@ class StaticFrontendPluginClient {
               chunksCount: chunkSizes.length,
             })
 
-            // More than 1 chunk? We finalize the addFilesToFrontendVersion batch
+            // More than 1 chunk? We finalize the addFiles batch
             if(chunkSizes.length > 1) {
               transactions.push({
-                functionName: 'addFilesToFrontendVersion',
+                functionName: 'addFiles',
                 args: [this.#websiteContractAddress, version, currentFileUploadInfos],
                 metadata: { files: currentFileUploadInfosMetadata },
               })
@@ -202,7 +202,7 @@ class StaticFrontendPluginClient {
           }
           else {
             transactions.push({
-              functionName: 'appendToFileInFrontendVersion',
+              functionName: 'appendToFile',
               args: [this.#websiteContractAddress, version, fileInfo.filePath, toHex(chunk)],
               metadata: {
                 sizeSent: chunkSize,
@@ -221,7 +221,7 @@ class StaticFrontendPluginClient {
     // If the current currentFileUploadInfos batch is not empty, add it to the transactions
     if (currentFileUploadInfos.length > 0) {
       transactions.push({
-        functionName: 'addFilesToFrontendVersion',
+        functionName: 'addFiles',
         args: [this.#websiteContractAddress, version, currentFileUploadInfos],
         metadata: { files: currentFileUploadInfosMetadata },
       })
@@ -230,9 +230,9 @@ class StaticFrontendPluginClient {
     return transactions
   }
 
-  async prepareRenameFilesInFrontendVersionTransaction(frontendIndex, oldFilePaths, newFilePaths) {
+  async prepareRenameFilesInStaticFrontendTransaction(frontendIndex, oldFilePaths, newFilePaths) {
     return {
-      functionName: 'renameFilesInFrontendVersion',
+      functionName: 'renameFiles',
       args: [this.#websiteContractAddress, frontendIndex, oldFilePaths, newFilePaths],
     }
   }
@@ -240,9 +240,9 @@ class StaticFrontendPluginClient {
   /**
    * filePaths: An array of strings, each string being the path of a file, without leading /. E.g. "index.html", "assets/logo.png"
    */
-  async prepareRemoveFilesFromFrontendVersionTransaction(frontendIndex, filePaths) {
+  async prepareRemoveFilesFromStaticFrontendTransaction(frontendIndex, filePaths) {
     return {
-      functionName: 'removeFilesFromFrontendVersion',
+      functionName: 'removeFiles',
       args: [this.#websiteContractAddress, frontendIndex, filePaths],
     }
   }

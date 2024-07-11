@@ -32,7 +32,7 @@ contract UploadSstore2Frontend is Script {
         (,uint256 frontendVersionCount) = frontendLibrary.getFrontendVersions(0, 0);
         if(frontendVersionCount > 0 && frontendLibrary.getFrontendVersion(frontendVersionCount - 1).locked == false) {
             console.log("Resetting and replacing latest frontend version");
-            frontendLibrary.removeAllFilesFromFrontendVersion(frontendVersionCount - 1);
+            frontendLibrary.removeAllFiles(frontendVersionCount - 1);
         }
         // Otherwise we add a new version
         else {
@@ -96,7 +96,7 @@ contract UploadSstore2Frontend is Script {
                             compressionAlgorithm: CompressionAlgorithm.GZIP,
                             data: chunk
                         });
-                        frontendLibrary.addFilesToFrontendVersion(frontendVersionCount - 1, fileUploadInfosOld);
+                        frontendLibrary.addFiles(frontendVersionCount - 1, fileUploadInfosOld);
                     }
 
                     {
@@ -108,13 +108,13 @@ contract UploadSstore2Frontend is Script {
                             compressionAlgorithm: CompressionAlgorithm.GZIP,
                             data: chunk
                         });
-                        staticFrontendPlugin.addFilesToFrontendVersion(versionableStaticWebsite, frontendVersionCount - 1, fileUploadInfos);
+                        staticFrontendPlugin.addFiles(versionableStaticWebsite, frontendVersionCount - 1, fileUploadInfos);
                     }
                 }
                 else {
-                    frontendLibrary.appendToFileInFrontendVersion(frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
+                    frontendLibrary.appendToFile(frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
 
-                    staticFrontendPlugin.appendToFileInFrontendVersion(versionableStaticWebsite, frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
+                    staticFrontendPlugin.appendToFile(versionableStaticWebsite, frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
                 }
             }
         }

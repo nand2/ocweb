@@ -41,21 +41,21 @@ interface IFrontendLibrary {
         // The compression algorithm used for the file data
         CompressionAlgorithm compressionAlgorithm;
         // The data for the storage backend. May be only a part of the file and require
-        // subsequent calls to appendToFileInFrontendVersion()
+        // subsequent calls to appendToFile()
         bytes data;
     }
-    function addFilesToFrontendVersion(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) external payable;
-    function appendToFileInFrontendVersion(uint256 frontendIndex, string memory filePath, bytes memory data) external payable;
+    function addFiles(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) external payable;
+    function appendToFile(uint256 frontendIndex, string memory filePath, bytes memory data) external payable;
 
     // Read a file
-    function readFileFromFrontendVersion(uint256 frontendIndex, string memory filePath, uint256 chunkId) external view returns (bytes memory data, uint256 nextChunkId);
+    function readFile(uint256 frontendIndex, string memory filePath, uint256 chunkId) external view returns (bytes memory data, uint256 nextChunkId);
 
     // Rename files
-    function renameFilesInFrontendVersion(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) external;
+    function renameFiles(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) external;
 
     // Remove files
-    function removeFilesFromFrontendVersion(uint256 frontendIndex, string[] memory filePaths) external;
-    function removeAllFilesFromFrontendVersion(uint256 frontendIndex) external;
+    function removeFiles(uint256 frontendIndex, string[] memory filePaths) external;
+    function removeAllFiles(uint256 frontendIndex) external;
 
     // Lock a frontend version: It won't be editable anymore, and cannot be deleted
     function lockFrontendVersion(uint256 frontendIndex) external;
