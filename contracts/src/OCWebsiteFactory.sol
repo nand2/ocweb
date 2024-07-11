@@ -27,7 +27,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     mapping(OCWebsite=> uint) public websiteToIndex;
     event WebsiteCreated(uint indexed websiteId, address website);
     
-    ClonableFrontendVersionViewer public frontendVersionViewerImplementation;
+    ClonableFrontendVersionViewer public websiteVersionViewerImplementation;
 
     string public topdomain;
     string public domain;
@@ -63,7 +63,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         string domain;
         OCWebsiteFactoryToken factoryToken;
         ClonableOCWebsite websiteImplementation;
-        ClonableFrontendVersionViewer frontendVersionViewerImplementation;
+        ClonableFrontendVersionViewer websiteVersionViewerImplementation;
     }
     constructor(ConstructorParams memory _params) ERC721("OCWebsite", "OCW") {
         owner = _params.owner;
@@ -73,7 +73,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
 
         factoryToken = _params.factoryToken;
         websiteImplementation = _params.websiteImplementation;
-        frontendVersionViewerImplementation = _params.frontendVersionViewerImplementation;
+        websiteVersionViewerImplementation = _params.websiteVersionViewerImplementation;
 
         // Adding some backlinks
         factoryToken.setWebsiteFactory(this);
@@ -95,7 +95,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
             firstFrontendVersionStorageBackend = storageBackends[0];
         }
 
-        newWebsite.initialize(msg.sender, address(this), frontendVersionViewerImplementation, firstFrontendVersionStorageBackend, newWebsiteDefaultPlugins);
+        newWebsite.initialize(msg.sender, address(this), websiteVersionViewerImplementation, firstFrontendVersionStorageBackend, newWebsiteDefaultPlugins);
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
 

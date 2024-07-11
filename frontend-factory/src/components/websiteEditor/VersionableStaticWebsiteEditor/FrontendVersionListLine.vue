@@ -12,7 +12,7 @@ import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
 import EyeSlashIcon from '../../../icons/EyeSlashIcon.vue';
 
-import { useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, invalidateFrontendVersionsQuery, invalidateFrontendVersionQuery, invalidateFrontendVersionsViewerQuery, useIsLocked } from '../../../utils/queries.js';
+import { useLiveWebsiteVersion, invalidateLiveFrontendVersionQuery, invalidateWebsiteVersionsQuery, invalidateFrontendVersionQuery, useIsLocked } from '../../../utils/queries.js';
 
 const props = defineProps({
   frontendVersion: {
@@ -22,10 +22,6 @@ const props = defineProps({
   frontendVersionIndex: {
     type: Number,
     required: true,
-  },
-  frontendVersionViewer: {
-    type: [Object, null],
-    required: true
   },
   contractAddress: {
     type: String,
@@ -44,8 +40,8 @@ const props = defineProps({
 const queryClient = useQueryClient()
 const { switchChainAsync } = useSwitchChain()
 
-// Fetch the live frontend infos
-const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(queryClient, props.contractAddress, props.chainId)
+// Fetch the live website infos
+const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
 
 // Get the lock status
 const { data: isGlobalLocked, isLoading: isGlobalLockedLoading, isFetching: isGlobalLockedFetching, isError: isGlobalLockedIsError, error: isGlobalLockedError, isSuccess: isGlobalLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
@@ -67,7 +63,7 @@ const { isPending: renameIsPending, isError: renameIsError, error: renameError, 
   },
   onSuccess: async (data, variables, context) => {
     // Refresh the frontend versions
-    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const renameFrontendVersion = async () => {
@@ -123,7 +119,7 @@ const { isPending: lockIsPending, isError: lockIsError, error: lockError, isSucc
   },
   onSuccess: async (data, variables, context) => {
     await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
-    return await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const lock = async () => {
@@ -140,14 +136,14 @@ const { isPending: toggleIsViewableIsPending, isError: toggleIsViewableIsError, 
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    const transaction = await props.websiteClient.prepareEnableViewerForFrontendVersionTransaction(props.frontendVersionIndex, !props.frontendVersionViewer.isViewable);
+    const transaction = await props.websiteClient.prepareEnableViewerForWebsiteVersionTransaction(props.frontendVersionIndex, !props.frontendVersion.isViewable);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return await invalidateFrontendVersionsViewerQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const toggleIsViewable = async () => {
@@ -163,10 +159,10 @@ const toggleIsViewable = async () => {
 }
 
 const viewerAddress = computed(() => {
-  if(props.frontendVersionViewer == null) {
+  if(props.frontendVersion.viewer == "0x0000000000000000000000000000000000000000") {
     return null
   }
-  return `web3://${props.frontendVersionViewer.viewer}:${props.chainId}/`
+  return `web3://${props.frontendVersion.viewer}:${props.chainId}/`
 })
 </script>
 
@@ -177,8 +173,8 @@ const viewerAddress = computed(() => {
         <PencilSquareIcon v-if="renameIsPending == true" class="anim-pulse" />
         <PlayCircleIcon v-else-if="setLiveIsPending == true" class="anim-pulse" />
         <LockFillIcon v-else-if="lockIsPending == true" class="anim-pulse" />
-        <EyeIcon v-else-if="toggleIsViewableIsPending == true && frontendVersionViewer != null && frontendVersionViewer.isViewable == false" class="anim-pulse" />
-        <EyeSlashIcon v-else-if="toggleIsViewableIsPending == true && (frontendVersionViewer != null && frontendVersionViewer.isViewable == true)" class="anim-pulse" />
+        <EyeIcon v-else-if="toggleIsViewableIsPending == true && frontendVersion.isViewable == false" class="anim-pulse" />
+        <EyeSlashIcon v-else-if="toggleIsViewableIsPending == true && (frontendVersion.isViewable == true)" class="anim-pulse" />
         <span v-else>
           #{{ frontendVersionIndex }} 
         </span>
@@ -198,23 +194,23 @@ const viewerAddress = computed(() => {
           <span v-if="renameIsPending">
             {{ newDescription }}
           </span>
-          <span class="text-muted" style="font-size: 0.8em">
+          <!-- <span class="text-muted" style="font-size: 0.8em">
             {{ frontendVersion.files.length }} files
-          </span>
+          </span> -->
           <LockFillIcon v-if="frontendVersion.locked" />
-          <span class="badge" v-if="liveFrontendVersionLoaded && frontendVersionIndex == liveFrontendVersionData.frontendIndex">
+          <span class="badge" v-if="liveFrontendVersionLoaded && frontendVersionIndex == liveFrontendVersionData.websiteVersionIndex">
             Live
           </span>
         </span>
       </div>
       <div class="text-80">
-        <a :href="viewerAddress" target="_blank" style="display: flex; max-width: 100%; align-items: center;" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && (frontendVersionViewer != null && frontendVersionViewer.isViewable == true)">
+        <a :href="viewerAddress" target="_blank" style="display: flex; max-width: 100%; align-items: center;" v-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.websiteVersionIndex) && frontendVersion.isViewable == true">
           <span style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
             {{ viewerAddress }} 
           </span>
           <BoxArrowUpRightIcon style="flex: 0 0 auto; margin-left: 0.5em" />
         </a>
-        <span v-else-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && (frontendVersionViewer != null && frontendVersionViewer.isViewable == false)" style="margin:auto;">
+        <span v-else-if="(liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.websiteVersionIndex) && frontendVersion.isViewable == false" style="margin:auto;">
           <EyeSlashIcon class="text-muted" />
         </span>
       </div>
@@ -222,12 +218,12 @@ const viewerAddress = computed(() => {
         <a @click.stop.prevent="showRenameForm = !showRenameForm; newDescription = frontendVersion.description" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <PencilSquareIcon />
         </a>
-        <a @click.stop.prevent="setLive()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
+        <a @click.stop.prevent="setLive()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.websiteVersionIndex && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <PlayCircleIcon />
         </a>
-        <a @click.stop.prevent="toggleIsViewable()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && (liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.frontendIndex) && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
-          <EyeIcon v-if="frontendVersionViewer != null && frontendVersionViewer.isViewable == false" />
-          <EyeSlashIcon v-else-if="frontendVersionViewer != null && frontendVersionViewer.isViewable == true" />
+        <a @click.stop.prevent="toggleIsViewable()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && (liveFrontendVersionLoaded && frontendVersionIndex != liveFrontendVersionData.websiteVersionIndex) && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
+          <EyeIcon v-if="frontendVersion.isViewable == false" />
+          <EyeSlashIcon v-else-if="frontendVersion.isViewable == true" />
         </a>
         <a @click.stop.prevent="lock()" class="white" v-if="isGlobalLockedLoaded && isGlobalLocked == false && frontendVersion.locked == false && renameIsPending == false && setLiveIsPending == false && lockIsPending == false && toggleIsViewableIsPending == false">
           <LockFillIcon />

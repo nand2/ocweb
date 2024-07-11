@@ -20,9 +20,9 @@ contract ClonableFrontendVersionViewer is ResourceRequestWebsite {
 
     function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         
-        // We prefix the resource with /__frontend_version/{frontendVersionIndex}
+        // We prefix the resource with /__website_version/{frontendVersionIndex}
         string[] memory newResource = new string[](resource.length + 2);
-        newResource[0] = "__frontend_version";
+        newResource[0] = "__website_version";
         newResource[1] = LibStrings.toString(frontendVersionIndex);
         for(uint i = 0; i < resource.length; i++) {
             newResource[i + 2] = resource[i];

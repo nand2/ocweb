@@ -45,11 +45,6 @@ interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
 
     // Enable/disable the viewer, for a frontend version which is not the live one
     function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) external;
-    struct FrontendVersionViewer {
-        IDecentralizedApp viewer;
-        bool isViewable;
-    }
-    function getFrontendVersionsViewer() external view returns (FrontendVersionViewer[] memory);
 
     function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin) external;
     struct IVersionableStaticWebsitePluginWithInfos {

@@ -48,7 +48,7 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 
 // Get variables
 const { data: injectedVariables, isLoading: injectedVariablesLoading, isFetching: injectedVariablesFetching, isError: injectedVariablesIsError, error: injectedVariablesError, isSuccess: injectedVariablesLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+  queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
   queryFn: async () => {
     const result = await injectedVariablesPluginClient.value.getVariables(props.frontendVersionIndex);
     return result;
@@ -75,7 +75,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
     additionValue.value = ""
     showForm.value = false
 
-    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const additionFile = async () => {
@@ -108,7 +108,7 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
     return await injectedVariablesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const removeItem = async (key) => {

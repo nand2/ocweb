@@ -10,7 +10,7 @@ import FrontendVersionListLine from './FrontendVersionListLine.vue';
 import LockFillIcon from '../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateFrontendVersionsQuery, useFrontendVersions, invalidateFrontendVersionsViewerQuery, useSupportedStorageBackendInterfaces, useIsLocked, invalidateIsLockedQuery } from '../../../utils/queries';
+import { useContractAddresses, invalidateWebsiteVersionsQuery, useWebsiteVersions, useSupportedStorageBackendInterfaces, useIsLocked, invalidateIsLockedQuery } from '../../../utils/queries';
 import { abi as factoryABI } from '../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
@@ -34,7 +34,7 @@ const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
 
 // Get the list of frontend versions
 const showEditedFrontendVersionSelector = ref(false)
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId)
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
 
 // Get the lock status
 const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
@@ -80,7 +80,7 @@ const newFrontendVersionStorageBackend = ref(null)
 const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddFrontendVersionAndCopyPluginsTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value, frontendVersionsData.value.totalCount - 1);
+    const transaction = await props.websiteClient.prepareAddWebsiteVersionTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value, frontendVersionsData.value.totalCount - 1);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
@@ -90,8 +90,7 @@ const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsErr
     newFrontendVersionDescription.value = ""
     showNewFrontendVersionForm.value = false
 
-    await invalidateFrontendVersionsQuery(queryClient, props.contractAddress, props.chainId)
-    return await invalidateFrontendVersionsViewerQuery(queryClient, props.contractAddress, props.chainId)
+    return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const newfrontendversionFile = async () => {

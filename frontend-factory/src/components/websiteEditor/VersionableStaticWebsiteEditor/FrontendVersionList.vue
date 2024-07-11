@@ -3,7 +3,7 @@ import { ref, shallowRef, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
 import FrontendVersionListLine from './FrontendVersionListLine.vue';
-import { useFrontendVersions, useFrontendVersionsViewer } from '../../../utils/queries.js';
+import { useWebsiteVersions } from '../../../utils/queries.js';
 
 const props = defineProps({
   contractAddress: {
@@ -23,10 +23,8 @@ const props = defineProps({
 const queryClient = useQueryClient()
 
 // Get frontend versions
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId)
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
 
-// Get the list of frontend versions viewer
-const { data: frontendVersionsViewer, isLoading: frontendVersionsViewerLoading, isFetching: frontendVersionsViewerFetching, isError: frontendVersionsViewerIsError, error: frontendVersionsViewerError, isSuccess: frontendVersionsViewerLoaded } = useFrontendVersionsViewer( props.contractAddress, props.chainId)
 </script>
 
 <template>
@@ -42,7 +40,6 @@ const { data: frontendVersionsViewer, isLoading: frontendVersionsViewerLoading, 
         <FrontendVersionListLine
           :frontendVersion="frontendVersion"
           :frontendVersionIndex="index"
-          :frontendVersionViewer="frontendVersionsViewerLoaded && index < frontendVersionsViewer.length ? frontendVersionsViewer[index] : null"
           :contractAddress
           :chainId
           :websiteClient />

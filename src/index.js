@@ -20,37 +20,27 @@ class VersionableStaticWebsiteClient {
     })
   }
 
-  /**
-   * Prepare the addition of a frontend version
-   */
-  async prepareAddFrontendVersionTransaction(storageBackend, description) {
+  async prepareAddWebsiteVersionTransaction(storageBackend, description, pluginsCopiedFromFrontendVersionIndex) {
     return {
-      functionName: 'addFrontendVersion',
-      args: [storageBackend, description],
+      functionName: 'addWebsiteVersion',
+      args: [description, pluginsCopiedFromFrontendVersionIndex],
     }
   }
 
-  async prepareAddFrontendVersionAndCopyPluginsTransaction(storageBackend, description, pluginsCopiedFromFrontendVersionIndex) {
-    return {
-      functionName: 'addFrontendVersionAndCopyPlugins',
-      args: [storageBackend, description, pluginsCopiedFromFrontendVersionIndex],
-    }
-  }
-
-  async getFrontendVersions(startIndex, count) {
-    return await this.#viemWebsiteContract.read.getFrontendVersions([startIndex, count])
+  async getWebsiteVersions(startIndex, count) {
+    return await this.#viemWebsiteContract.read.getWebsiteVersions([startIndex, count])
   }
 
   async getLiveWebsiteVersion() {
     const result = await this.#viemWebsiteContract.read.getLiveWebsiteVersion()
     return {
-      frontendVersion: result[0],
-      frontendIndex: Number(result[1]),
+      websiteVersion: result[0],
+      websiteVersionIndex: Number(result[1]),
     }
   }
 
-  async getFrontendVersion(frontendIndex) {
-    return await this.#viemWebsiteContract.read.getFrontendVersion([frontendIndex])
+  async getWebsiteVersion(frontendIndex) {
+    return await this.#viemWebsiteContract.read.getWebsiteVersion([frontendIndex])
   }
 
   async getFrontendVersionsViewer() {
@@ -83,7 +73,7 @@ class VersionableStaticWebsiteClient {
     }
   }
 
-  async prepareEnableViewerForFrontendVersionTransaction(frontendIndex, enable) {
+  async prepareEnableViewerForWebsiteVersionTransaction(frontendIndex, enable) {
     return {
       functionName: 'enableViewerForFrontendVersion',
       args: [frontendIndex, enable],

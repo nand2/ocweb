@@ -97,7 +97,7 @@ contract OCWebsiteFactoryScript is Script {
                 ClonableOCWebsite websiteImplementation = new ClonableOCWebsite();
 
                 // Create the frontend version viewer implementation
-                ClonableFrontendVersionViewer frontendVersionViewerImplementation = new ClonableFrontendVersionViewer();
+                ClonableFrontendVersionViewer websiteVersionViewerImplementation = new ClonableFrontendVersionViewer();
 
                 // Deploying the blog factory
                 // {salt: bytes32(vm.envBytes("CONTRACT_SALT"))}
@@ -107,7 +107,7 @@ contract OCWebsiteFactoryScript is Script {
                     domain: domain,
                     factoryToken: factoryToken,
                     websiteImplementation: websiteImplementation,
-                    frontendVersionViewerImplementation: frontendVersionViewerImplementation
+                    websiteVersionViewerImplementation: websiteVersionViewerImplementation
                 }));
 
                 // Transfer the website implementation ownership to the factory

@@ -48,7 +48,7 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 
 // Get proxied websites
 const { data: proxiedWebsites, isLoading: proxiedWebsitesLoading, isFetching: proxiedWebsitesFetching, isError: proxiedWebsitesIsError, error: proxiedWebsitesError, isSuccess: proxiedWebsitesLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+  queryKey: ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
   queryFn: async () => {
     const result = await proxiedWebsitesPluginClient.value.getProxiedWebsites(props.frontendVersionIndex);
     return result;
@@ -77,7 +77,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
     additionRemotePrefix.value = ""
     showForm.value = false
 
-    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const additionFile = async () => {
@@ -104,7 +104,7 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
     return await proxiedWebsitesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteFrontendVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const removeItem = async (index) => {

@@ -23,20 +23,18 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
     // The index of the live frontend version
     uint256 public liveWebsiteVersionIndex;
 
+    // Global lock! Store when it was locked
     uint256 lockedAt;
-
-    // For each frontend version, the list of plugins
-    mapping(uint => IVersionableStaticWebsitePlugin[]) public plugins;
 
     // When not the live version, a frontend version can be viewed by this address,
     // which is a clone of a cheap proxy contract
-    ClonableFrontendVersionViewer public frontendVersionViewerImplementation;
-    mapping(uint => FrontendVersionViewer) public frontendVersionsViewer;
+    // This is the implementation of the viewer
+    ClonableFrontendVersionViewer public websiteVersionViewerImplementation;
     
 
 
     constructor(ClonableFrontendVersionViewer _viewerImplementation) FrontendLibrary()  {
-        frontendVersionViewerImplementation = _viewerImplementation;
+        websiteVersionViewerImplementation = _viewerImplementation;
     }
 
 
@@ -144,7 +142,7 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
     // Plugins
     // 
 
-    function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin) public override onlyOwner {
+    function addPlugin(uint websiteVersionIndex, IVersionableStaticWebsitePlugin plugin) public override onlyOwner {
         // Ensure that the plugin support one of the requested interfaces
         bytes4[] memory supportedInterfaces = getSupportedPluginInterfaces();
         bool supported = false;
@@ -157,41 +155,50 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         require(supported, "Plugin does not support any of the required interfaces");
 
         // Ensure that the global lock is not active
-        require(lockedAt != 0 == false, "Frontend library is locked");
+        require(lockedAt == 0, "Frontend library is locked");
 
-        // Ensure that the frontendIndex is within bounds
-        require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
+        // Ensure that the websiteVersionIndex is within bounds
+        require(websiteVersionIndex < websiteVersions.length, "Invalid website version index");
 
-        // Ensure that the frontend versop, is not locked
-        require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
+        WebsiteVersion storage websiteVersion = websiteVersions[websiteVersionIndex];
+
+        // Ensure that the websiteVersion is not locked
+        require(websiteVersion.locked == false, "Website version is locked");
 
         // Ensure that the plugin is not already added
-        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
-            require(address(plugins[frontendIndex][i]) != address(plugin), "Plugin already added");
+        for(uint i = 0; i < websiteVersion.plugins.length; i++) {
+            require(address(websiteVersion.plugins[i]) != address(plugin), "Plugin already added");
         }
 
-        plugins[frontendIndex].push(plugin);
+        websiteVersion.plugins.push(plugin);
     }
 
-    function getPlugins(uint frontendIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginWithInfos) {
-        pluginWithInfos = new IVersionableStaticWebsitePluginWithInfos[](plugins[frontendIndex].length);
-        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
-            pluginWithInfos[i].plugin = plugins[frontendIndex][i];
-            pluginWithInfos[i].infos = plugins[frontendIndex][i].infos();
+    function getPlugins(uint websiteVersionIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginWithInfos) {
+        // Ensure that the websiteVersionIndex is within bounds
+        require(websiteVersionIndex < websiteVersions.length, "Invalid website version index");
+
+        WebsiteVersion storage websiteVersion = websiteVersions[websiteVersionIndex];
+
+        pluginWithInfos = new IVersionableStaticWebsitePluginWithInfos[](websiteVersion.plugins.length);
+        for(uint i = 0; i < websiteVersion.plugins.length; i++) {
+            pluginWithInfos[i].plugin = websiteVersion.plugins[i];
+            pluginWithInfos[i].infos = websiteVersion.plugins[i].infos();
         }
     }
 
-    function removePlugin(uint frontendIndex, address plugin) public onlyOwner {
-        // Ensure that the frontendIndex is within bounds
-        require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
-
+    function removePlugin(uint websiteVersionIndex, address plugin) public onlyOwner {
         // Ensure that the global lock is not active
-        require(lockedAt != 0 == false, "Frontend library is locked");
+        require(lockedAt == 0, "Frontend library is locked");
 
-        // Ensure that the frontend versop, is not locked
-        require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
+        // Ensure that the websiteVersionIndex is within bounds
+        require(websiteVersionIndex < websiteVersions.length, "Invalid website version index");
 
-        IVersionableStaticWebsitePlugin[] storage _plugins = plugins[frontendIndex];
+        WebsiteVersion storage websiteVersion = websiteVersions[websiteVersionIndex];
+
+        // Ensure that the websiteVersion is not locked
+        require(websiteVersion.locked == false, "Website version is locked");
+
+        IVersionableStaticWebsitePlugin[] storage _plugins = websiteVersion.plugins;
         for(uint i = 0; i < _plugins.length; i++) {
             if(address(_plugins[i]) == plugin) {
                 _plugins[i] = _plugins[_plugins.length - 1];
@@ -220,34 +227,26 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
 
     /**
      * Enable/disable the viewing of a non-live frontend version
-     * @param frontendIndex The index of the frontend version
+     * @param websiteVersionIndex The index of the frontend version
      * @param enable Enable or disable the viewer
      */
-    function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) public onlyOwner {
-        // Ensure that the frontend is not locked
-        require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
+    function enableViewerForFrontendVersion(uint256 websiteVersionIndex, bool enable) public onlyOwner {
+        // Ensure that the global lock is not active
+        require(lockedAt == 0, "Frontend library is locked");
 
-        // Ensure that the frontendIndex is within bounds
-        require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
+        // Ensure that the website frontend index is within bounds
+        require(websiteVersionIndex < websiteVersions.length, "Invalid frontend index");
 
-        FrontendVersionViewer memory modifiedValue = frontendVersionsViewer[frontendIndex];
+        WebsiteVersion storage version = websiteVersions[websiteVersionIndex];
         // Create the viewer if not done so yet
-        if(enable && address(frontendVersionsViewer[frontendIndex].viewer) == address(0)) {
-            ClonableFrontendVersionViewer viewer = ClonableFrontendVersionViewer(Clones.clone(address(frontendVersionViewerImplementation)));
-            viewer.initialize(IDecentralizedApp(address(this)), frontendIndex);
-            modifiedValue.viewer = IDecentralizedApp(viewer);
+        if(enable && address(version.viewer) == address(0)) {
+            ClonableFrontendVersionViewer viewer = ClonableFrontendVersionViewer(Clones.clone(address(websiteVersionViewerImplementation)));
+            viewer.initialize(IDecentralizedApp(address(this)), websiteVersionIndex);
+            version.viewer = IDecentralizedApp(viewer);
         }
-        modifiedValue.isViewable = enable;
-        frontendVersionsViewer[frontendIndex] = modifiedValue;
+        version.isViewable = enable;
     }
 
-    function getFrontendVersionsViewer() public view returns (FrontendVersionViewer[] memory) {
-        FrontendVersionViewer[] memory viewers = new FrontendVersionViewer[](getFrontendLibrary().getFrontendVersionCount());
-        for(uint i = 0; i < viewers.length; i++) {
-            viewers[i] = frontendVersionsViewer[i];
-        }
-        return viewers;
-    }
 
 
     //
@@ -260,19 +259,16 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
      *                   process the call
      */
     function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
-        FrontendFilesSet memory frontend;
         uint frontendIndex = liveWebsiteVersionIndex;
 
         // Get the frontend version to use
         {
-            IFrontendLibrary frontendLibrary = getFrontendLibrary();
-
-            // Special path prefix : /__frontend_version/{id}
+            // Special path prefix : /__website_version/{id}
             // Combined with the CLonableFrontendVersionViewer, this allows to serve a 
             // specific frontend version
-            if(resource.length >= 2 && LibStrings.compare(resource[0], "__frontend_version")) {
+            if(resource.length >= 2 && LibStrings.compare(resource[0], "__website_version")) {
                 uint overridenFrontendIndex = LibStrings.stringToUint(resource[1]);
-                if(overridenFrontendIndex < frontendLibrary.getFrontendVersionCount()) {
+                if(overridenFrontendIndex < websiteVersions.length) {
                     frontendIndex = overridenFrontendIndex;
 
                     string[] memory newResource = new string[](resource.length - 2);
@@ -284,20 +280,23 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
             }
 
             // Get the frontend version
-            frontend = frontendLibrary.getFrontendVersion(frontendIndex);
+            WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
             // If we are serving a non-live, non-viewable frontend, we return a 404
-            if(frontendIndex != liveWebsiteVersionIndex && frontendVersionsViewer[frontendIndex].isViewable == false) {
+            if(frontendIndex != liveWebsiteVersionIndex && websiteVersion.isViewable == false) {
                 statusCode = 404;
                 return (statusCode, body, headers);
             }
         }
 
+        WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
+        IVersionableStaticWebsitePlugin[] storage plugins = websiteVersion.plugins;
+
         // Plugins: rewrite the request
-        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
+        for(uint i = 0; i < plugins.length; i++) {
             bool rewritten;
             string[] memory newResource;
             KeyValue[] memory newParams;
-            (rewritten, newResource, newParams) = plugins[frontendIndex][i].rewriteWeb3Request(this, frontendIndex, resource, params);
+            (rewritten, newResource, newParams) = plugins[i].rewriteWeb3Request(this, frontendIndex, resource, params);
             if(rewritten) {
                 resource = newResource;
                 params = newParams;
@@ -305,16 +304,16 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         }
 
         // Plugins: return content before the static content
-        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
-            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestBeforeStaticContent(this, frontendIndex, resource, params);
+        for(uint i = 0; i < plugins.length; i++) {
+            (statusCode, body, headers) = plugins[i].processWeb3RequestBeforeStaticContent(this, frontendIndex, resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }
         }
 
         // Plugins: return content after the static content
-        for(uint i = 0; i < plugins[frontendIndex].length; i++) {
-            (statusCode, body, headers) = plugins[frontendIndex][i].processWeb3RequestAfterStaticContent(this, frontendIndex, resource, params);
+        for(uint i = 0; i < plugins.length; i++) {
+            (statusCode, body, headers) = plugins[i].processWeb3RequestAfterStaticContent(this, frontendIndex, resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }

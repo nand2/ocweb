@@ -75,7 +75,7 @@ function useFrontendVersionPlugins(contractAddress, chainId, frontendIndex) {
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
-    queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex],
+    queryKey: ['OCWebsiteVersionPlugins', contractAddress, chainId, frontendIndex],
     queryFn: async () => {
       // Switch chain if necessary
       await switchChainAsync({ chainId: chainId })
@@ -89,7 +89,7 @@ function useFrontendVersionPlugins(contractAddress, chainId, frontendIndex) {
 }
 
 function invalidateFrontendVersionPluginsQuery(queryClient, contractAddress, chainId, frontendIndex) {
-  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex] })
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPlugins', contractAddress, chainId, frontendIndex] })
 }
 
 function useStaticFrontendPluginClient(websiteContractAddress, pluginAddress) {
@@ -113,7 +113,7 @@ function useStaticFrontendPluginClient(websiteContractAddress, pluginAddress) {
 
 
 
-function useLiveFrontendVersion(queryClient,contractAddress, chainId) {
+function useLiveWebsiteVersion(queryClient,contractAddress, chainId) {
   const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
@@ -127,8 +127,8 @@ function useLiveFrontendVersion(queryClient,contractAddress, chainId) {
 
       // We got a frontend version, prefill the cache of the individual frontend version
       await queryClient.prefetchQuery({
-        queryKey: ['OCWebsiteFrontendVersion', contractAddress, chainId, result.frontendIndex],
-        queryFn: () => { return result.frontendVersion },
+        queryKey: ['OCWebsiteVersion', contractAddress, chainId, result.frontendIndex],
+        queryFn: () => { return result.websiteVersion },
       })
 
       return result
@@ -143,20 +143,20 @@ function invalidateLiveFrontendVersionQuery(queryClient, contractAddress, chainI
 }
 
 function invalidateFrontendVersionQuery(queryClient, contractAddress, chainId, version) {
-  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersion', contractAddress, chainId, version] })
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersion', contractAddress, chainId, version] })
 }
 
-function useFrontendVersions(queryClient, contractAddress, chainId, condition) {
+function useWebsiteVersions(queryClient, contractAddress, chainId, condition) {
   const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
-    queryKey: ['OCWebsiteFrontendVersions', contractAddress, chainId],
+    queryKey: ['OCWebsiteVersions', contractAddress, chainId],
     queryFn: async () => {
       // Switch chain if necessary
       await switchChainAsync({ chainId: chainId })
   
-      const result = await websiteClient.value.getFrontendVersions(0, 0)
+      const result = await websiteClient.value.getWebsiteVersions(0, 0)
       return {
         versions: result[0],
         totalCount: Number(result[1]),
@@ -167,30 +167,8 @@ function useFrontendVersions(queryClient, contractAddress, chainId, condition) {
   });
 }
 
-function invalidateFrontendVersionsQuery(queryClient, contractAddress, chainId) {
-  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', contractAddress, chainId] })
-}
-
-function useFrontendVersionsViewer(contractAddress, chainId) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
-  const { switchChainAsync } = useSwitchChain()
-
-  return useQuery({
-    queryKey: ['OCWebsiteFrontendVersionsViewer', contractAddress, chainId],
-    queryFn: async () => {
-      // Switch chain if necessary
-      await switchChainAsync({ chainId: chainId })
-
-      const result = await websiteClient.value.getFrontendVersionsViewer()
-      return result;
-    },
-    staleTime: 3600 * 1000,
-    enabled: websiteClientLoaded,
-  })
-}
-
-function invalidateFrontendVersionsViewerQuery(queryClient, contractAddress, chainId) {
-  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionsViewer', contractAddress, chainId] })
+function invalidateWebsiteVersionsQuery(queryClient, contractAddress, chainId) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersions', contractAddress, chainId] })
 }
 
 function useSupportedStorageBackendInterfaces(contractAddress, chainId) {
@@ -257,11 +235,10 @@ export {
   useContractAddresses, 
   useVersionableStaticWebsiteClient, 
   useStaticFrontendPluginClient,
-  useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, 
+  useLiveWebsiteVersion, invalidateLiveFrontendVersionQuery, 
   invalidateFrontendVersionQuery,
-  useFrontendVersions, invalidateFrontendVersionsQuery,
+  useWebsiteVersions, invalidateWebsiteVersionsQuery,
   useFrontendVersionPlugins, invalidateFrontendVersionPluginsQuery,
-  useFrontendVersionsViewer, invalidateFrontendVersionsViewerQuery,
   useSupportedStorageBackendInterfaces,
   useSupportedPluginInterfaces,
   useIsLocked, invalidateIsLockedQuery

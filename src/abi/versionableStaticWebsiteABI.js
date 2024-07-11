@@ -260,7 +260,7 @@ export const abi = [
   },
   {
     inputs: [],
-    name: "frontendVersionViewerImplementation",
+    name: "websiteVersionViewerImplementation",
     outputs: [
       {
         internalType: "contract ClonableFrontendVersionViewer",

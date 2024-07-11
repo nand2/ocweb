@@ -30,7 +30,7 @@ export const abi = [
           },
           {
             internalType: "contract ClonableFrontendVersionViewer",
-            name: "frontendVersionViewerImplementation",
+            name: "websiteVersionViewerImplementation",
             type: "address"
           }
         ],
@@ -295,7 +295,7 @@ export const abi = [
   },
   {
     inputs: [],
-    name: "frontendVersionViewerImplementation",
+    name: "websiteVersionViewerImplementation",
     outputs: [
       {
         internalType: "contract ClonableFrontendVersionViewer",

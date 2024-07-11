@@ -38,14 +38,15 @@ contract ClonableOCWebsite is OCWebsite {
         }
         owner = _owner;
         ownershipController = _ownershipController;
-        frontendVersionViewerImplementation = _frontendViewerImplementation;
+        websiteVersionViewerImplementation = _frontendViewerImplementation;
 
         // Add the first website version
         _addWebsiteVersion("Initial version", 0);
 
         // Add the plugins
+        WebsiteVersion storage websiteVersion = websiteVersions[0];
         for(uint i = 0; i < _plugins.length; i++) {
-            plugins[0].push(_plugins[i]);
+            websiteVersion.plugins.push(_plugins[i]);
         }
 
         // Add the first frontend version

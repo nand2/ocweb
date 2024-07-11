@@ -10,7 +10,7 @@ import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
 import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
-import { useVersionableStaticWebsiteClient, useLiveFrontendVersion, useFrontendVersions, useFrontendVersionPlugins } from '../../../utils/queries.js';
+import { useVersionableStaticWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useFrontendVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
 
@@ -37,7 +37,7 @@ const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableSt
 
 
 // Fetch the live frontend infos
-const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveFrontendVersion(queryClient, props.contractAddress, props.chainId)
+const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
 
 const userSelectedFrontendVersionBeingEditedIndex = ref(-1)
 // The index of the frontend version being edited is by default the live version
@@ -47,19 +47,19 @@ const frontendVersionBeingEditedIndex = computed(() => {
     return userSelectedFrontendVersionBeingEditedIndex.value
   }
   if(liveFrontendVersionLoaded.value) {
-    return liveFrontendVersionData.value.frontendIndex
+    return liveFrontendVersionData.value.websiteVersionIndex
   }
   return -1;
 })
 
 // Get the frontend version being edited
 const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedLoading, isFetching: frontendVersionBeingEditedFetching, isError: frontendVersionBeingEditedIsError, error: frontendVersionBeingEditedError, isSuccess: frontendVersionBeingEditedLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex],
+  queryKey: ['OCWebsiteVersion', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex],
   queryFn: async () => {
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    return await websiteClient.value.getFrontendVersion(frontendVersionBeingEditedIndex.value)
+    return await websiteClient.value.getWebsiteVersion(frontendVersionBeingEditedIndex.value)
   },
   staleTime: 3600 * 1000,
   enabled: computed(() => websiteClientLoaded.value && liveFrontendVersionLoaded.value),
@@ -87,7 +87,7 @@ watch(frontendVersionBeingEditedPluginsLoaded, () => {
 
 // Get the list frontend versions : Only when the user display the form to select a version
 const showEditedFrontendVersionSelector = ref(false)
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useFrontendVersions(queryClient, props.contractAddress, props.chainId, showEditedFrontendVersionSelector)
+const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId, showEditedFrontendVersionSelector)
 
 const showConfigPanel = ref(false)
 </script>
@@ -156,7 +156,7 @@ const showConfigPanel = ref(false)
                 <a v-for="(frontendVersion, index) in frontendVersionsData.versions" :key="index" class="bg entry" @click.prevent.stop="userSelectedFrontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
                   Version #{{ index }}: 
                   {{ frontendVersion.description }}
-                  <span class="badge" v-if="index == liveFrontendVersionData.frontendIndex">
+                  <span class="badge" v-if="index == liveFrontendVersionData.websiteVersionIndex">
                     Live
                   </span>
                 </a>
@@ -168,7 +168,7 @@ const showConfigPanel = ref(false)
             <span>
               Version #{{ frontendVersionBeingEditedIndex }}: 
               {{ frontendVersionBeingEdited.description }} 
-              <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData.frontendIndex">
+              <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData.websiteVersionIndex">
                 Live
               </span>
             </span>

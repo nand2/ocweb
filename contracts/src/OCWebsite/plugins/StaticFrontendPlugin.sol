@@ -42,13 +42,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
             });
     }
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint websiteVersion, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableStaticWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
     function processWeb3RequestBeforeStaticContent(
         IVersionableStaticWebsite website,
-        uint websiteVersion,
+        uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
     )
@@ -59,13 +59,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     function processWeb3RequestAfterStaticContent(
         IVersionableStaticWebsite website,
-        uint websiteVersion,
+        uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
     )
         public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersion];
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         // Compute the filePaths of the requested resource. 2 paths:
         // - The path as a file path (e.g. "images/logo.png") if "logo.png" is a file
@@ -155,8 +155,8 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         websiteVersionStaticFrontends[website][toFrontendIndex].storageBackend = frontend.storageBackend;
     }
 
-    function getStaticFrontend(IVersionableStaticWebsite website, uint websiteVersion) public view returns (StaticFrontend memory) {
-        return websiteVersionStaticFrontends[website][websiteVersion];
+    function getStaticFrontend(IVersionableStaticWebsite website, uint websiteVersionIndex) public view returns (StaticFrontend memory) {
+        return websiteVersionStaticFrontends[website][websiteVersionIndex];
     }
 
 
@@ -178,21 +178,20 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     /**
      * Add several files to a website version. If a file already exists, it is replaced.
-     * @param websiteVersion The website version
+     * @param websiteVersionIndex The website version
      * @param fileUploadInfos The files to add
      */
-    function addFiles(IVersionableStaticWebsite website, uint256 websiteVersion, FileUploadInfos[] memory fileUploadInfos) public payable {
+    function addFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex, FileUploadInfos[] memory fileUploadInfos) public payable {
         require(website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
 
-        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersion];
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         // If the frontend does not have a storage backend yet, use the first one
         if(frontend.storageBackend == IStorageBackend(address(0))) {
@@ -259,22 +258,21 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     /**
      * Append data to a file in a website version.
-     * @param websiteVersion The website version
+     * @param websiteVersionIndex The website version
      * @param filePath The path of the file to read
      * @param data The data to give to the storage backend
      */
-    function appendToFile(IVersionableStaticWebsite website, uint256 websiteVersion, string memory filePath, bytes memory data) public payable {
+    function appendToFile(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string memory filePath, bytes memory data) public payable {
         require(website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
 
-        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersion];
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePath);
         require(fileFound, "File not found");
@@ -289,18 +287,18 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     /**
      * Read a file from a website version. It will read as much chunks as possible.
-     * @param websiteVersion The website version
+     * @param websiteVersionIndex The website version
      * @param filePath The path of the file to read
      * @param chunkId The starting chunk ID
      * @return data The read data
      * @return nextChunkId The next chunk ID to read. 0 if none.
      */
-    function readFile(IVersionableStaticWebsite website, uint256 websiteVersion, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
+    function readFile(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
 
 
-        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersion];
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
         
         (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePath);
         require(fileFound, "File not found");
@@ -310,22 +308,21 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     /**
      * Rename a file in a website version
-     * @param websiteVersion The website version
+     * @param websiteVersionIndex The website version
      * @param oldFilePaths The old path of the file
      * @param newFilePaths The new path of the file
      */
-    function renameFiles(IVersionableStaticWebsite website, uint256 websiteVersion, string[] memory oldFilePaths, string[] memory newFilePaths) public {
+    function renameFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public {
         require(website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
 
-        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersion];
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         require(oldFilePaths.length == newFilePaths.length, "Arrays length mismatch");
 
@@ -342,21 +339,20 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     /**
      * Remove files from the backend
-     * @param websiteVersion The website version
+     * @param websiteVersionIndex The website version
      * @param filePaths The paths of the files to remove
      */
-    function removeFiles(IVersionableStaticWebsite website, uint256 websiteVersion, string[] memory filePaths) public {
+    function removeFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string[] memory filePaths) public {
         require(website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
 
-        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersion];
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         for(uint i = 0; i < filePaths.length; i++) {
             (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePaths[i]);
@@ -370,20 +366,19 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     /**
      * Remove all files from a website version
-     * @param websiteVersion The website version
+     * @param websiteVersionIndex The website version
      */
-    function removeAllFiles(IVersionableStaticWebsite website, uint256 websiteVersion) public {
+    function removeAllFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex) public {
         require(website.owner() == msg.sender, "Not the owner");
 
-        IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(website.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Website is locked");
 
-        require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
-        FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
-        require(frontendVersion.locked == false, "Frontend version is locked");
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
 
 
-        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersion];
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         for(uint i = 0; i < frontend.files.length; i++) {
             frontend.storageBackend.remove(frontend.files[i].contentKey);
