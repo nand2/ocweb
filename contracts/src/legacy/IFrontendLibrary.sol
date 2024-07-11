@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./IFileInfos.sol";
-import "./IStorageBackend.sol";
+import "../interfaces/IFileInfos.sol";
+import "../interfaces/IStorageBackend.sol";
 
 interface IFrontendLibrary {
     error IndexOutOfBounds();

@@ -32,7 +32,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableWebsitePlugin {
             });
     }
 
-    function rewriteWeb3Request(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         if(resource.length == 1 && LibStrings.compare(resource[0], "#")) {
             return (true, new string[](0), new KeyValue[](0));
         }
@@ -46,7 +46,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableWebsitePlugin {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         return (0, "", new KeyValue[](0));
     }
@@ -57,7 +57,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableWebsitePlugin {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         return (0, "", new KeyValue[](0));
     }

@@ -7,7 +7,7 @@ import { Ownable } from "../library/Ownable.sol";
 
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
-import "../interfaces/IFrontendLibrary.sol";
+import "./IFrontendLibrary.sol";
 import "../interfaces/IStorageBackend.sol";
 
 contract FrontendLibrary is IFrontendLibrary, Ownable {

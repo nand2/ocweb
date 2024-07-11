@@ -30,7 +30,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
             });
     }
 
-    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
@@ -40,7 +40,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         if(resource.length == 1 && LibStrings.compare(resource[0], "variables.json")) {
             // We output all the static contract addresses and ourselves
@@ -69,7 +69,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         return (0, "", new KeyValue[](0));
     }

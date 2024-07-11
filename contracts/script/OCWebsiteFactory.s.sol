@@ -24,7 +24,6 @@ import { IPriceOracle } from "ens-contracts/ethregistrar/IPriceOracle.sol";
 import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageContractKZG.sol";
 import { StorageContract } from "storage-contracts-v1/StorageContract.sol";
 
-import { IFrontendLibrary } from "../src/interfaces/IFrontendLibrary.sol";
 import { IStorageBackend } from "../src/interfaces/IStorageBackend.sol";
 import { CompressionAlgorithm } from "../src/interfaces/IFileInfos.sol";
 import { KeyValue } from "../src/interfaces/IDecentralizedApp.sol";
@@ -35,6 +34,7 @@ import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
 import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
 import { ClonableWebsiteVersionViewer } from "../src/OCWebsite/ClonableWebsiteVersionViewer.sol";
 import { StorageBackendSSTORE2 } from "../src/OCWebsite/storageBackends/StorageBackendSSTORE2.sol";
+import { StorageBackendEthStorage } from "../src/OCWebsite/storageBackends/StorageBackendEthStorage.sol";
 import { LibStrings } from "../src/library/LibStrings.sol";
 import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariablesPlugin.sol";
 import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
@@ -127,6 +127,11 @@ contract OCWebsiteFactoryScript is Script {
                 // Add the SSTORE2 storage backend
                 StorageBackendSSTORE2 storageBackend = new StorageBackendSSTORE2();
                 staticFrontendPlugin.addStorageBackend(storageBackend);
+                // Testing: Add the EthStorage storage backend
+                if(targetChain == TargetChain.LOCAL) {
+                    StorageBackendEthStorage ethStorageBackend = new StorageBackendEthStorage(ethStorage);
+                    staticFrontendPlugin.addStorageBackend(ethStorageBackend);
+                }
                 factory.addWebsitePlugin(staticFrontendPlugin, true);
 
                 // Proxied websites plugin

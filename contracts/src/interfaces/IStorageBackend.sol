@@ -13,9 +13,9 @@ interface IStorageBackend is IERC165 {
     // Create a new file of a specified size
     // data can be either the actual data, or an abi-encoded struct
     // Only a portion of the data can be uploaded first, and subsequent calls to append() will be needed
-    function create(bytes memory data, uint fileSize) external payable returns (uint index, uint fundsUsed);
+    function create(bytes calldata data, uint fileSize) external payable returns (uint index, uint fundsUsed);
     // Append data to an existing file
-    function append(uint index, bytes memory data) external payable returns (uint fundsUsed);
+    function append(uint index, bytes calldata data) external payable returns (uint fundsUsed);
     // Remove a file: It won't be accessible anymore
     function remove(uint index) external;
     

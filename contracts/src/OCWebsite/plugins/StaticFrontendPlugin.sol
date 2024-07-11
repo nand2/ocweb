@@ -42,7 +42,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             });
     }
 
-    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
@@ -52,7 +52,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         return (0, "", new KeyValue[](0));
     }
@@ -63,7 +63,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
@@ -181,7 +181,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
      * @param websiteVersionIndex The website version
      * @param fileUploadInfos The files to add
      */
-    function addFiles(IVersionableWebsite website, uint256 websiteVersionIndex, FileUploadInfos[] memory fileUploadInfos) public payable {
+    function addFiles(IVersionableWebsite website, uint256 websiteVersionIndex, FileUploadInfos[] calldata fileUploadInfos) public payable {
         require(website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
@@ -262,7 +262,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
      * @param filePath The path of the file to read
      * @param data The data to give to the storage backend
      */
-    function appendToFile(IVersionableWebsite website, uint256 websiteVersionIndex, string memory filePath, bytes memory data) public payable {
+    function appendToFile(IVersionableWebsite website, uint256 websiteVersionIndex, string memory filePath, bytes calldata data) public payable {
         require(website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");

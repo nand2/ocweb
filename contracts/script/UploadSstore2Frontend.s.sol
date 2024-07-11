@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {Script, console} from "forge-std/Script.sol";
 import {LibString} from "solady/utils/LibString.sol";
 
-import "../src/interfaces/IFrontendLibrary.sol";
 import "../src/interfaces/IStorageBackend.sol";
 import "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
 import "../src/library/LibStrings.sol";

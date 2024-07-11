@@ -32,7 +32,7 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableWebsitePlugin {
             });
     }
 
-    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
@@ -42,7 +42,7 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableWebsitePlugin {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         return (0, "", new KeyValue[](0));
     }
@@ -53,7 +53,7 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableWebsitePlugin {
         string[] memory resource,
         KeyValue[] memory params
     )
-        public view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
+        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
         ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][websiteVersionIndex];
 
