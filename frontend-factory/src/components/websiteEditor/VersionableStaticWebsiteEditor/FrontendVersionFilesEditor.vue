@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/vue-query'
 import { useConnectorClient } from '@wagmi/vue'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
-import { useIsLocked  } from '../../../utils/queries';
+import { useIsLocked, useStaticFrontendPluginClient } from '../../../utils/queries';
 
+import { StaticFrontendPluginClient } from '../../../../../src/plugins/staticFrontendPluginClient.js';
 import FolderChildren from './FolderChildren.vue';
-import { size } from 'viem';
 
 const props = defineProps({
   frontendVersion: {
@@ -34,10 +34,18 @@ const props = defineProps({
     type: [Object, null],
     required: true,
   },
+  pluginInfos: {
+    type: Object,
+    required: true,
+  },
 })
 
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+// Ge the staticFrontendPluginClient
+const { data: staticFrontendPluginClient, isLoading: staticFrontendPluginClientLoading, isFetching: staticFrontendPluginClientFetching, isError: staticFrontendPluginClientIsError, error: staticFrontendPluginClientError, isSuccess: staticFrontendPluginClientLoaded } = useStaticFrontendPluginClient(props.contractAddress, props.pluginInfos.plugin)
 
 // Get the lock status
 const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
@@ -46,15 +54,29 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 // We keep track of the empty folders to display them
 const globalEmptyFolders = ref([])
 
+// Fetch the static frontend
+const { data: staticFrontend, isLoading: staticFrontendLoading, isFetching: staticFrontendFetching, isError: staticFrontendIsError, error: staticFrontendError, isSuccess: staticFrontendLoaded } = useQuery({
+  queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+  queryFn: async () => {
+    // Invalidate dependent query : sizes
+    queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+
+    const result = await staticFrontendPluginClient.value.getStaticFrontend(props.frontendVersionIndex);
+    return result;
+  },
+  enabled: computed(() => props.frontendVersion != null && staticFrontendPluginClient.value != null && props.frontendVersionIsFetching == false),
+})
+
+
 // Fetch the frontend files extra metadata from the storage backend
-const { data: frontendFilesSizes, isLoading: frontendFilesSizesLoading, isError: frontendFilesSizesError, isSuccess: frontendFilesSizesLoaded } = useQuery({
-  queryKey: ['OCWebsiteFrontendVersionFilesSizes', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+const { data: frontendFilesSizes, isLoading: frontendFilesSizesLoading, isError: frontendFilesSizesIsError, error: frontendFilesSizesError, isSuccess: frontendFilesSizesLoaded } = useQuery({
+  queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
   queryFn: async () => {
 
-    return await props.websiteClient.getFrontendFilesSizesFromStorageBackend(props.frontendVersion)
+    return await staticFrontendPluginClient.value.getFrontendFilesSizesFromStorageBackend(staticFrontend.value)
   },
   staleTime: 3600 * 1000,
-  enabled: computed(() => props.frontendVersion != null && props.websiteClient != null && props.frontendVersionIsFetching == false),
+  enabled: computed(() => props.frontendVersion != null && staticFrontendPluginClient.value != null && staticFrontendLoaded.value == true && staticFrontendFetching.value == false),
 })
 
 
@@ -62,7 +84,7 @@ const { data: frontendFilesSizes, isLoading: frontendFilesSizesLoading, isError:
 // their file path
 // We convert this flat list into a hierarchical structure
 const rootFolderChildren = computed(() => {
-  if(props.frontendVersion == null) {
+  if(staticFrontend.value == null) {
     return [];
   }
 
@@ -83,7 +105,7 @@ const rootFolderChildren = computed(() => {
   }
 
   // Inject the files
-  for(const file of props.frontendVersion.files) {
+  for(const file of staticFrontend.value.files) {
     const filePathParts = file.filePath.split('/')
 
     // Function to sort the children: First folders in alphabetical order, then files in alphabetical order
@@ -146,7 +168,7 @@ const rootFolderChildren = computed(() => {
       </div>
     </div>
 
-    <div v-if="frontendVersion == null">
+    <div v-if="frontendVersion == null || staticFrontendPluginClientLoading == true">
       Loading...
     </div>
 <!-- 
@@ -154,7 +176,7 @@ const rootFolderChildren = computed(() => {
       Error loading the files: {{ error.shortMessage || error.message }}
     </div> -->
 
-    <div v-else>
+    <div v-else-if="staticFrontendPluginClientLoaded">
       <div v-if="frontendVersion.files.length == 0" class="no-files">
         No files
       </div>
@@ -162,7 +184,12 @@ const rootFolderChildren = computed(() => {
       <FolderChildren 
         :folderChildren="rootFolderChildren" 
         :locked="isLockedLoaded && isLocked || frontendVersion.locked"
-        :contractAddress :chainId :frontendVersionIndex :websiteClient :globalEmptyFolders />
+        :contractAddress 
+        :chainId 
+        :frontendVersionIndex 
+        :websiteClient 
+        :staticFrontendPluginClient
+        :globalEmptyFolders />
 
     </div>
   </div>

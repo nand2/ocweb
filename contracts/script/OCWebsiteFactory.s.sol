@@ -39,6 +39,7 @@ import { LibStrings } from "../src/library/LibStrings.sol";
 import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariablesPlugin.sol";
 import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
 import { FragmentRequestRewriterPlugin } from "../src/OCWebsite/plugins/FragmentRequestRewriterPlugin.sol";
+import { StaticFrontendPlugin } from "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
 
 contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -126,6 +127,12 @@ contract OCWebsiteFactoryScript is Script {
                 // Injected variables plugin
                 injectedVariablesPlugin = new InjectedVariablesPlugin();
                 factory.addWebsitePlugin(injectedVariablesPlugin, true);
+
+                // Static frontend plugin
+                StaticFrontendPlugin staticFrontendPlugin = new StaticFrontendPlugin();
+                StorageBackendSSTORE2 storageBackend = new StorageBackendSSTORE2();
+                staticFrontendPlugin.addStorageBackend(storageBackend);
+                factory.addWebsitePlugin(staticFrontendPlugin, true);
 
                 // Proxied websites plugin
                 ProxiedWebsitesPlugin proxiedWebsitesPlugin = new ProxiedWebsitesPlugin();

@@ -38,6 +38,10 @@ const props = defineProps({
     type: [Object, null],
     required: true,
   },
+  staticFrontendPluginClient: {
+    type: Object,
+    required: true,
+  },
   folderParentChildren: {
     type: Array,
     required: true,
@@ -63,15 +67,15 @@ const preRenameError = ref('')
 const { isPending: renameIsPending, isError: renameIsError, error: renameError, isSuccess: renameIsSuccess, mutate: renameMutate, reset: renameReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction to rename the file
-    const transaction = await props.websiteClient.prepareRenameFilesInFrontendVersionTransaction(props.frontendVersionIndex, [props.file.filePath], [newFileName.value]);
+    const transaction = await props.staticFrontendPluginClient.prepareRenameFilesInFrontendVersionTransaction(props.frontendVersionIndex, [props.file.filePath], [newFileName.value]);
 
-    const hash = await props.websiteClient.executeTransaction(transaction);
+    const hash = await props.staticFrontendPluginClient.executeTransaction(transaction);
 
-    return await props.websiteClient.waitForTransactionReceipt(hash);
+    return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    // Refresh the static frontend
+    return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const renameFile = async () => {
@@ -101,15 +105,15 @@ const renameFile = async () => {
 const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, isSuccess: deleteIsSuccess, mutate: deleteMutate, reset: deleteReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction to delete the file
-    const transaction = await props.websiteClient.prepareRemoveFilesFromFrontendVersionTransaction(props.frontendVersionIndex, [props.file.filePath]);
+    const transaction = await props.staticFrontendPluginClient.prepareRemoveFilesFromFrontendVersionTransaction(props.frontendVersionIndex, [props.file.filePath]);
 
-    const hash = await props.websiteClient.executeTransaction(transaction);
+    const hash = await props.staticFrontendPluginClient.executeTransaction(transaction);
 
-    return await props.websiteClient.waitForTransactionReceipt(hash);
+    return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    // Refresh the static frontend
+    return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   }
 })
 const deleteFile = async () => {

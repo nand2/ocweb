@@ -29,6 +29,10 @@ const props = defineProps({
     type: [Object, null],
     required: true,
   },
+  pluginInfos: {
+    type: Object,
+    required: true,
+  },
 })
 </script>
 
@@ -41,6 +45,7 @@ const props = defineProps({
         :contractAddress
         :chainId
         :websiteClient
+        :pluginInfos
         />
   </div>
 </template>

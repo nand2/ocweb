@@ -41,6 +41,10 @@ const props = defineProps({
     type: [Object, null],
     required: true,
   },
+  staticFrontendPluginClient: {
+    type: Object,
+    required: true,
+  },
   globalEmptyFolders: {
     type: Array,
     required: true,
@@ -105,7 +109,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     fileInfos.sort((a, b) => a.size - b.size);
   
     // Prepare the transaction to upload the files
-    const transactions = await props.websiteClient.prepareAddFilesToFrontendVersionTransactions(props.frontendVersionIndex, fileInfos);
+    const transactions = await props.staticFrontendPluginClient.prepareAddFilesToFrontendVersionTransactions(props.frontendVersionIndex, fileInfos);
     console.log(transactions);
 
     return transactions;
@@ -127,11 +131,11 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     addFileTransactionResults.value.push({status: 'pending'})
     addFileTransactionBeingExecutedIndex.value = index
 
-    const hash = await props.websiteClient.executeTransaction(transaction);
+    const hash = await props.staticFrontendPluginClient.executeTransaction(transaction);
     console.log(hash);
 
     // Wait for the transaction to be mined
-    return await props.websiteClient.waitForTransactionReceipt(hash);
+    return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
   },
   scope: {
     // This scope will make the mutations run serially
@@ -141,8 +145,8 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     // Mark the transaction as successful
     addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'success'}
 
-    // Refresh the frontend version
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    // Refresh the static frontend
+    return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.frontendVersionIndex] })
   },
   onError: (error) => {
     // Mark the transaction as failed
@@ -202,6 +206,7 @@ const addNewFolder = async () => {
           :chainId
           :frontendVersionIndex
           :websiteClient
+          :staticFrontendPluginClient
           :globalEmptyFolders
           v-if="child.type == 'folder'" />
         <File 
@@ -212,6 +217,7 @@ const addNewFolder = async () => {
           :chainId
           :frontendVersionIndex
           :websiteClient
+          :staticFrontendPluginClient
           :folderParentChildren="folderChildren"
           v-else-if="child.type == 'file'" />
 
@@ -267,7 +273,7 @@ const addNewFolder = async () => {
                   </span>
                 </div>
                 <div v-if="transaction.functionName == 'addFilesToFrontendVersion'" class="transaction-details">
-                  <div v-for="(file, index) in transaction.args[1]" :key="index">
+                  <div v-for="(file, index) in transaction.args[2]" :key="index">
                     <code class="filename">{{ file.filePath }}</code>
                     <span class="text-muted filename-details">
                       <span v-if="transaction.metadata.files[index].chunksCount > 1">
@@ -289,7 +295,7 @@ const addNewFolder = async () => {
                 </div>
                 <div v-else-if="transaction.functionName == 'appendToFileInFrontendVersion'" class="transaction-details">
                   <div>
-                    <code class="filename">{{ transaction.args[1] }}</code>
+                    <code class="filename">{{ transaction.args[2] }}</code>
                     <span class="text-muted  filename-details">
                       +{{ Math.round(transaction.metadata.sizeSent / 1024) }} KB
                       (chunk {{ transaction.metadata.chunkId + 1 }} / {{ transaction.metadata.chunksCount }})

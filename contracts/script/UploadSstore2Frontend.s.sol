@@ -7,6 +7,8 @@ import {LibString} from "solady/utils/LibString.sol";
 import "../src/interfaces/IFrontendLibrary.sol";
 import "../src/interfaces/IStorageBackendLibrary.sol";
 import "../src/interfaces/IStorageBackend.sol";
+import "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
+import "../src/library/LibStrings.sol";
 
 contract UploadSstore2Frontend is Script {
 
@@ -22,13 +24,9 @@ contract UploadSstore2Frontend is Script {
         vm.startBroadcast();
 
         IFrontendLibrary frontendLibrary = IFrontendLibrary(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
+        IVersionableStaticWebsite versionableStaticWebsite = IVersionableStaticWebsite(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
 
-        // Get the SSTORE2 storage backend
-        IStorageBackend storageBackend;
-        {
-            IStorageBackendLibrary storageBackendLibrary = IStorageBackendLibrary(vm.envAddress("ISTORAGE_BACKEND_LIBRARY_CONTRACT_ADDRESS"));
-            storageBackend = storageBackendLibrary.getStorageBackendByName("sstore2");
-        }
+        StaticFrontendPlugin staticFrontendPlugin = StaticFrontendPlugin(vm.envAddress("STATIC_FRONTEND_PLUGIN_ADDRESS"));
 
         // If there is already a frontend version which is unlocked, we wipe it and replace it
         (,uint256 frontendVersionCount) = frontendLibrary.getFrontendVersions(0, 0);
@@ -39,6 +37,20 @@ contract UploadSstore2Frontend is Script {
         // Otherwise we add a new version
         else {
             console.log("Adding new frontend version");
+
+            // Get the SSTORE2 storage backend
+            IStorageBackend storageBackend;
+            {
+                StaticFrontendPlugin.StorageBackendWithInfos[] memory storageBackends = staticFrontendPlugin.getStorageBackends(new bytes4[](0));
+                for(uint256 i = 0; i < storageBackends.length; i++) {
+                    if(LibStrings.compare(storageBackends[i].name, "sstore2") && LibStrings.compare(storageBackends[i].version, "0.1.0")) {
+                        storageBackend = storageBackends[i].storageBackend;
+                        break;
+                    }
+                }
+                require(address(storageBackend) != address(0), "SSTORE2 storage backend not found");
+            }
+
             frontendLibrary.addFrontendVersion(storageBackend, "Initial version");
         }
 
@@ -64,26 +76,45 @@ contract UploadSstore2Frontend is Script {
 
             (,uint256 frontendVersionCount) = frontendLibrary.getFrontendVersions(0, 0);
             for(uint256 j = 0; j < chunksCount; j++) {
-                uint256 start = j * chunkSize;
-                uint256 end = start + chunkSize;
-                if(end > fileContents.length) {
-                    end = fileContents.length;
+                bytes memory chunk;
+                {
+                    uint256 start = j * chunkSize;
+                    uint256 end = start + chunkSize;
+                    if(end > fileContents.length) {
+                        end = fileContents.length;
+                    }
+                    chunk = bytes(LibString.slice(string(fileContents), start, end));
                 }
-                bytes memory chunk = bytes(LibString.slice(string(fileContents), start, end));
                 console.log("    - Uploading chunk", j, "of size", chunk.length);
                 if(j == 0) {
-                    IFrontendLibrary.FileUploadInfos[] memory fileUploadInfos = new IFrontendLibrary.FileUploadInfos[](1);
-                    fileUploadInfos[0] = IFrontendLibrary.FileUploadInfos({
-                        filePath: string.concat(files[i].subFolder, files[i].filename),
-                        fileSize: fileContents.length,
-                        contentType: files[i].mimeType,
-                        compressionAlgorithm: CompressionAlgorithm.GZIP,
-                        data: chunk
-                    });
-                    frontendLibrary.addFilesToFrontendVersion(frontendVersionCount - 1, fileUploadInfos);
+                    {
+                        IFrontendLibrary.FileUploadInfos[] memory fileUploadInfosOld = new IFrontendLibrary.FileUploadInfos[](1);
+                        fileUploadInfosOld[0] = IFrontendLibrary.FileUploadInfos({
+                            filePath: string.concat(files[i].subFolder, files[i].filename),
+                            fileSize: fileContents.length,
+                            contentType: files[i].mimeType,
+                            compressionAlgorithm: CompressionAlgorithm.GZIP,
+                            data: chunk
+                        });
+                        frontendLibrary.addFilesToFrontendVersion(frontendVersionCount - 1, fileUploadInfosOld);
+                    }
+
+                    {
+                        StaticFrontendPlugin.FileUploadInfos[] memory fileUploadInfos = new StaticFrontendPlugin.FileUploadInfos[](1);
+                        fileUploadInfos[0] = StaticFrontendPlugin.FileUploadInfos({
+                            filePath: string.concat(files[i].subFolder, files[i].filename),
+                            fileSize: fileContents.length,
+                            contentType: files[i].mimeType,
+                            compressionAlgorithm: CompressionAlgorithm.GZIP,
+                            data: chunk
+                        });
+                        staticFrontendPlugin.addFilesToFrontendVersion(versionableStaticWebsite, frontendVersionCount - 1, fileUploadInfos);
+                    }
                 }
                 else {
                     frontendLibrary.appendToFileInFrontendVersion(frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
+
+                    staticFrontendPlugin.appendToFileInFrontendVersion(versionableStaticWebsite, frontendVersionCount - 1, string.concat(files[i].subFolder, files[i].filename), chunk);
                 }
             }
         }

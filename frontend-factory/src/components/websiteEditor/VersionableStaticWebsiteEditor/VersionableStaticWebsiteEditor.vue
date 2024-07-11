@@ -1,5 +1,5 @@
 <script setup>
-import { ref, shallowRef, computed, defineProps } from 'vue';
+import { ref, watch, shallowRef, computed, defineProps } from 'vue';
 import { useQuery, useMutation } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -10,7 +10,7 @@ import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
 import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
-import { useVersionableStaticWebsiteClient, useLiveFrontendVersion, useFrontendVersions } from '../../../utils/queries.js';
+import { useVersionableStaticWebsiteClient, useLiveFrontendVersion, useFrontendVersions, useFrontendVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
 
@@ -28,8 +28,8 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
 
-// Tabs handling
-const activeTab = ref('files');
+// Tabs handling. Default value will be set once the plugin list was loaded
+const activeTab = ref('');
 
 // Fetch the website client
 const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
@@ -56,9 +56,6 @@ const frontendVersionBeingEditedIndex = computed(() => {
 const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedLoading, isFetching: frontendVersionBeingEditedFetching, isError: frontendVersionBeingEditedIsError, error: frontendVersionBeingEditedError, isSuccess: frontendVersionBeingEditedLoaded } = useQuery({
   queryKey: ['OCWebsiteFrontendVersion', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex],
   queryFn: async () => {
-    // Invalidate dependent query : sizes
-    queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionFilesSizes', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex.value] })
-
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
@@ -68,6 +65,25 @@ const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedL
   enabled: computed(() => websiteClientLoaded.value && liveFrontendVersionLoaded.value),
 })
 
+// Get the list of installed plugins of the version being edited
+const { data: frontendVersionBeingEditedPlugins, isLoading: frontendVersionBeingEditedPluginsLoading, isFetching: frontendVersionBeingEditedPluginsFetching, isError: frontendVersionBeingEditedPluginsIsError, error: frontendVersionBeingEditedPluginsError, isSuccess: frontendVersionBeingEditedPluginsLoaded } = useFrontendVersionPlugins(props.contractAddress, props.chainId, frontendVersionBeingEditedIndex) 
+
+const staticFrontendInstalledPlugin = computed(() => {
+  if(frontendVersionBeingEditedPluginsLoaded.value) {
+    return frontendVersionBeingEditedPlugins.value.find(plugin => plugin.infos.name == 'staticFrontend')
+  }
+  return null
+})
+
+// When the plugins are loaded, now set the default tab
+watch(frontendVersionBeingEditedPluginsLoaded, () => {
+  if(staticFrontendInstalledPlugin.value) {
+    activeTab.value = 'files'
+  }
+  else {
+    activeTab.value = 'preview'
+  }
+})
 
 // Get the list frontend versions : Only when the user display the form to select a version
 const showEditedFrontendVersionSelector = ref(false)
@@ -78,21 +94,22 @@ const showConfigPanel = ref(false)
 
 <template>
   <div class="versionable-static-website-editor">
-    
     <div class="tabs">
-      <a @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
+      <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
     </div>
     
     <FilesTab 
+      v-if="staticFrontendInstalledPlugin"
       :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
       :frontendVersionIndex="frontendVersionBeingEditedIndex"
       :frontendVersionIsFetching="frontendVersionBeingEditedFetching"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
+      :pluginInfos="staticFrontendInstalledPlugin"
       class="tab" v-show="activeTab == 'files'" />
     <PreviewTab 
       :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"

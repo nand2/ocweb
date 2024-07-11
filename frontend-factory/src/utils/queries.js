@@ -3,6 +3,7 @@ import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionRece
 import { computed, shallowRef } from 'vue'
 
 import { VersionableStaticWebsiteClient } from '../../../src/index.js';
+import { StaticFrontendPluginClient } from '../../../src/plugins/staticFrontendPluginClient.js';
 
 function useInjectedVariables() {
   return useQuery({
@@ -68,6 +69,50 @@ function useVersionableStaticWebsiteClient(websiteContractAddress) {
   }
 }
 
+// FrontendIndex is a reactive value
+function useFrontendVersionPlugins(contractAddress, chainId, frontendIndex) {
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { switchChainAsync } = useSwitchChain()
+
+  return useQuery({
+    queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+
+      const result = await websiteClient.value.getFrontendVersionPlugins(frontendIndex.value)
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: computed(() => websiteClientLoaded.value != null && frontendIndex.value >= 0),
+  })
+}
+
+function invalidateFrontendVersionPluginsQuery(queryClient, contractAddress, chainId, frontendIndex) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex] })
+}
+
+function useStaticFrontendPluginClient(websiteContractAddress, pluginAddress) {
+  // Fetch the viem connector client
+  const { data: viemClient, isLoading, isSuccess, isError, error } = useConnectorClient()
+
+  return {
+    data: computed(() => {
+      let client = null;
+      if (isSuccess.value) {
+        client = new StaticFrontendPluginClient(viemClient.value, websiteContractAddress, pluginAddress)
+      }
+      return client
+    }),
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  }
+}
+
+
+
 function useLiveFrontendVersion(queryClient,contractAddress, chainId) {
   const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
@@ -124,29 +169,6 @@ function useFrontendVersions(queryClient, contractAddress, chainId, condition) {
 
 function invalidateFrontendVersionsQuery(queryClient, contractAddress, chainId) {
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersions', contractAddress, chainId] })
-}
-
-// FrontendIndex is a computed value
-function useFrontendVersionPlugins(contractAddress, chainId, frontendIndex) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
-  const { switchChainAsync } = useSwitchChain()
-
-  return useQuery({
-    queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex],
-    queryFn: async () => {
-      // Switch chain if necessary
-      await switchChainAsync({ chainId: chainId })
-
-      const result = await websiteClient.value.getFrontendVersionPlugins(frontendIndex.value)
-      return result;
-    },
-    staleTime: 3600 * 1000,
-    enabled: computed(() => websiteClientLoaded.value != null && frontendIndex.value >= 0),
-  })
-}
-
-function invalidateFrontendVersionPluginsQuery(queryClient, contractAddress, chainId, frontendIndex) {
-  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteFrontendVersionPlugins', contractAddress, chainId, frontendIndex] })
 }
 
 function useFrontendVersionsViewer(contractAddress, chainId) {
@@ -229,10 +251,12 @@ function invalidateIsLockedQuery(queryClient, contractAddress, chainId) {
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteIsLocked', contractAddress, chainId] })
 }
 
+
 export { 
   useInjectedVariables,
   useContractAddresses, 
   useVersionableStaticWebsiteClient, 
+  useStaticFrontendPluginClient,
   useLiveFrontendVersion, invalidateLiveFrontendVersionQuery, 
   invalidateFrontendVersionQuery,
   useFrontendVersions, invalidateFrontendVersionsQuery,

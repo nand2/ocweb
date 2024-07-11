@@ -105,7 +105,7 @@ elif [ "$TARGET_CHAIN" == "sepolia" ]; then
 elif [ "$TARGET_CHAIN" == "holesky" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   # Weird, sometimes I have "Failed to get EIP-1559 fees" on holesky, need --legacy
-  FORGE_SCRIPT_OPTIONS="--broadcast --verify" #  --legacy --with-gas-price=1000000000
+  FORGE_SCRIPT_OPTIONS="--broadcast --verify --legacy --with-gas-price=1000000000" #  --legacy --with-gas-price=1000000000
 elif [ "$TARGET_CHAIN" == "base-sepolia" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   FORGE_SCRIPT_OPTIONS="--broadcast --verify"
@@ -213,6 +213,10 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   echo ""
   echo "Detected OCWebsiteFactory: $OCWEBSITEFACTORY_ADDRESS"
 
+  # Fetch the address of the StaticFrontendPlugin
+  STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin")][0].contractAddress')
+  echo "Detected StaticFrontendPlugin: $STATIC_FRONTEND_PLUGIN_ADDRESS"
+
   # Fetch the address of the OCWebsiteFactoryFrontend
   OCWEBSITEFACTORY_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .function == "setWebsite(address)")][0].arguments[0]')
   echo "Uploading frontend to OCWebsiteFactoryFrontend ($OCWEBSITEFACTORY_FRONTEND_ADDRESS) ..."
@@ -235,7 +239,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
     FILE_ARGS=$(cast abi-encode "x((string,string,string,string)[])" "${SSTORE2_FILE_ARGS_SIG}")
 
     IFRONTEND_LIBRARY_CONTRACT_ADDRESS=$OCWEBSITEFACTORY_FRONTEND_ADDRESS \
-    ISTORAGE_BACKEND_LIBRARY_CONTRACT_ADDRESS=$OCWEBSITEFACTORY_ADDRESS \
+    STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
     FILE_ARGS=$FILE_ARGS \
     COMPRESSED_FILES_BASE_PATH=$COMPRESSED_FILES_BASE_PATH \
     TARGET_CHAIN=$TARGET_CHAIN \
