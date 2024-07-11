@@ -10,14 +10,13 @@ import "./OCWebsite/ClonableOCWebsite.sol";
 import "./OCWebsite/ClonableWebsiteVersionViewer.sol";
 import "./OCWebsiteFactoryToken.sol";
 import "./interfaces/IStorageBackend.sol";
-import "./interfaces/IStorageBackendLibrary.sol";
 import "./interfaces/IVersionableWebsite.sol";
 
 interface IFactoryExtension {
   function getName() external view returns (string memory);
 }
 
-contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
+contract OCWebsiteFactory is ERC721Enumerable {
     OCWebsite public website;
     OCWebsiteFactoryToken public immutable factoryToken;
 
@@ -35,9 +34,6 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     // VersionableWebsite plugins
     IVersionableWebsitePlugin[] public websiteAvailablePlugins;
     IVersionableWebsitePlugin[] public newWebsiteDefaultPlugins;
-
-    // Storage backends
-    IStorageBackend[] public storageBackends;
  
     // The owner of the factory
     address public owner;
@@ -84,18 +80,13 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     }
 
     /**
-     * Add a new website
-     * @param firstFrontendVersionStorageBackend The storage backend for the first frontend version. Can be null.
+     * Mint a new website
      */
-    function mintWebsite(IStorageBackend firstFrontendVersionStorageBackend) public payable returns(ClonableOCWebsite) {
+    function mintWebsite() public payable returns(ClonableOCWebsite) {
 
         ClonableOCWebsite newWebsite = ClonableOCWebsite(Clones.clone(address(websiteImplementation)));
 
-        if(address(firstFrontendVersionStorageBackend) == address(0) && storageBackends.length > 0) {
-            firstFrontendVersionStorageBackend = storageBackends[0];
-        }
-
-        newWebsite.initialize(msg.sender, address(this), websiteVersionViewerImplementation, firstFrontendVersionStorageBackend, newWebsiteDefaultPlugins);
+        newWebsite.initialize(msg.sender, address(this), websiteVersionViewerImplementation, newWebsiteDefaultPlugins);
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
 
@@ -107,61 +98,6 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         return newWebsite;
     }
 
-
-
-
-    //
-    // Storage backends
-    //
-
-    function addStorageBackend(IStorageBackend storageBackend) public onlyOwner {
-        // Make sure it is not inserted yet
-        // Make sure name is unique
-        for(uint i = 0; i < storageBackends.length; i++) {
-            require(address(storageBackends[i]) != address(storageBackend), "Storage backend already added");
-            require(LibStrings.compare(storageBackends[i].name(), storageBackend.name()) == false, "Storage backend name already used");
-        }
-
-        storageBackends.push(storageBackend);
-    }
-
-    function getStorageBackends(bytes4[] memory interfaceFilters) public view returns (IStorageBackendWithInfos[] memory) {
-        IStorageBackendWithInfos[] memory backends = new IStorageBackendWithInfos[](storageBackends.length);
-        for(uint i = 0; i < storageBackends.length; i++) {
-            // Is interface supported?
-            bool interfaceValid = (interfaceFilters.length == 0);
-            for(uint j = 0; j < interfaceFilters.length; j++) {
-                if(storageBackends[i].supportsInterface(interfaceFilters[j])) {
-                    interfaceValid = true;
-                    break;
-                }
-            }
-
-            backends[i] = IStorageBackendWithInfos({
-                storageBackend: storageBackends[i],
-                name: storageBackends[i].name(),
-                title: storageBackends[i].title(),
-                version: storageBackends[i].version(),
-                interfaceValid: interfaceValid
-            });
-        }
-
-        return backends;
-    }
-
-    function getStorageBackendByName(string memory name) public view returns (IStorageBackend) {
-        bool found = false;
-        uint index = 0;
-        for(uint i = 0; i < storageBackends.length; i++) {
-            if(LibStrings.compare(storageBackends[i].name(), name)) {
-                index = i;
-                found = true;
-            }
-        }
-        require(found, "Storage backend not found");
-
-        return storageBackends[index];
-    }
 
 
     //

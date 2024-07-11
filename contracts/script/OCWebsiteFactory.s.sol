@@ -115,12 +115,6 @@ contract OCWebsiteFactoryScript is Script {
                 websiteImplementation.transferOwnership(address(factory));
             }
 
-            // Add the SSTORE2 storage backend
-            {
-                StorageBackendSSTORE2 storageBackend = new StorageBackendSSTORE2();
-                factory.addStorageBackend(storageBackend);
-            }
-
             // Add the plugins
             InjectedVariablesPlugin injectedVariablesPlugin;
             {
@@ -130,6 +124,7 @@ contract OCWebsiteFactoryScript is Script {
 
                 // Static frontend plugin
                 StaticFrontendPlugin staticFrontendPlugin = new StaticFrontendPlugin();
+                // Add the SSTORE2 storage backend
                 StorageBackendSSTORE2 storageBackend = new StorageBackendSSTORE2();
                 staticFrontendPlugin.addStorageBackend(storageBackend);
                 factory.addWebsitePlugin(staticFrontendPlugin, true);
@@ -140,7 +135,7 @@ contract OCWebsiteFactoryScript is Script {
             }
 
             // Create a website from the factory, to use as frontend for the factory itself
-            OCWebsite factoryFrontend = factory.mintWebsite(IStorageBackend(address(0)));
+            OCWebsite factoryFrontend = factory.mintWebsite();
 
             // Add the factory contract address to the frontend
             injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
