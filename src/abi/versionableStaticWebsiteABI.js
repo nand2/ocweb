@@ -163,7 +163,7 @@ export const abi = [
         type: "uint256"
       },
       {
-        internalType: "contract IVersionableStaticWebsitePlugin",
+        internalType: "contract IVersionableWebsitePlugin",
         name: "plugin",
         type: "address"
       }
@@ -516,7 +516,7 @@ export const abi = [
             type: "bool"
           }
         ],
-        internalType: "struct IVersionableStaticWebsite.FrontendVersionViewer[]",
+        internalType: "struct IVersionableWebsite.FrontendVersionViewer[]",
         name: "",
         type: "tuple[]"
       }
@@ -536,7 +536,7 @@ export const abi = [
             type: "string"
           },
           {
-            internalType: "contract IVersionableStaticWebsitePlugin[]",
+            internalType: "contract IVersionableWebsitePlugin[]",
             name: "plugins",
             type: "address[]"
           },
@@ -556,7 +556,7 @@ export const abi = [
             type: "bool"
           }
         ],
-        internalType: "struct IVersionableStaticWebsite.WebsiteVersion",
+        internalType: "struct IVersionableWebsite.WebsiteVersion",
         name: "websiteVersion",
         type: "tuple"
       },
@@ -582,7 +582,7 @@ export const abi = [
       {
         components: [
           {
-            internalType: "contract IVersionableStaticWebsitePlugin",
+            internalType: "contract IVersionableWebsitePlugin",
             name: "plugin",
             type: "address"
           },
@@ -619,12 +619,12 @@ export const abi = [
                 type: "string"
               }
             ],
-            internalType: "struct IVersionableStaticWebsitePlugin.Infos",
+            internalType: "struct IVersionableWebsitePlugin.Infos",
             name: "infos",
             type: "tuple"
           }
         ],
-        internalType: "struct IVersionableStaticWebsite.IVersionableStaticWebsitePluginWithInfos[]",
+        internalType: "struct IVersionableWebsite.IVersionableWebsitePluginWithInfos[]",
         name: "pluginWithInfos",
         type: "tuple[]"
       }
@@ -676,7 +676,7 @@ export const abi = [
             type: "string"
           },
           {
-            internalType: "contract IVersionableStaticWebsitePlugin[]",
+            internalType: "contract IVersionableWebsitePlugin[]",
             name: "plugins",
             type: "address[]"
           },
@@ -696,7 +696,7 @@ export const abi = [
             type: "bool"
           }
         ],
-        internalType: "struct IVersionableStaticWebsite.WebsiteVersion",
+        internalType: "struct IVersionableWebsite.WebsiteVersion",
         name: "",
         type: "tuple"
       }
@@ -740,7 +740,7 @@ export const abi = [
             type: "string"
           },
           {
-            internalType: "contract IVersionableStaticWebsitePlugin[]",
+            internalType: "contract IVersionableWebsitePlugin[]",
             name: "plugins",
             type: "address[]"
           },
@@ -760,7 +760,7 @@ export const abi = [
             type: "bool"
           }
         ],
-        internalType: "struct IVersionableStaticWebsite.WebsiteVersion[]",
+        internalType: "struct IVersionableWebsite.WebsiteVersion[]",
         name: "",
         type: "tuple[]"
       },
@@ -796,7 +796,7 @@ export const abi = [
         type: "address"
       },
       {
-        internalType: "contract IVersionableStaticWebsitePlugin[]",
+        internalType: "contract IVersionableWebsitePlugin[]",
         name: "_plugins",
         type: "address[]"
       }
@@ -907,7 +907,7 @@ export const abi = [
     name: "plugins",
     outputs: [
       {
-        internalType: "contract IVersionableStaticWebsitePlugin",
+        internalType: "contract IVersionableWebsitePlugin",
         name: "",
         type: "address"
       }

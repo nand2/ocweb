@@ -10,7 +10,7 @@ import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
 import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
-import { useVersionableStaticWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
+import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
 
@@ -32,7 +32,7 @@ const queryClient = useQueryClient()
 const activeTab = ref('');
 
 // Fetch the website client
-const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
+const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableWebsiteClient
 (props.contractAddress)
 
 

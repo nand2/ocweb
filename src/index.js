@@ -4,7 +4,7 @@ import { abi as versionableStaticWebsiteABI } from './abi/versionableStaticWebsi
 import { abi as storageBackendABI } from './abi/storageBackendABI.js'
 
 
-class VersionableStaticWebsiteClient {
+class VersionableWebsiteClient {
   #viemClient = null
   #websiteContractAddress = null
   #viemWebsiteContract = null
@@ -142,4 +142,4 @@ class VersionableStaticWebsiteClient {
 
 }
 
-export { VersionableStaticWebsiteClient };
+export { VersionableWebsiteClient };

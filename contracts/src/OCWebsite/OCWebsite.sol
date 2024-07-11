@@ -7,14 +7,14 @@ import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 
-import "./VersionableStaticWebsite.sol";
+import "./VersionableWebsite.sol";
 import "./ContractAddressesWebsite.sol";
 import "./ProxyWebsite.sol";
 
-contract OCWebsite is VersionableStaticWebsite {
+contract OCWebsite is VersionableWebsite {
     uint public constant VERSION = 1;
 
-    constructor(ClonableWebsiteVersionViewer _websiteVersionViewerImplementation) VersionableStaticWebsite(_websiteVersionViewerImplementation) {
+    constructor(ClonableWebsiteVersionViewer _websiteVersionViewerImplementation) VersionableWebsite(_websiteVersionViewerImplementation) {
     }
 
     

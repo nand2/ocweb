@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 import { computed, shallowRef } from 'vue'
 
-import { VersionableStaticWebsiteClient } from '../../../src/index.js';
+import { VersionableWebsiteClient } from '../../../src/index.js';
 import { StaticFrontendPluginClient } from '../../../src/plugins/staticFrontendPluginClient.js';
 
 function useInjectedVariables() {
@@ -50,7 +50,7 @@ function useContractAddresses() {
   })
 }
 
-function useVersionableStaticWebsiteClient(websiteContractAddress) {
+function useVersionableWebsiteClient(websiteContractAddress) {
   // Fetch the viem connector client
   const { data: viemClient, isLoading, isSuccess, isError, error } = useConnectorClient()
 
@@ -58,7 +58,7 @@ function useVersionableStaticWebsiteClient(websiteContractAddress) {
     data: computed(() => {
       let websiteClient = null;
       if (isSuccess.value) {
-        websiteClient = new VersionableStaticWebsiteClient(viemClient.value, websiteContractAddress)
+        websiteClient = new VersionableWebsiteClient(viemClient.value, websiteContractAddress)
       }
       return websiteClient
     }),
@@ -71,7 +71,7 @@ function useVersionableStaticWebsiteClient(websiteContractAddress) {
 
 // FrontendIndex is a reactive value
 function useWebsiteVersionPlugins(contractAddress, chainId, frontendIndex) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
@@ -114,7 +114,7 @@ function useStaticFrontendPluginClient(websiteContractAddress, pluginAddress) {
 
 
 function useLiveWebsiteVersion(queryClient,contractAddress, chainId) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
@@ -147,7 +147,7 @@ function invalidateWebsiteVersionQuery(queryClient, contractAddress, chainId, ve
 }
 
 function useWebsiteVersions(queryClient, contractAddress, chainId, condition) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
@@ -172,7 +172,7 @@ function invalidateWebsiteVersionsQuery(queryClient, contractAddress, chainId) {
 }
 
 function useSupportedStorageBackendInterfaces(contractAddress, chainId) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
@@ -190,7 +190,7 @@ function useSupportedStorageBackendInterfaces(contractAddress, chainId) {
 }
 
 function useSupportedPluginInterfaces(contractAddress, chainId) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
@@ -208,7 +208,7 @@ function useSupportedPluginInterfaces(contractAddress, chainId) {
 }
 
 function useIsLocked(contractAddress, chainId) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableStaticWebsiteClient(contractAddress)
+  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
@@ -233,7 +233,7 @@ function invalidateIsLockedQuery(queryClient, contractAddress, chainId) {
 export { 
   useInjectedVariables,
   useContractAddresses, 
-  useVersionableStaticWebsiteClient, 
+  useVersionableWebsiteClient, 
   useStaticFrontendPluginClient,
   useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, 
   invalidateWebsiteVersionQuery,

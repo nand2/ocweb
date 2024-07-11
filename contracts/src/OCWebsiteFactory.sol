@@ -11,7 +11,7 @@ import "./OCWebsite/ClonableWebsiteVersionViewer.sol";
 import "./OCWebsiteFactoryToken.sol";
 import "./interfaces/IStorageBackend.sol";
 import "./interfaces/IStorageBackendLibrary.sol";
-import "./interfaces/IVersionableStaticWebsite.sol";
+import "./interfaces/IVersionableWebsite.sol";
 
 interface IFactoryExtension {
   function getName() external view returns (string memory);
@@ -32,9 +32,9 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     string public topdomain;
     string public domain;
 
-    // VersionableStaticWebsite plugins
-    IVersionableStaticWebsitePlugin[] public websiteAvailablePlugins;
-    IVersionableStaticWebsitePlugin[] public newWebsiteDefaultPlugins;
+    // VersionableWebsite plugins
+    IVersionableWebsitePlugin[] public websiteAvailablePlugins;
+    IVersionableWebsitePlugin[] public newWebsiteDefaultPlugins;
 
     // Storage backends
     IStorageBackend[] public storageBackends;
@@ -168,7 +168,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
     // Website plugins
     //
 
-    function addWebsitePlugin(IVersionableStaticWebsitePlugin plugin, bool addAsNewWebsiteDefaultPlugin) public onlyOwner {
+    function addWebsitePlugin(IVersionableWebsitePlugin plugin, bool addAsNewWebsiteDefaultPlugin) public onlyOwner {
         // Make sure it is not inserted yet
         for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
             require(address(websiteAvailablePlugins[i]) != address(plugin), "Plugin already added");
@@ -180,14 +180,14 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         }
     }
 
-    struct IVersionableStaticWebsitePluginWithInfos {
-        IVersionableStaticWebsitePlugin plugin;
-        IVersionableStaticWebsitePlugin.Infos infos;
+    struct IVersionableWebsitePluginWithInfos {
+        IVersionableWebsitePlugin plugin;
+        IVersionableWebsitePlugin.Infos infos;
         bool interfaceValid;
         bool isDefaultPlugin;
     }
-    function getWebsitePlugins(bytes4[] memory interfaceFilters) public view returns (IVersionableStaticWebsitePluginWithInfos[] memory) {
-        IVersionableStaticWebsitePluginWithInfos[] memory plugins = new IVersionableStaticWebsitePluginWithInfos[](websiteAvailablePlugins.length);
+    function getWebsitePlugins(bytes4[] memory interfaceFilters) public view returns (IVersionableWebsitePluginWithInfos[] memory) {
+        IVersionableWebsitePluginWithInfos[] memory plugins = new IVersionableWebsitePluginWithInfos[](websiteAvailablePlugins.length);
 
         for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
             // Is interface supported?
@@ -208,7 +208,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
                 }
             }
 
-            plugins[i] = IVersionableStaticWebsitePluginWithInfos({
+            plugins[i] = IVersionableWebsitePluginWithInfos({
                 plugin: websiteAvailablePlugins[i],
                 infos: websiteAvailablePlugins[i].infos(),
                 interfaceValid: interfaceValid,
@@ -219,7 +219,7 @@ contract OCWebsiteFactory is ERC721Enumerable, IStorageBackendLibrary {
         return plugins;
     }
 
-    function removeWebsitePlugin(IVersionableStaticWebsitePlugin plugin) public onlyOwner {
+    function removeWebsitePlugin(IVersionableWebsitePlugin plugin) public onlyOwner {
         for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
             if(address(websiteAvailablePlugins[i]) == address(plugin)) {
                 websiteAvailablePlugins[i] = websiteAvailablePlugins[websiteAvailablePlugins.length - 1];

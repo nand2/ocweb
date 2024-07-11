@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../../interfaces/IVersionableStaticWebsite.sol";
+import "../../interfaces/IVersionableWebsite.sol";
 import "../../library/LibStrings.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract FragmentRequestRewriterPlugin is ERC165, IVersionableStaticWebsitePlugin {
+contract FragmentRequestRewriterPlugin is ERC165, IVersionableWebsitePlugin {
     struct ProxiedWebsite {
         // An web3:// resource request mode website, cf ERC-6944 / ERC-5219
         IDecentralizedApp website;
         string[] localPrefix;
         string[] remotePrefix;
     }
-    mapping(IVersionableStaticWebsite => mapping(uint => ProxiedWebsite[])) public proxiedWebsites;
+    mapping(IVersionableWebsite => mapping(uint => ProxiedWebsite[])) public proxiedWebsites;
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
-            interfaceId == type(IVersionableStaticWebsitePlugin).interfaceId ||
+            interfaceId == type(IVersionableWebsitePlugin).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -32,7 +32,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableStaticWebsitePlugi
             });
     }
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         if(resource.length == 1 && LibStrings.compare(resource[0], "#")) {
             return (true, new string[](0), new KeyValue[](0));
         }
@@ -41,7 +41,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableStaticWebsitePlugi
     }
 
     function processWeb3RequestBeforeStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint frontendIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -52,7 +52,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableStaticWebsitePlugi
     }
 
     function processWeb3RequestAfterStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint frontendIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -62,7 +62,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableStaticWebsitePlugi
         return (0, "", new KeyValue[](0));
     }
 
-    function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
+    function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
     }
 }

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 
-import VersionableStaticWebsiteEditor from './VersionableStaticWebsiteEditor.vue';
+import VersionableWebsiteEditor from './VersionableWebsiteEditor.vue';
 import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
 
 const props = defineProps({

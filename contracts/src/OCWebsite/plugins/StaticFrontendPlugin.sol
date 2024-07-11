@@ -3,12 +3,12 @@ pragma solidity ^0.8.13;
 
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../../interfaces/IVersionableStaticWebsite.sol";
+import "../../interfaces/IVersionableWebsite.sol";
 import "../../library/LibStrings.sol";
 import "../../interfaces/IFileInfos.sol";
 import "../../library/Ownable.sol";
 
-contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownable {
+contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
     struct StaticFrontend {
         // The files of the frontend
         PartialFileInfos[] files;
@@ -16,7 +16,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         // Storage backend of the frontend files
         IStorageBackend storageBackend;
     }
-    mapping(IVersionableStaticWebsite => mapping(uint => StaticFrontend)) public websiteVersionStaticFrontends;
+    mapping(IVersionableWebsite => mapping(uint => StaticFrontend)) public websiteVersionStaticFrontends;
 
     // Storage backends
     IStorageBackend[] public storageBackends;
@@ -26,7 +26,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
-            interfaceId == type(IVersionableStaticWebsitePlugin).interfaceId ||
+            interfaceId == type(IVersionableWebsitePlugin).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -42,12 +42,12 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
             });
     }
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
     function processWeb3RequestBeforeStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -58,7 +58,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
     }
 
     function processWeb3RequestAfterStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -148,14 +148,14 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         }
     }
 
-    function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
+    function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
         require(address(website) == msg.sender);
 
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][fromFrontendIndex];
         websiteVersionStaticFrontends[website][toFrontendIndex].storageBackend = frontend.storageBackend;
     }
 
-    function getStaticFrontend(IVersionableStaticWebsite website, uint websiteVersionIndex) public view returns (StaticFrontend memory) {
+    function getStaticFrontend(IVersionableWebsite website, uint websiteVersionIndex) public view returns (StaticFrontend memory) {
         return websiteVersionStaticFrontends[website][websiteVersionIndex];
     }
 
@@ -181,13 +181,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
      * @param websiteVersionIndex The website version
      * @param fileUploadInfos The files to add
      */
-    function addFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex, FileUploadInfos[] memory fileUploadInfos) public payable {
+    function addFiles(IVersionableWebsite website, uint256 websiteVersionIndex, FileUploadInfos[] memory fileUploadInfos) public payable {
         require(website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
 
@@ -262,13 +262,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
      * @param filePath The path of the file to read
      * @param data The data to give to the storage backend
      */
-    function appendToFile(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string memory filePath, bytes memory data) public payable {
+    function appendToFile(IVersionableWebsite website, uint256 websiteVersionIndex, string memory filePath, bytes memory data) public payable {
         require(website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
 
@@ -293,7 +293,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
      * @return data The read data
      * @return nextChunkId The next chunk ID to read. 0 if none.
      */
-    function readFile(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
+    function readFile(IVersionableWebsite website, uint256 websiteVersionIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
 
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
@@ -310,13 +310,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
      * @param oldFilePaths The old path of the file
      * @param newFilePaths The new path of the file
      */
-    function renameFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public {
+    function renameFiles(IVersionableWebsite website, uint256 websiteVersionIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public {
         require(website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
 
@@ -340,13 +340,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
      * @param websiteVersionIndex The website version
      * @param filePaths The paths of the files to remove
      */
-    function removeFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex, string[] memory filePaths) public {
+    function removeFiles(IVersionableWebsite website, uint256 websiteVersionIndex, string[] memory filePaths) public {
         require(website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
 
@@ -366,13 +366,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
      * Remove all files from a website version
      * @param websiteVersionIndex The website version
      */
-    function removeAllFiles(IVersionableStaticWebsite website, uint256 websiteVersionIndex) public {
+    function removeAllFiles(IVersionableWebsite website, uint256 websiteVersionIndex) public {
         require(website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
 

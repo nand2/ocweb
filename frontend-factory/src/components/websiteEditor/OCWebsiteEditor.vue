@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 
-import VersionableStaticWebsiteEditor from './VersionableStaticWebsiteEditor/VersionableStaticWebsiteEditor.vue';
+import VersionableWebsiteEditor from './VersionableWebsiteEditor/VersionableWebsiteEditor.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -17,7 +17,7 @@ const props = defineProps({
 
 <template>
   <div class="oc-website-editor">
-    <VersionableStaticWebsiteEditor :contractAddress :chainId />
+    <VersionableWebsiteEditor :contractAddress :chainId />
   </div>
 </template>
 

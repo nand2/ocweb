@@ -8,13 +8,13 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
-import "../interfaces/IVersionableStaticWebsite.sol";
+import "../interfaces/IVersionableWebsite.sol";
 
 import '../library/Ownable.sol';
 import './ResourceRequestWebsite.sol';
 import "./ClonableWebsiteVersionViewer.sol";
 
-contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestWebsite, Ownable {
+contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Ownable {
 
     // The list of website versions
     WebsiteVersion[] public websiteVersions;
@@ -49,7 +49,7 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         // Add the new website version
         websiteVersions.push(WebsiteVersion({
             description: _description,
-            plugins: new IVersionableStaticWebsitePlugin[](0),
+            plugins: new IVersionableWebsitePlugin[](0),
             viewer: IDecentralizedApp(address(0)),
             isViewable: false,
             locked: false
@@ -141,7 +141,7 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
     // Plugins
     // 
 
-    function addPlugin(uint websiteVersionIndex, IVersionableStaticWebsitePlugin plugin) public override onlyOwner {
+    function addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin) public override onlyOwner {
         // Ensure that the plugin support one of the requested interfaces
         bytes4[] memory supportedInterfaces = getSupportedPluginInterfaces();
         bool supported = false;
@@ -172,13 +172,13 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         websiteVersion.plugins.push(plugin);
     }
 
-    function getPlugins(uint websiteVersionIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginWithInfos) {
+    function getPlugins(uint websiteVersionIndex) external view returns (IVersionableWebsitePluginWithInfos[] memory pluginWithInfos) {
         // Ensure that the websiteVersionIndex is within bounds
         require(websiteVersionIndex < websiteVersions.length, "Invalid website version index");
 
         WebsiteVersion storage websiteVersion = websiteVersions[websiteVersionIndex];
 
-        pluginWithInfos = new IVersionableStaticWebsitePluginWithInfos[](websiteVersion.plugins.length);
+        pluginWithInfos = new IVersionableWebsitePluginWithInfos[](websiteVersion.plugins.length);
         for(uint i = 0; i < websiteVersion.plugins.length; i++) {
             pluginWithInfos[i].plugin = websiteVersion.plugins[i];
             pluginWithInfos[i].infos = websiteVersion.plugins[i].infos();
@@ -197,7 +197,7 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         // Ensure that the websiteVersion is not locked
         require(websiteVersion.locked == false, "Website version is locked");
 
-        IVersionableStaticWebsitePlugin[] storage _plugins = websiteVersion.plugins;
+        IVersionableWebsitePlugin[] storage _plugins = websiteVersion.plugins;
         for(uint i = 0; i < _plugins.length; i++) {
             if(address(_plugins[i]) == plugin) {
                 _plugins[i] = _plugins[_plugins.length - 1];
@@ -214,7 +214,7 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
     function getSupportedPluginInterfaces() public pure returns (bytes4[] memory) {
         unchecked {
             bytes4[] memory supportedInterfaces = new bytes4[](1);
-            supportedInterfaces[0] = type(IVersionableStaticWebsitePlugin).interfaceId;
+            supportedInterfaces[0] = type(IVersionableWebsitePlugin).interfaceId;
             return supportedInterfaces;
         }
     }
@@ -288,7 +288,7 @@ contract VersionableStaticWebsite is IVersionableStaticWebsite, ResourceRequestW
         }
 
         WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
-        IVersionableStaticWebsitePlugin[] storage plugins = websiteVersion.plugins;
+        IVersionableWebsitePlugin[] storage plugins = websiteVersion.plugins;
 
         // Plugins: rewrite the request
         for(uint i = 0; i < plugins.length; i++) {

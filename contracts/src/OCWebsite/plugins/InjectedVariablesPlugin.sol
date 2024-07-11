@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../../interfaces/IVersionableStaticWebsite.sol";
+import "../../interfaces/IVersionableWebsite.sol";
 import "../../library/LibStrings.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
+contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
     struct KeyValueVariable {
         string key;
         string value;
     }
-    mapping(IVersionableStaticWebsite => mapping(uint => KeyValueVariable[])) public variables;
+    mapping(IVersionableWebsite => mapping(uint => KeyValueVariable[])) public variables;
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
-            interfaceId == type(IVersionableStaticWebsitePlugin).interfaceId ||
+            interfaceId == type(IVersionableWebsitePlugin).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -30,12 +30,12 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
             });
     }
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
     function processWeb3RequestBeforeStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -64,7 +64,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
     }
 
     function processWeb3RequestAfterStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -74,7 +74,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         return (0, "", new KeyValue[](0));
     }
 
-    function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
+    function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
         require(address(website) == msg.sender);
 
         KeyValueVariable[] storage vars = variables[website][fromFrontendIndex];
@@ -83,13 +83,13 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         }
     }
 
-    function addVariable(IVersionableStaticWebsite website, uint websiteVersionIndex, string memory key, string memory value) public {
+    function addVariable(IVersionableWebsite website, uint websiteVersionIndex, string memory key, string memory value) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
         // Reserved keys: "self"
@@ -103,17 +103,17 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         vars.push(KeyValueVariable({key: key, value: value}));
     }
 
-    function getVariables(IVersionableStaticWebsite website, uint websiteVersionIndex) public view returns (KeyValueVariable[] memory) {
+    function getVariables(IVersionableWebsite website, uint websiteVersionIndex) public view returns (KeyValueVariable[] memory) {
         return variables[website][websiteVersionIndex];
     }
 
-    function removeVariable(IVersionableStaticWebsite website, uint websiteVersionIndex, string memory key) public {
+    function removeVariable(IVersionableWebsite website, uint websiteVersionIndex, string memory key) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
         KeyValueVariable[] storage vars = variables[website][websiteVersionIndex];

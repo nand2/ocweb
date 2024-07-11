@@ -29,7 +29,7 @@ contract ClonableOCWebsite is OCWebsite {
      * @param _owner The owner of the website
      * @param _ownershipController The controller of the ownership. Can be null.
      */
-    function initialize(address _owner, address _ownershipController, ClonableWebsiteVersionViewer _frontendViewerImplementation, IStorageBackend firstFrontendVersionStorageBackend, IVersionableStaticWebsitePlugin[] memory _plugins) public {
+    function initialize(address _owner, address _ownershipController, ClonableWebsiteVersionViewer _frontendViewerImplementation, IStorageBackend firstFrontendVersionStorageBackend, IVersionableWebsitePlugin[] memory _plugins) public {
         if(owner != address(0)) {
             revert AlreadyInitialized();
         }

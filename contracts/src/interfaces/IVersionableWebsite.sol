@@ -5,12 +5,12 @@ import { IDecentralizedApp, KeyValue } from "./IDecentralizedApp.sol";
 import { IOwnable } from "./IOwnable.sol";
 import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
+interface IVersionableWebsite is IDecentralizedApp, IOwnable {
     struct WebsiteVersion {
         string description;
 
         // The list of enabled plugins for this version
-        IVersionableStaticWebsitePlugin[] plugins;
+        IVersionableWebsitePlugin[] plugins;
         
         // When not the live version, a frontend version can be viewed by this address,
         // which is a clone of a cheap proxy contract
@@ -43,16 +43,16 @@ interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
     // Enable/disable the viewer, for a frontend version which is not the live one
     function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) external;
 
-    function addPlugin(uint frontendIndex, IVersionableStaticWebsitePlugin plugin) external;
-    struct IVersionableStaticWebsitePluginWithInfos {
-        IVersionableStaticWebsitePlugin plugin;
-        IVersionableStaticWebsitePlugin.Infos infos;
+    function addPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin) external;
+    struct IVersionableWebsitePluginWithInfos {
+        IVersionableWebsitePlugin plugin;
+        IVersionableWebsitePlugin.Infos infos;
     }
-    function getPlugins(uint frontendIndex) external view returns (IVersionableStaticWebsitePluginWithInfos[] memory pluginWithInfos);
+    function getPlugins(uint frontendIndex) external view returns (IVersionableWebsitePluginWithInfos[] memory pluginWithInfos);
     function removePlugin(uint frontendIndex, address plugin) external;
 }
 
-interface IVersionableStaticWebsitePlugin is IERC165 {
+interface IVersionableWebsitePlugin is IERC165 {
     struct Infos {
         // Technical name
         string name;
@@ -68,12 +68,12 @@ interface IVersionableStaticWebsitePlugin is IERC165 {
     }
     function infos() external view returns (Infos memory);
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams);
+    function rewriteWeb3Request(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams);
 
-    function processWeb3RequestBeforeStaticContent(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
+    function processWeb3RequestBeforeStaticContent(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
 
-    function processWeb3RequestAfterStaticContent(IVersionableStaticWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
+    function processWeb3RequestAfterStaticContent(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
 
-    function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) external;
+    function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) external;
 }
 

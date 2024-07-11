@@ -165,7 +165,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsitePlugin",
+        internalType: "contract IVersionableWebsitePlugin",
         name: "plugin",
         type: "address"
       },
@@ -428,7 +428,7 @@ export const abi = [
       {
         components: [
           {
-            internalType: "contract IVersionableStaticWebsitePlugin",
+            internalType: "contract IVersionableWebsitePlugin",
             name: "plugin",
             type: "address"
           },
@@ -465,7 +465,7 @@ export const abi = [
                 type: "string"
               }
             ],
-            internalType: "struct IVersionableStaticWebsitePlugin.Infos",
+            internalType: "struct IVersionableWebsitePlugin.Infos",
             name: "infos",
             type: "tuple"
           },
@@ -480,7 +480,7 @@ export const abi = [
             type: "bool"
           }
         ],
-        internalType: "struct OCWebsiteFactory.IVersionableStaticWebsitePluginWithInfos[]",
+        internalType: "struct OCWebsiteFactory.IVersionableWebsitePluginWithInfos[]",
         name: "",
         type: "tuple[]"
       }
@@ -555,7 +555,7 @@ export const abi = [
     name: "newWebsiteDefaultPlugins",
     outputs: [
       {
-        internalType: "contract IVersionableStaticWebsitePlugin",
+        internalType: "contract IVersionableWebsitePlugin",
         name: "",
         type: "address"
       }
@@ -598,7 +598,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsitePlugin",
+        internalType: "contract IVersionableWebsitePlugin",
         name: "plugin",
         type: "address"
       }
@@ -921,7 +921,7 @@ export const abi = [
     name: "websiteAvailablePlugins",
     outputs: [
       {
-        internalType: "contract IVersionableStaticWebsitePlugin",
+        internalType: "contract IVersionableWebsitePlugin",
         name: "",
         type: "address"
       }

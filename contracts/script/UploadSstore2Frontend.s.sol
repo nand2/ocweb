@@ -23,7 +23,7 @@ contract UploadSstore2Frontend is Script {
     function run() public {
         vm.startBroadcast();
 
-        IVersionableStaticWebsite versionableStaticWebsite = IVersionableStaticWebsite(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
+        IVersionableWebsite versionableStaticWebsite = IVersionableWebsite(vm.envAddress("IFRONTEND_LIBRARY_CONTRACT_ADDRESS"));
 
         StaticFrontendPlugin staticFrontendPlugin = StaticFrontendPlugin(vm.envAddress("STATIC_FRONTEND_PLUGIN_ADDRESS"));
 

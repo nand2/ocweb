@@ -2,7 +2,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsite",
+        internalType: "contract IVersionableWebsite",
         name: "website",
         type: "address"
       },
@@ -35,7 +35,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsite",
+        internalType: "contract IVersionableWebsite",
         name: "website",
         type: "address"
       },
@@ -58,7 +58,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsite",
+        internalType: "contract IVersionableWebsite",
         name: "website",
         type: "address"
       },
@@ -133,7 +133,7 @@ export const abi = [
             type: "string"
           }
         ],
-        internalType: "struct IVersionableStaticWebsitePlugin.Infos",
+        internalType: "struct IVersionableWebsitePlugin.Infos",
         name: "",
         type: "tuple"
       }
@@ -144,7 +144,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsite",
+        internalType: "contract IVersionableWebsite",
         name: "website",
         type: "address"
       },
@@ -212,7 +212,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsite",
+        internalType: "contract IVersionableWebsite",
         name: "",
         type: "address"
       },
@@ -241,7 +241,7 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IVersionableStaticWebsite",
+        internalType: "contract IVersionableWebsite",
         name: "website",
         type: "address"
       },

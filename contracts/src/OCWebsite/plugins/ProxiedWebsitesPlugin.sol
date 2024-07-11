@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../../interfaces/IVersionableStaticWebsite.sol";
+import "../../interfaces/IVersionableWebsite.sol";
 import "../../library/LibStrings.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
+contract ProxiedWebsitesPlugin is ERC165, IVersionableWebsitePlugin {
     struct ProxiedWebsite {
         // An web3:// resource request mode website, cf ERC-6944 / ERC-5219
         IDecentralizedApp website;
         string[] localPrefix;
         string[] remotePrefix;
     }
-    mapping(IVersionableStaticWebsite => mapping(uint => ProxiedWebsite[])) public proxiedWebsites;
+    mapping(IVersionableWebsite => mapping(uint => ProxiedWebsite[])) public proxiedWebsites;
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
-            interfaceId == type(IVersionableStaticWebsitePlugin).interfaceId ||
+            interfaceId == type(IVersionableWebsitePlugin).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -32,12 +32,12 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
             });
     }
 
-    function rewriteWeb3Request(IVersionableStaticWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
+    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) public view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
         return (false, new string[](0), new KeyValue[](0));
     }
 
     function processWeb3RequestBeforeStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -48,7 +48,7 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
     }
 
     function processWeb3RequestAfterStaticContent(
-        IVersionableStaticWebsite website,
+        IVersionableWebsite website,
         uint websiteVersionIndex,
         string[] memory resource,
         KeyValue[] memory params
@@ -89,7 +89,7 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         }
     }
 
-    function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
+    function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
         require(address(website) == msg.sender);
 
         ProxiedWebsite[] storage vars = proxiedWebsites[website][fromFrontendIndex];
@@ -98,13 +98,13 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         }
     }
 
-    function addProxiedWebsite(IVersionableStaticWebsite website, uint websiteVersionIndex, IDecentralizedApp proxiedWebsite, string[] memory localPrefix, string[] memory remotePrefix) public {
+    function addProxiedWebsite(IVersionableWebsite website, uint websiteVersionIndex, IDecentralizedApp proxiedWebsite, string[] memory localPrefix, string[] memory remotePrefix) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
         // Ensure the localPrefix is not used yet
@@ -125,17 +125,17 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         frontendProxiedWebsites.push(ProxiedWebsite({website: proxiedWebsite, localPrefix: localPrefix, remotePrefix: remotePrefix}));
     }
 
-    function getProxiedWebsites(IVersionableStaticWebsite website, uint websiteVersionIndex) public view returns (ProxiedWebsite[] memory) {
+    function getProxiedWebsites(IVersionableWebsite website, uint websiteVersionIndex) public view returns (ProxiedWebsite[] memory) {
         return proxiedWebsites[website][websiteVersionIndex];
     }
 
-    function removeProxiedWebsite(IVersionableStaticWebsite website, uint websiteVersionIndex, uint index) public {
+    function removeProxiedWebsite(IVersionableWebsite website, uint websiteVersionIndex, uint index) public {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         require(website.isLocked() == false, "Website is locked");
 
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
-        IVersionableStaticWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
         ProxiedWebsite[] storage frontendProxiedWebsites = proxiedWebsites[website][websiteVersionIndex];
