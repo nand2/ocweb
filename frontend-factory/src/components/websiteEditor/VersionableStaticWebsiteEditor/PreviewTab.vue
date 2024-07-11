@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
-import { useLiveWebsiteVersion, invalidateFrontendVersionQuery, useIsLocked } from '../../../utils/queries';
+import { useLiveWebsiteVersion, invalidateFrontendVersionQuery, invalidateWebsiteVersionsQuery,useIsLocked } from '../../../utils/queries';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
@@ -83,14 +83,15 @@ const { isPending: setIsViewableIsPending, isError: setIsViewableIsError, error:
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    const transaction = await props.websiteClient.prepareEnableViewerForWebsiteVersionTransaction(props.frontendVersionIndex, !frontendVersion.value.isViewable);
+    const transaction = await props.websiteClient.prepareEnableViewerForWebsiteVersionTransaction(props.frontendVersionIndex, !props.frontendVersion.isViewable);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
+    return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
 const setIsViewable = async () => {

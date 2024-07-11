@@ -20,7 +20,7 @@ class VersionableStaticWebsiteClient {
     })
   }
 
-  async prepareAddWebsiteVersionTransaction(storageBackend, description, pluginsCopiedFromFrontendVersionIndex) {
+  async prepareAddWebsiteVersionTransaction(description, pluginsCopiedFromFrontendVersionIndex) {
     return {
       functionName: 'addWebsiteVersion',
       args: [description, pluginsCopiedFromFrontendVersionIndex],

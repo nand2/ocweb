@@ -80,7 +80,7 @@ const newFrontendVersionStorageBackend = ref(null)
 const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddWebsiteVersionTransaction(newFrontendVersionStorageBackend.value, newFrontendVersionDescription.value, frontendVersionsData.value.totalCount - 1);
+    const transaction = await props.websiteClient.prepareAddWebsiteVersionTransaction(newFrontendVersionDescription.value, frontendVersionsData.value.totalCount - 1);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
@@ -150,7 +150,7 @@ const activateLockl = async () => {
             Error loading storage backends: {{ storageBackendsError.shortMessage || storageBackendsError.message }}
           </div>
 
-          <button @click="newfrontendversionFile" :disabled="newFrontendVersionDescription == '' || newFrontendVersionStorageBackend == null">Add new version</button>
+          <button @click="newfrontendversionFile" :disabled="newFrontendVersionDescription == ''">Add new version</button>
 
           <div v-if="newfrontendversionIsError" class="text-danger text-90">
             Error adding new version: {{ newfrontendversionError.shortMessage || newfrontendversionError.message }}

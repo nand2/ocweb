@@ -143,6 +143,7 @@ const { isPending: toggleIsViewableIsPending, isError: toggleIsViewableIsError, 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
+    await invalidateFrontendVersionQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex)
     return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
