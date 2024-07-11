@@ -41,8 +41,8 @@ class VersionableStaticWebsiteClient {
     return await this.#viemWebsiteContract.read.getFrontendVersions([startIndex, count])
   }
 
-  async getLiveFrontendVersion() {
-    const result = await this.#viemWebsiteContract.read.getLiveFrontendVersion()
+  async getLiveWebsiteVersion() {
+    const result = await this.#viemWebsiteContract.read.getLiveWebsiteVersion()
     return {
       frontendVersion: result[0],
       frontendIndex: Number(result[1]),

@@ -351,19 +351,19 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
         frontend.locked = true;
     }
 
-    /**
-     * Lock the whole frontend library
-     */
-    function lock() public onlyOwner {
-        frontendLibraryLocked = true;
-    }
+    // /**
+    //  * Lock the whole frontend library
+    //  */
+    // function lock() public onlyOwner {
+    //     frontendLibraryLocked = true;
+    // }
 
-    /**
-     * Is the frontend library locked?
-     */
-    function isLocked() public view returns (bool) {
-        return frontendLibraryLocked;
-    }
+    // /**
+    //  * Is the frontend library locked?
+    //  */
+    // function isLocked() public view returns (bool) {
+    //     return frontendLibraryLocked;
+    // }
 
     /**
      * Get the list of supported storage backend interfaces

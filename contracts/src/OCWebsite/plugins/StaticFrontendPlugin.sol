@@ -185,7 +185,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         require(website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(frontendLibrary.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Frontend library is locked");
 
         require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
         FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
@@ -267,7 +267,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         require(website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(frontendLibrary.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Frontend library is locked");
 
         require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
         FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
@@ -318,7 +318,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         require(website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(frontendLibrary.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Frontend library is locked");
 
         require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
         FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
@@ -349,7 +349,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         require(website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(frontendLibrary.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Frontend library is locked");
 
         require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
         FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);
@@ -376,7 +376,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableStaticWebsitePlugin, Ownabl
         require(website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(frontendLibrary.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Frontend library is locked");
 
         require(websiteVersion < frontendLibrary.getFrontendVersionCount(), "Website version out of bounds");
         FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(websiteVersion);

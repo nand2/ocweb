@@ -87,7 +87,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(frontendLibrary.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Frontend library is locked");
 
         require(frontendIndex < frontendLibrary.getFrontendVersionCount(), "Frontend index out of bounds");
         FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(frontendIndex);
@@ -112,7 +112,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableStaticWebsitePlugin {
         require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
 
         IFrontendLibrary frontendLibrary = website.getFrontendLibrary();
-        require(frontendLibrary.isLocked() == false, "Frontend library is locked");
+        require(website.isLocked() == false, "Frontend library is locked");
 
         require(frontendIndex < frontendLibrary.getFrontendVersionCount(), "Frontend index out of bounds");
         FrontendFilesSet memory frontendVersion = frontendLibrary.getFrontendVersion(frontendIndex);

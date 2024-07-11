@@ -230,20 +230,20 @@ class StaticFrontendPluginClient {
     return transactions
   }
 
-  async prepareRenameFilesInStaticFrontendTransaction(frontendIndex, oldFilePaths, newFilePaths) {
+  async prepareRenameFilesInStaticFrontendTransaction(websiteVersion, oldFilePaths, newFilePaths) {
     return {
       functionName: 'renameFiles',
-      args: [this.#websiteContractAddress, frontendIndex, oldFilePaths, newFilePaths],
+      args: [this.#websiteContractAddress, websiteVersion, oldFilePaths, newFilePaths],
     }
   }
 
   /**
    * filePaths: An array of strings, each string being the path of a file, without leading /. E.g. "index.html", "assets/logo.png"
    */
-  async prepareRemoveFilesFromStaticFrontendTransaction(frontendIndex, filePaths) {
+  async prepareRemoveFilesFromStaticFrontendTransaction(websiteVersion, filePaths) {
     return {
       functionName: 'removeFiles',
-      args: [this.#websiteContractAddress, frontendIndex, filePaths],
+      args: [this.#websiteContractAddress, websiteVersion, filePaths],
     }
   }
 

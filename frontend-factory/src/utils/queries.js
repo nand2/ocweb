@@ -123,7 +123,7 @@ function useLiveFrontendVersion(queryClient,contractAddress, chainId) {
       // Switch chain if necessary
       await switchChainAsync({ chainId: chainId })
       
-      const result = await websiteClient.value.getLiveFrontendVersion()
+      const result = await websiteClient.value.getLiveWebsiteVersion()
 
       // We got a frontend version, prefill the cache of the individual frontend version
       await queryClient.prefetchQuery({

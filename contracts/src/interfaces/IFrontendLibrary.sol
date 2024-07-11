@@ -59,9 +59,9 @@ interface IFrontendLibrary {
 
     // Lock a frontend version: It won't be editable anymore, and cannot be deleted
     function lockFrontendVersion(uint256 frontendIndex) external;
-    // Lock the whole frontend library
-    function lock() external;
-    function isLocked() external view returns (bool);
+    // // Lock the whole frontend library
+    // function lock() external;
+    // function isLocked() external view returns (bool);
 
     // Get the list of supported storage backend interfaces
     function getSupportedStorageBackendInterfaces() external view returns (bytes4[] memory);

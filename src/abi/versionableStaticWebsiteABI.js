@@ -76,6 +76,11 @@ export const abi = [
   },
   {
     inputs: [],
+    name: "UnsupportedStorageBackendInterface",
+    type: "error"
+  },
+  {
+    inputs: [],
     name: "VERSION",
     outputs: [
       {
@@ -153,29 +158,6 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "contract IStorageBackend",
-        name: "storageBackend",
-        type: "address"
-      },
-      {
-        internalType: "string",
-        name: "_description",
-        type: "string"
-      },
-      {
-        internalType: "uint256",
-        name: "frontendVersionIndexToCopyFrom",
-        type: "uint256"
-      }
-    ],
-    name: "addFrontendVersionAndCopyPlugins",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
         name: "frontendIndex",
         type: "uint256"
@@ -187,6 +169,24 @@ export const abi = [
       }
     ],
     name: "addPlugin",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_description",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "copyPluginsFromWebsiteVersionIndex",
+        type: "uint256"
+      }
+    ],
+    name: "addWebsiteVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -526,59 +526,29 @@ export const abi = [
   },
   {
     inputs: [],
-    name: "getLiveFrontendIndex",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "getLiveFrontendVersion",
+    name: "getLiveWebsiteVersion",
     outputs: [
       {
         components: [
           {
-            components: [
-              {
-                internalType: "string",
-                name: "filePath",
-                type: "string"
-              },
-              {
-                internalType: "string",
-                name: "contentType",
-                type: "string"
-              },
-              {
-                internalType: "enum CompressionAlgorithm",
-                name: "compressionAlgorithm",
-                type: "uint8"
-              },
-              {
-                internalType: "uint256",
-                name: "contentKey",
-                type: "uint256"
-              }
-            ],
-            internalType: "struct PartialFileInfos[]",
-            name: "files",
-            type: "tuple[]"
-          },
-          {
-            internalType: "contract IStorageBackend",
-            name: "storageBackend",
-            type: "address"
-          },
-          {
             internalType: "string",
             name: "description",
             type: "string"
+          },
+          {
+            internalType: "contract IVersionableStaticWebsitePlugin[]",
+            name: "plugins",
+            type: "address[]"
+          },
+          {
+            internalType: "contract IDecentralizedApp",
+            name: "viewer",
+            type: "address"
+          },
+          {
+            internalType: "bool",
+            name: "isViewable",
+            type: "bool"
           },
           {
             internalType: "bool",
@@ -586,13 +556,13 @@ export const abi = [
             type: "bool"
           }
         ],
-        internalType: "struct FrontendFilesSet",
-        name: "frontendVersion",
+        internalType: "struct IVersionableStaticWebsite.WebsiteVersion",
+        name: "websiteVersion",
         type: "tuple"
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       }
     ],
@@ -691,6 +661,121 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "websiteVersionIndex",
+        type: "uint256"
+      }
+    ],
+    name: "getWebsiteVersion",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "description",
+            type: "string"
+          },
+          {
+            internalType: "contract IVersionableStaticWebsitePlugin[]",
+            name: "plugins",
+            type: "address[]"
+          },
+          {
+            internalType: "contract IDecentralizedApp",
+            name: "viewer",
+            type: "address"
+          },
+          {
+            internalType: "bool",
+            name: "isViewable",
+            type: "bool"
+          },
+          {
+            internalType: "bool",
+            name: "locked",
+            type: "bool"
+          }
+        ],
+        internalType: "struct IVersionableStaticWebsite.WebsiteVersion",
+        name: "",
+        type: "tuple"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "getWebsiteVersionCount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "startIndex",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "count",
+        type: "uint256"
+      }
+    ],
+    name: "getWebsiteVersions",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "description",
+            type: "string"
+          },
+          {
+            internalType: "contract IVersionableStaticWebsitePlugin[]",
+            name: "plugins",
+            type: "address[]"
+          },
+          {
+            internalType: "contract IDecentralizedApp",
+            name: "viewer",
+            type: "address"
+          },
+          {
+            internalType: "bool",
+            name: "isViewable",
+            type: "bool"
+          },
+          {
+            internalType: "bool",
+            name: "locked",
+            type: "bool"
+          }
+        ],
+        internalType: "struct IVersionableStaticWebsite.WebsiteVersion[]",
+        name: "",
+        type: "tuple[]"
+      },
+      {
+        internalType: "uint256",
+        name: "totalCount",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_owner",
         type: "address"
@@ -736,6 +821,19 @@ export const abi = [
   },
   {
     inputs: [],
+    name: "liveWebsiteVersionIndex",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
     name: "lock",
     outputs: [],
     stateMutability: "nonpayable",
@@ -750,6 +848,19 @@ export const abi = [
       }
     ],
     name: "lockFrontendVersion",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "websiteVersionIndex",
+        type: "uint256"
+      }
+    ],
+    name: "lockWebsiteVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -931,6 +1042,24 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "websiteVersionIndex",
+        type: "uint256"
+      },
+      {
+        internalType: "string",
+        name: "newDescription",
+        type: "string"
+      }
+    ],
+    name: "renameWebsiteVersion",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "string[]",
         name: "resource",
         type: "string[]"
@@ -1015,6 +1144,19 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "index",
+        type: "uint256"
+      }
+    ],
+    name: "setLiveWebsiteVersionIndex",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_newOwner",
         type: "address"
@@ -1024,5 +1166,39 @@ export const abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    name: "websiteVersions",
+    outputs: [
+      {
+        internalType: "string",
+        name: "description",
+        type: "string"
+      },
+      {
+        internalType: "contract IDecentralizedApp",
+        name: "viewer",
+        type: "address"
+      },
+      {
+        internalType: "bool",
+        name: "isViewable",
+        type: "bool"
+      },
+      {
+        internalType: "bool",
+        name: "locked",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
   }
-];
+]

@@ -7,12 +7,41 @@ import { IOwnable } from "./IOwnable.sol";
 import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 interface IVersionableStaticWebsite is IDecentralizedApp, IOwnable {
+    struct WebsiteVersion {
+        string description;
 
+        // The list of enabled plugins for this version
+        IVersionableStaticWebsitePlugin[] plugins;
+        
+        // When not the live version, a frontend version can be viewed by this address,
+        // which is a clone of a cheap proxy contract
+        IDecentralizedApp viewer;
+        bool isViewable;
 
-    function getLiveFrontendIndex() external view returns (uint256);
-    function getFrontendLibrary() external view returns (IFrontendLibrary);
+        // A lock at the version level: Plugins cannot be added, edited, or removed
+        // Only the isViewable toggle can be changed
+        bool locked;
+    }
+
+    function liveWebsiteVersionIndex() external view returns (uint256);
+    function setLiveWebsiteVersionIndex(uint256 index) external;
     // Shortcut for frontends
-    function getLiveFrontendVersion() external view returns (FrontendFilesSet memory frontendVersion, uint256 frontendIndex);
+    function getLiveWebsiteVersion() external view returns (WebsiteVersion memory websiteVersion, uint256 websiteVersionIndex);
+
+    function addWebsiteVersion(string memory description, uint copyPluginsFromWebsiteVersionIndex) external;
+    function getWebsiteVersionCount() external view returns (uint);
+    function getWebsiteVersions(uint startIndex, uint count) external view returns (WebsiteVersion[] memory, uint totalCount);
+    function getWebsiteVersion(uint256 websiteVersionIndex) external view returns (WebsiteVersion memory);
+    function renameWebsiteVersion(uint256 websiteVersionIndex, string memory newDescription) external;
+    
+    // Lock a website version: It won't be editable anymore
+    function lockWebsiteVersion(uint256 websiteVersionIndex) external;
+    // Lock the whole website
+    function lock() external;
+    function isLocked() external view returns (bool);
+
+
+    function getFrontendLibrary() external view returns (IFrontendLibrary);
 
     // Enable/disable the viewer, for a frontend version which is not the live one
     function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) external;
