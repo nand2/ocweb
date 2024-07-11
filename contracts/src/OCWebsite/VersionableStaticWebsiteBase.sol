@@ -80,10 +80,13 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         }
         require(supported, "Plugin does not support any of the required interfaces");
 
+        // Ensure that the global lock is not active
+        require(getFrontendLibrary().isLocked() == false, "Frontend library is locked");
+
         // Ensure that the frontendIndex is within bounds
         require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
 
-        // Ensure that the frontend is not locked
+        // Ensure that the frontend versop, is not locked
         require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
 
         // Ensure that the plugin is not already added
@@ -106,7 +109,10 @@ abstract contract VersionableStaticWebsiteBase is IVersionableStaticWebsite, Res
         // Ensure that the frontendIndex is within bounds
         require(frontendIndex < getFrontendLibrary().getFrontendVersionCount(), "Invalid frontend index");
 
-        // Ensure that the frontend is not locked
+        // Ensure that the global lock is not active
+        require(getFrontendLibrary().isLocked() == false, "Frontend library is locked");
+
+        // Ensure that the frontend versop, is not locked
         require(getFrontendLibrary().getFrontendVersion(frontendIndex).locked == false, "Frontend version is locked");
 
         IVersionableStaticWebsitePlugin[] storage _plugins = plugins[frontendIndex];

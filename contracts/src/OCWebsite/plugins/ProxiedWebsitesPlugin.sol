@@ -90,7 +90,7 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableStaticWebsitePlugin {
     }
 
     function copyFrontendSettings(IVersionableStaticWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
-        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
+        require(address(website) == msg.sender);
 
         ProxiedWebsite[] storage vars = proxiedWebsites[website][fromFrontendIndex];
         for (uint i = 0; i < vars.length; i++) {
