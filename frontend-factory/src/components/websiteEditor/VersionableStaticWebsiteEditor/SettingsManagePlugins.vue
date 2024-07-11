@@ -136,9 +136,9 @@ const removeItem = async (pluginAddress) => {
 <template>
   <div>
 
-    <div class="title">
+    <!-- <div class="title">
       Manage plugins
-    </div>
+    </div> -->
 
     <div class="plugins-lists">
       <div class="plugins-list">

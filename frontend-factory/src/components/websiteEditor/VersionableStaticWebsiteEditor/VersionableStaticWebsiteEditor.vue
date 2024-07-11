@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import FilesTab from './FilesTab.vue';
 import PreviewTab from './PreviewTab.vue';
 import SettingsTab from './SettingsTab.vue';
+import PluginsTab from './PluginsTab.vue';
 import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
 import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
 import { useVersionableStaticWebsiteClient, useLiveFrontendVersion, useFrontendVersions } from '../../../utils/queries.js';
@@ -29,17 +30,6 @@ const queryClient = useQueryClient()
 
 // Tabs handling
 const activeTab = ref('files');
-const activeComponent = computed(() => {
-  switch (activeTab.value) {
-    case 'files':
-      return FilesTab;
-    case 'preview':
-      return PreviewTab;
-    case 'settings':
-      return SettingsTab;
-  }
-});
-
 
 // Fetch the website client
 const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableStaticWebsiteClient
@@ -93,6 +83,7 @@ const showConfigPanel = ref(false)
       <a @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
+      <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
     </div>
     
     <FilesTab 
@@ -117,6 +108,13 @@ const showConfigPanel = ref(false)
       :chainId 
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'settings'" />
+    <PluginsTab
+      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
+      :frontendVersionIndex="frontendVersionBeingEditedIndex"
+      :contractAddress 
+      :chainId 
+      :websiteClient="websiteClient"
+      class="tab" v-show="activeTab == 'plugins'" />
 
 
     <div class="footer">

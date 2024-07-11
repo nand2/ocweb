@@ -49,59 +49,20 @@ const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, 
         <span>Failed to load plugin infos: {{ frontendVersionPluginsError.shortMessage || frontendVersionPluginsError.message }}</span>
       </div>
     </div>
-    <div v-else-if="frontendVersionPluginsLoaded" class="settings">
+    <div v-else-if="frontendVersionPluginsLoaded" style="margin: 1em;">
 
-      <div v-for="pluginInfos in frontendVersionPlugins" :key="pluginInfos.plugin" class="settings-item">
-        <SettingsPlugin
-          :frontendVersion
-          :frontendVersionIndex
-          :contractAddress
-          :chainId
-          :websiteClient 
-          :pluginInfos="pluginInfos" />
-      </div>
+      <SettingsManagePlugins
+        :frontendVersion
+        :frontendVersionIndex
+        :contractAddress
+        :chainId
+        :websiteClient />
 
     </div>
   </div>
 </template>
 
 <style scoped>
-.settings {
-  display: flex;
-  flex-direction: column;
-}
 
-.settings-item {
-  padding: 1em;
-}
-
-.settings-item + .settings-item {
-  border-top: 1px solid var(--color-divider-secondary);
-}
-
-.title {
-  font-size: 1.1em;
-  font-weight: bold;
-  margin-bottom: 1em;
-}
-
-
-.operations {
-  display: flex;
-  gap: 1em;
-  margin-top: 1em;
-  align-items: flex-start;
-}
-@media (max-width: 700px) {
-  .operations {
-    flex-direction: column;
-  }
-}
-
-.no-entries {
-  padding: 1.5em;
-  text-align: center;
-  color: var(--color-text-muted);
-}
 
 </style>
