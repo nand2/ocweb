@@ -257,7 +257,7 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
      * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
      *                   process the call
      */
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal virtual override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+    function request(string[] memory resource, KeyValue[] memory params) external virtual override(IDecentralizedApp, ResourceRequestWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         uint frontendIndex = liveWebsiteVersionIndex;
 
         // Get the frontend version to use
@@ -317,6 +317,9 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
                 return (statusCode, body, headers);
             }
         }
+
+        // Default: Returning 404
+        return (404, "", new KeyValue[](0));
     }
 
 

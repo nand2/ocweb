@@ -18,7 +18,7 @@ contract ClonableWebsiteVersionViewer is ResourceRequestWebsite {
         frontendVersionIndex = _frontendVersionIndex;
     }
 
-    function _processWeb3Request(string[] memory resource, KeyValue[] memory params) internal override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+    function request(string[] memory resource, KeyValue[] memory params) external override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         
         // We prefix the resource with /__website_version/{frontendVersionIndex}
         string[] memory newResource = new string[](resource.length + 2);

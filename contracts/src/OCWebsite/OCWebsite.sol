@@ -8,8 +8,6 @@ import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 
 import "./VersionableWebsite.sol";
-import "./ContractAddressesWebsite.sol";
-import "./ProxyWebsite.sol";
 
 contract OCWebsite is VersionableWebsite {
     uint public constant VERSION = 1;
