@@ -8,8 +8,8 @@ import FilesTab from './FilesTab.vue';
 import PreviewTab from './PreviewTab.vue';
 import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
-import FrontendVersionEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
-import FrontendVersionsConfigEditor from './websiteVersionsEditor/WebsiteVersionsConfigEditor.vue';
+import WebsiteVersionEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
+import WebsiteVersionsConfigEditor from './websiteVersionsEditor/WebsiteVersionsConfigEditor.vue';
 import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
@@ -36,47 +36,47 @@ const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableWe
 (props.contractAddress)
 
 
-// Fetch the live frontend infos
-const { data: liveFrontendVersionData, isLoading: liveFrontendVersionLoading, isFetching: liveFrontendVersionFetching, isError: liveFrontendVersionIsError, error: liveFrontendVersionError, isSuccess: liveFrontendVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
+// Fetch the live website infos
+const { data: liveWebsiteVersionData, isLoading: liveWebsiteVersionLoading, isFetching: liveWebsiteVersionFetching, isError: liveWebsiteVersionIsError, error: liveWebsiteVersionError, isSuccess: liveWebsiteVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
 
-const userSelectedFrontendVersionBeingEditedIndex = ref(-1)
-// The index of the frontend version being edited is by default the live version
+const userSelectedWebsiteVersionBeingEditedIndex = ref(-1)
+// The index of the website version being edited is by default the live version
 // and then can be changed by the select form
-const frontendVersionBeingEditedIndex = computed(() => {
-  if(userSelectedFrontendVersionBeingEditedIndex.value != -1) {
-    return userSelectedFrontendVersionBeingEditedIndex.value
+const websiteVersionBeingEditedIndex = computed(() => {
+  if(userSelectedWebsiteVersionBeingEditedIndex.value != -1) {
+    return userSelectedWebsiteVersionBeingEditedIndex.value
   }
-  if(liveFrontendVersionLoaded.value) {
-    return liveFrontendVersionData.value.websiteVersionIndex
+  if(liveWebsiteVersionLoaded.value) {
+    return liveWebsiteVersionData.value.websiteVersionIndex
   }
   return -1;
 })
 
-// Get the frontend version being edited
-const { data: frontendVersionBeingEdited, isLoading: frontendVersionBeingEditedLoading, isFetching: frontendVersionBeingEditedFetching, isError: frontendVersionBeingEditedIsError, error: frontendVersionBeingEditedError, isSuccess: frontendVersionBeingEditedLoaded } = useQuery({
-  queryKey: ['OCWebsiteVersion', props.contractAddress, props.chainId, frontendVersionBeingEditedIndex],
+// Get the website version being edited
+const { data: websiteVersionBeingEdited, isLoading: websiteVersionBeingEditedLoading, isFetching: websiteVersionBeingEditedFetching, isError: websiteVersionBeingEditedIsError, error: websiteVersionBeingEditedError, isSuccess: websiteVersionBeingEditedLoaded } = useQuery({
+  queryKey: ['OCWebsiteVersion', props.contractAddress, props.chainId, websiteVersionBeingEditedIndex],
   queryFn: async () => {
     // Switch chain if necessary
     await switchChainAsync({ chainId: props.chainId })
 
-    return await websiteClient.value.getWebsiteVersion(frontendVersionBeingEditedIndex.value)
+    return await websiteClient.value.getWebsiteVersion(websiteVersionBeingEditedIndex.value)
   },
   staleTime: 3600 * 1000,
-  enabled: computed(() => websiteClientLoaded.value && liveFrontendVersionLoaded.value),
+  enabled: computed(() => websiteClientLoaded.value && liveWebsiteVersionLoaded.value),
 })
 
 // Get the list of installed plugins of the version being edited
-const { data: frontendVersionBeingEditedPlugins, isLoading: frontendVersionBeingEditedPluginsLoading, isFetching: frontendVersionBeingEditedPluginsFetching, isError: frontendVersionBeingEditedPluginsIsError, error: frontendVersionBeingEditedPluginsError, isSuccess: frontendVersionBeingEditedPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, frontendVersionBeingEditedIndex) 
+const { data: websiteVersionBeingEditedPlugins, isLoading: websiteVersionBeingEditedPluginsLoading, isFetching: websiteVersionBeingEditedPluginsFetching, isError: websiteVersionBeingEditedPluginsIsError, error: websiteVersionBeingEditedPluginsError, isSuccess: websiteVersionBeingEditedPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, websiteVersionBeingEditedIndex) 
 
 const staticFrontendInstalledPlugin = computed(() => {
-  if(frontendVersionBeingEditedPluginsLoaded.value) {
-    return frontendVersionBeingEditedPlugins.value.find(plugin => plugin.infos.name == 'staticFrontend')
+  if(websiteVersionBeingEditedPluginsLoaded.value) {
+    return websiteVersionBeingEditedPlugins.value.find(plugin => plugin.infos.name == 'staticFrontend')
   }
   return null
 })
 
 // When the plugins are loaded, now set the default tab
-watch(frontendVersionBeingEditedPluginsLoaded, () => {
+watch(websiteVersionBeingEditedPluginsLoaded, () => {
   if(activeTab.value != '') {
     return;
   }
@@ -89,9 +89,9 @@ watch(frontendVersionBeingEditedPluginsLoaded, () => {
   }
 })
 
-// Get the list frontend versions : Only when the user display the form to select a version
-const showEditedFrontendVersionSelector = ref(false)
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId, showEditedFrontendVersionSelector)
+// Get the list website versions : Only when the user display the form to select a version
+const showEditedWebsiteVersionSelector = ref(false)
+const { data: websiteVersionsData, isLoading: websiteVersionsLoading, isFetching: websiteVersionsFetching, isError: websiteVersionsIsError, error: websiteVersionsError, isSuccess: websiteVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId, showEditedWebsiteVersionSelector)
 
 const showConfigPanel = ref(false)
 </script>
@@ -99,7 +99,7 @@ const showConfigPanel = ref(false)
 <template>
   <div class="versionable-static-website-editor">
     <div class="tabs">
-      <a v-if="frontendVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
+      <a v-if="websiteVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
@@ -107,31 +107,31 @@ const showConfigPanel = ref(false)
     
     <FilesTab 
       v-if="staticFrontendInstalledPlugin"
-      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
-      :frontendVersionIndex="frontendVersionBeingEditedIndex"
-      :frontendVersionIsFetching="frontendVersionBeingEditedFetching"
+      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
+      :websiteVersionIsFetching="websiteVersionBeingEditedFetching"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
       :pluginInfos="staticFrontendInstalledPlugin"
       class="tab" v-show="activeTab == 'files'" />
     <PreviewTab 
-      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
-      :frontendVersionIndex="frontendVersionBeingEditedIndex"
+      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'preview'" />
     <SettingsTab 
-      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
-      :frontendVersionIndex="frontendVersionBeingEditedIndex"
+      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'settings'" />
     <PluginsTab
-      :frontendVersion="frontendVersionBeingEditedLoaded ? frontendVersionBeingEdited : null"
-      :frontendVersionIndex="frontendVersionBeingEditedIndex"
+      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
@@ -140,27 +140,27 @@ const showConfigPanel = ref(false)
 
     <div class="footer">
       <div class="footer-inner">
-        <span v-if="frontendVersionBeingEditedLoading">
+        <span v-if="websiteVersionBeingEditedLoading">
           Loading version...
         </span>
-        <span v-else-if="frontendVersionBeingEditedIsError">
-          Error loading version: {{ frontendVersionBeingEditedError.shortMessage || frontendVersionBeingEditedError.message }}
+        <span v-else-if="websiteVersionBeingEditedIsError">
+          Error loading version: {{ websiteVersionBeingEditedError.shortMessage || websiteVersionBeingEditedError.message }}
         </span>
-        <a v-else-if="frontendVersionBeingEditedLoaded" class="bg" @click.prevent.stop="showEditedFrontendVersionSelector = !showEditedFrontendVersionSelector">
+        <a v-else-if="websiteVersionBeingEditedLoaded" class="bg" @click.prevent.stop="showEditedWebsiteVersionSelector = !showEditedWebsiteVersionSelector">
             
-          <div class="form-select-frontend-version-popup" v-if="showEditedFrontendVersionSelector">
-            <div class="form-select-frontend-version-popup-inner">
-              <span v-if="frontendVersionsLoading" class="text-muted text-90">
-                Loading frontend versions...
+          <div class="form-select-website-version-popup" v-if="showEditedWebsiteVersionSelector">
+            <div class="form-select-website-version-popup-inner">
+              <span v-if="websiteVersionsLoading" class="text-muted text-90">
+                Loading website versions...
               </span>
-              <span v-else-if="frontendVersionsIsError" class="text-danger text-90">
-                Error loading frontend versions: {{ frontendVersionsError.message }}
+              <span v-else-if="websiteVersionsIsError" class="text-danger text-90">
+                Error loading website versions: {{ websiteVersionsError.message }}
               </span>
-              <div v-else-if="frontendVersionsLoaded" class="entries">
-                <a v-for="(frontendVersion, index) in frontendVersionsData.versions" :key="index" class="bg entry" @click.prevent.stop="userSelectedFrontendVersionBeingEditedIndex = index; showEditedFrontendVersionSelector = false">
+              <div v-else-if="websiteVersionsLoaded" class="entries">
+                <a v-for="(websiteVersion, index) in websiteVersionsData.versions" :key="index" class="bg entry" @click.prevent.stop="userSelectedWebsiteVersionBeingEditedIndex = index; showEditedWebsiteVersionSelector = false">
                   Version #{{ index }}: 
-                  {{ frontendVersion.description }}
-                  <span class="badge" v-if="index == liveFrontendVersionData.websiteVersionIndex">
+                  {{ websiteVersion.description }}
+                  <span class="badge" v-if="index == liveWebsiteVersionData.websiteVersionIndex">
                     Live
                   </span>
                 </a>
@@ -170,9 +170,9 @@ const showConfigPanel = ref(false)
 
           <span class="selected-version-label">
             <span>
-              Version #{{ frontendVersionBeingEditedIndex }}: 
-              {{ frontendVersionBeingEdited.description }} 
-              <span class="badge" v-if="frontendVersionBeingEditedIndex == liveFrontendVersionData.websiteVersionIndex">
+              Version #{{ websiteVersionBeingEditedIndex }}: 
+              {{ websiteVersionBeingEdited.description }} 
+              <span class="badge" v-if="websiteVersionBeingEditedIndex == liveWebsiteVersionData.websiteVersionIndex">
                 Live
               </span>
             </span>
@@ -186,7 +186,7 @@ const showConfigPanel = ref(false)
       </div>
 
       <div class="versions-config-panel" v-if="showConfigPanel">
-        <FrontendVersionsConfigEditor
+        <WebsiteVersionsConfigEditor
           :contractAddress
           :chainId
           :websiteClient="websiteClient"
@@ -253,11 +253,11 @@ const showConfigPanel = ref(false)
   gap: 1em;
 }
 
-.form-select-frontend-version-popup {
+.form-select-website-version-popup {
   position: relative;
 }
 
-.form-select-frontend-version-popup-inner {
+.form-select-website-version-popup-inner {
   position: absolute;
   bottom: 0;
   background-color: var(--color-root-bg);
@@ -267,22 +267,22 @@ const showConfigPanel = ref(false)
   width: 100%;
 }
 
-.form-select-frontend-version-popup-inner > span {
+.form-select-website-version-popup-inner > span {
   padding: 0.5em 1em;
   display: block;
 }
 
-.form-select-frontend-version-popup-inner .entries {
+.form-select-website-version-popup-inner .entries {
   display: flex;
   flex-direction: column;
 }
 
-.form-select-frontend-version-popup-inner .entry {
+.form-select-website-version-popup-inner .entry {
   padding: 0.5em 1em;
   display: block;
 }
 
-.form-select-frontend-version-popup-inner .entries .entry {
+.form-select-website-version-popup-inner .entries .entry {
 
 }
 

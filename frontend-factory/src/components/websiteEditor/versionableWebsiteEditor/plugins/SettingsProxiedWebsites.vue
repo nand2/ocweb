@@ -10,11 +10,11 @@ import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
 import TrashIcon from '../../../../icons/TrashIcon.vue';
 
 const props = defineProps({
-  frontendVersion: {
+  websiteVersion: {
     type: [Object, null],
     required: true
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -48,9 +48,9 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 
 // Get proxied websites
 const { data: proxiedWebsites, isLoading: proxiedWebsitesLoading, isFetching: proxiedWebsitesFetching, isError: proxiedWebsitesIsError, error: proxiedWebsitesError, isSuccess: proxiedWebsitesLoaded } = useQuery({
-  queryKey: ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+  queryKey: ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
   queryFn: async () => {
-    const result = await proxiedWebsitesPluginClient.value.getProxiedWebsites(props.frontendVersionIndex);
+    const result = await proxiedWebsitesPluginClient.value.getProxiedWebsites(props.websiteVersionIndex);
     return result;
   },
   enabled: computed(() => proxiedWebsitesPluginClient.value != null),
@@ -65,7 +65,7 @@ const preAdditionError = ref('')
 const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await proxiedWebsitesPluginClient.value.prepareAddProxiedWebsiteTransaction(props.frontendVersionIndex, additionLocalPrefix.value, additionRemoteAddress.value, additionRemotePrefix.value);
+    const transaction = await proxiedWebsitesPluginClient.value.prepareAddProxiedWebsiteTransaction(props.websiteVersionIndex, additionLocalPrefix.value, additionRemoteAddress.value, additionRemotePrefix.value);
 
     const hash = await proxiedWebsitesPluginClient.value.executeTransaction(transaction);
 
@@ -77,7 +77,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
     additionRemotePrefix.value = ""
     showForm.value = false
 
-    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.websiteVersionIndex] })
   }
 })
 const additionFile = async () => {
@@ -97,14 +97,14 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
   mutationFn: async (index) => {
 
     // Prepare the transaction
-    const transaction = await proxiedWebsitesPluginClient.value.prepareRemoveProxiedWebsiteTransaction(props.frontendVersionIndex, index);
+    const transaction = await proxiedWebsitesPluginClient.value.prepareRemoveProxiedWebsiteTransaction(props.websiteVersionIndex, index);
 
     const hash = await proxiedWebsitesPluginClient.value.executeTransaction(transaction);
 
     return await proxiedWebsitesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey:  ['OCWebsiteVersionPluginProxiedWebsites', props.contractAddress, props.chainId, props.websiteVersionIndex] })
   }
 })
 const removeItem = async (index) => {
@@ -148,7 +148,7 @@ const removeItem = async (index) => {
           web3://{{ proxiedWebsite.website }}{{ chainId > 1 ? ':' + chainId : '' }}/{{ proxiedWebsite.remotePrefix.join('/') }}
         </div>
         <div style="text-align: right">
-          <a @click.stop.prevent="removeItem(index)" class="white" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
+          <a @click.stop.prevent="removeItem(index)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && removeIsPending == false">
             <TrashIcon />
           </a>
           <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == index" />
@@ -167,7 +167,7 @@ const removeItem = async (index) => {
     </div>
 
 
-    <div class="operations" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false">
+    <div class="operations" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false">
       <div class="op-add-new">
 
         <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">

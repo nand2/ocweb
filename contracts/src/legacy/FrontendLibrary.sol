@@ -12,7 +12,7 @@ import "../interfaces/IStorageBackend.sol";
 
 contract FrontendLibrary is IFrontendLibrary, Ownable {
 
-    FrontendFilesSet[] public frontendVersions;
+    FrontendFilesSet[] public websiteVersions;
     // The index of the default frontend to use
     uint256 public defaultFrontendIndex;
     // Is the frontend library locked?
@@ -56,8 +56,8 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
             revert UnsupportedStorageBackendInterface();
         }
 
-        frontendVersions.push();
-        FrontendFilesSet storage newFrontend = frontendVersions[frontendVersions.length - 1];
+        websiteVersions.push();
+        FrontendFilesSet storage newFrontend = websiteVersions[websiteVersions.length - 1];
         newFrontend.storageBackend = storageBackend;
         newFrontend.description = _description;
     }
@@ -66,7 +66,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * Get the number of frontend versions
      */
     function getFrontendVersionCount() external view returns (uint) {
-        return frontendVersions.length;
+        return websiteVersions.length;
     }
 
     /**
@@ -75,21 +75,21 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param count The number of frontend versions to get. If 0, get all versions
      */
     function getFrontendVersions(uint startIndex, uint count) public view returns (FrontendFilesSet[] memory, uint totalCount) {
-        if(startIndex >= frontendVersions.length) {
+        if(startIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
         
         if(count == 0) {
-            count = frontendVersions.length - startIndex;
+            count = websiteVersions.length - startIndex;
         }
-        else if(startIndex + count > frontendVersions.length) {
-            count = frontendVersions.length - startIndex;
+        else if(startIndex + count > websiteVersions.length) {
+            count = websiteVersions.length - startIndex;
         }
         FrontendFilesSet[] memory result = new FrontendFilesSet[](count);
         for(uint i = 0; i < count; i++) {
-            result[i] = frontendVersions[startIndex + i];
+            result[i] = websiteVersions[startIndex + i];
         }
-        return (result, frontendVersions.length);
+        return (result, websiteVersions.length);
     }
 
     /**
@@ -97,24 +97,24 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function getFrontendVersion(uint256 frontendIndex) public view returns (FrontendFilesSet memory) {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        return frontendVersions[frontendIndex];
+        return websiteVersions[frontendIndex];
     }
 
     /**
      * Rename a frontend version
      */
     function renameFrontendVersion(uint256 frontendIndex, string memory newDescription) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        if(frontendVersions[frontendIndex].locked) {
+        if(websiteVersions[frontendIndex].locked) {
             revert FrontendVersionLocked();
         }
 
-        frontendVersions[frontendIndex].description = newDescription;
+        websiteVersions[frontendIndex].description = newDescription;
     }
 
     /**
@@ -129,7 +129,7 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function setDefaultFrontendIndex(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
         defaultFrontendIndex = frontendIndex;
@@ -141,10 +141,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param fileUploadInfos The files to add
      */
     function addFiles(uint256 frontendIndex, FileUploadInfos[] memory fileUploadInfos) public payable onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        FrontendFilesSet storage frontend = websiteVersions[frontendIndex];
         if(frontend.locked) {
             revert FrontendVersionLocked();
         }
@@ -214,10 +214,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param data The data to give to the storage backend
      */
     function appendToFile(uint256 frontendIndex, string memory filePath, bytes memory data) public payable onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        FrontendFilesSet storage frontend = websiteVersions[frontendIndex];
         if(frontend.locked) {
             revert FrontendVersionLocked();
         }
@@ -244,10 +244,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @return nextChunkId The next chunk ID to read. 0 if none.
      */
     function readFile(uint256 frontendIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        FrontendFilesSet storage frontend = websiteVersions[frontendIndex];
         
         (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePath);
         if(fileFound == false) {
@@ -264,10 +264,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param newFilePaths The new path of the file
      */
     function renameFiles(uint256 frontendIndex, string[] memory oldFilePaths, string[] memory newFilePaths) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        FrontendFilesSet storage frontend = websiteVersions[frontendIndex];
         if(frontend.locked) {
             revert FrontendVersionLocked();
         }
@@ -297,10 +297,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param filePaths The paths of the files to remove
      */
     function removeFiles(uint256 frontendIndex, string[] memory filePaths) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        FrontendFilesSet storage frontend = websiteVersions[frontendIndex];
         if(frontend.locked) {
             revert FrontendVersionLocked();
         }
@@ -322,10 +322,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function removeAllFiles(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked  {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        FrontendFilesSet storage frontend = websiteVersions[frontendIndex];
         if(frontend.locked) {
             revert FrontendVersionLocked();
         }
@@ -341,10 +341,10 @@ contract FrontendLibrary is IFrontendLibrary, Ownable {
      * @param frontendIndex The index of the frontend version
      */
     function lockFrontendVersion(uint256 frontendIndex) public onlyOwner frontendLibraryUnlocked {
-        if(frontendIndex >= frontendVersions.length) {
+        if(frontendIndex >= websiteVersions.length) {
             revert FrontendIndexOutOfBounds();
         }
-        FrontendFilesSet storage frontend = frontendVersions[frontendIndex];
+        FrontendFilesSet storage frontend = websiteVersions[frontendIndex];
         if(frontend.locked) {
             revert FrontendVersionIsAlreadyLocked();
         }

@@ -10,20 +10,20 @@ import "../library/LibStrings.sol";
  */
 contract ClonableWebsiteVersionViewer is ResourceRequestWebsite {
     IDecentralizedApp public target;
-    uint public frontendVersionIndex;
+    uint public websiteVersionIndex;
 
-    function initialize(IDecentralizedApp _target, uint _frontendVersionIndex) public {
+    function initialize(IDecentralizedApp _target, uint _websiteVersionIndex) public {
         require(address(target) == address(0), "Already initialized");
         target = _target;
-        frontendVersionIndex = _frontendVersionIndex;
+        websiteVersionIndex = _websiteVersionIndex;
     }
 
     function request(string[] memory resource, KeyValue[] memory params) external override view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
         
-        // We prefix the resource with /__website_version/{frontendVersionIndex}
+        // We prefix the resource with /__website_version/{websiteVersionIndex}
         string[] memory newResource = new string[](resource.length + 2);
         newResource[0] = "__website_version";
-        newResource[1] = LibStrings.toString(frontendVersionIndex);
+        newResource[1] = LibStrings.toString(websiteVersionIndex);
         for(uint i = 0; i < resource.length; i++) {
             newResource[i + 2] = resource[i];
         }

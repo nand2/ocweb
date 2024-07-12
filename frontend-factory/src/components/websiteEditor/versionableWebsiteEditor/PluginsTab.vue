@@ -7,11 +7,11 @@ import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionP
 import ManagePlugins from './plugins/ManagePlugins.vue';
 
 const props = defineProps({
-  frontendVersion: {
+  websiteVersion: {
     type: [Object, null],
     required: true
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -32,25 +32,25 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 
 
-const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
+const { data: websiteVersionPlugins, isLoading: websiteVersionPluginsLoading, isFetching: websiteVersionPluginsFetching, isError: websiteVersionPluginsIsError, error: websiteVersionPluginsError, isSuccess: websiteVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)) 
 
 </script>
 
 <template>
   <div>
-    <div v-if="frontendVersionPluginsLoading" style="text-align: center; margin: 2em;">
+    <div v-if="websiteVersionPluginsLoading" style="text-align: center; margin: 2em;">
       Loading plugin infos...
     </div>
-    <div v-else-if="frontendVersionPluginsIsError">
+    <div v-else-if="websiteVersionPluginsIsError">
       <div class="text-danger text-90" style="text-align: center; margin: 2em;">
-        <span>Failed to load plugin infos: {{ frontendVersionPluginsError.shortMessage || frontendVersionPluginsError.message }}</span>
+        <span>Failed to load plugin infos: {{ websiteVersionPluginsError.shortMessage || websiteVersionPluginsError.message }}</span>
       </div>
     </div>
-    <div v-else-if="frontendVersionPluginsLoaded" style="margin: 1em;">
+    <div v-else-if="websiteVersionPluginsLoaded" style="margin: 1em;">
 
       <ManagePlugins
-        :frontendVersion
-        :frontendVersionIndex
+        :websiteVersion
+        :websiteVersionIndex
         :contractAddress
         :chainId
         :websiteClient />

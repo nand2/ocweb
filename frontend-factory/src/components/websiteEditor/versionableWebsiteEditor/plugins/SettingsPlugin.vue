@@ -9,11 +9,11 @@ import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import BoxArrowUpRightIcon from '../../../../icons/BoxArrowUpRightIcon.vue';
 
 const props = defineProps({
-  frontendVersion: {
+  websiteVersion: {
     type: [Object, null],
     required: true
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -59,8 +59,8 @@ const openHomepageWithArgs = () => {
 
     <SettingsProxiedWebsites 
       v-if="pluginInfos.infos.name == 'proxiedWebsites'"
-      :frontendVersion
-      :frontendVersionIndex
+      :websiteVersion
+      :websiteVersionIndex
       :contractAddress
       :chainId
       :websiteClient
@@ -68,8 +68,8 @@ const openHomepageWithArgs = () => {
 
     <SettingsInjectedVariables
       v-else-if="pluginInfos.infos.name == 'injectedVariables'"
-      :frontendVersion
-      :frontendVersionIndex
+      :websiteVersion
+      :websiteVersionIndex
       :contractAddress
       :chainId
       :websiteClient

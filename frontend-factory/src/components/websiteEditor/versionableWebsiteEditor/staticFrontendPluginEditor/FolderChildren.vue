@@ -33,7 +33,7 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -105,7 +105,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     fileInfos.sort((a, b) => a.size - b.size);
   
     // Prepare the transaction to upload the files
-    const transactions = await props.staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(props.frontendVersionIndex, fileInfos);
+    const transactions = await props.staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(props.websiteVersionIndex, fileInfos);
     console.log(transactions);
 
     return transactions;
@@ -141,8 +141,8 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     // Mark the transaction as successful
     addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'success'}
 
-    // Refresh the static frontend
-    return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    // Refresh the static website
+    return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
   },
   onError: (error) => {
     // Mark the transaction as failed
@@ -200,7 +200,7 @@ const addNewFolder = async () => {
           :locked
           :contractAddress
           :chainId
-          :frontendVersionIndex
+          :websiteVersionIndex
           :staticFrontendPluginClient
           :globalEmptyFolders
           v-if="child.type == 'folder'" />
@@ -210,7 +210,7 @@ const addNewFolder = async () => {
           :locked
           :contractAddress
           :chainId
-          :frontendVersionIndex
+          :websiteVersionIndex
           :staticFrontendPluginClient
           :folderParentChildren="folderChildren"
           v-else-if="child.type == 'file'" />

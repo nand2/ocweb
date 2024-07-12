@@ -10,15 +10,15 @@ import { StaticFrontendPluginClient } from '../../../../../../src/plugins/static
 import FolderChildren from './FolderChildren.vue';
 
 const props = defineProps({
-  frontendVersion: {
+  websiteVersion: {
     type: [Object, null],
     required: true
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
-  frontendVersionIsFetching: {
+  websiteVersionIsFetching: {
     type: Boolean,
     required: true,
   },
@@ -56,31 +56,31 @@ const globalEmptyFolders = ref([])
 
 // Fetch the static frontend
 const { data: staticFrontend, isLoading: staticFrontendLoading, isFetching: staticFrontendFetching, isError: staticFrontendIsError, error: staticFrontendError, isSuccess: staticFrontendLoaded } = useQuery({
-  queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+  queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
   queryFn: async () => {
     // Invalidate dependent query : sizes
-    queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, props.websiteVersionIndex] })
 
-    const result = await staticFrontendPluginClient.value.getStaticFrontend(props.frontendVersionIndex);
+    const result = await staticFrontendPluginClient.value.getStaticFrontend(props.websiteVersionIndex);
     return result;
   },
-  enabled: computed(() => props.frontendVersion != null && staticFrontendPluginClient.value != null && props.frontendVersionIsFetching == false),
+  enabled: computed(() => props.websiteVersion != null && staticFrontendPluginClient.value != null && props.websiteVersionIsFetching == false),
 })
 
 
 // Fetch the frontend files extra metadata from the storage backend
 const { data: frontendFilesSizes, isLoading: frontendFilesSizesLoading, isError: frontendFilesSizesIsError, error: frontendFilesSizesError, isSuccess: frontendFilesSizesLoaded } = useQuery({
-  queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+  queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
   queryFn: async () => {
 
     return await staticFrontendPluginClient.value.getStaticFrontendFilesSizesFromStorageBackend(staticFrontend.value)
   },
   staleTime: 3600 * 1000,
-  enabled: computed(() => props.frontendVersion != null && staticFrontendPluginClient.value != null && staticFrontendLoaded.value == true && staticFrontendFetching.value == false),
+  enabled: computed(() => props.websiteVersion != null && staticFrontendPluginClient.value != null && staticFrontendLoaded.value == true && staticFrontendFetching.value == false),
 })
 
 
-// frontendVersion.files is a flat list of files with their folder structure encoded in 
+// websiteVersion.files is a flat list of files with their folder structure encoded in 
 // their file path
 // We convert this flat list into a hierarchical structure
 const rootFolderChildren = computed(() => {
@@ -168,11 +168,11 @@ const rootFolderChildren = computed(() => {
       </div>
     </div>
 
-    <div v-if="frontendVersion == null || staticFrontendPluginClientLoading || staticFrontendLoading">
+    <div v-if="websiteVersion == null || staticFrontendPluginClientLoading || staticFrontendLoading">
       Loading...
     </div>
 <!-- 
-    <div v-else-if="frontendVersionError == true">
+    <div v-else-if="websiteVersionError == true">
       Error loading the files: {{ error.shortMessage || error.message }}
     </div> -->
 
@@ -183,10 +183,10 @@ const rootFolderChildren = computed(() => {
 
       <FolderChildren 
         :folderChildren="rootFolderChildren" 
-        :locked="isLockedLoaded && isLocked || frontendVersion.locked"
+        :locked="isLockedLoaded && isLocked || websiteVersion.locked"
         :contractAddress 
         :chainId 
-        :frontendVersionIndex 
+        :websiteVersionIndex 
         :staticFrontendPluginClient
         :globalEmptyFolders />
 

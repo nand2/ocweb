@@ -31,9 +31,9 @@ const queryClient = useQueryClient()
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
 
 
-// Get the list of frontend versions
-const showEditedFrontendVersionSelector = ref(false)
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
+// Get the list of website versions
+const showEditedWebsiteVersionSelector = ref(false)
+const { data: websiteVersionsData, isLoading: websiteVersionsLoading, isFetching: websiteVersionsFetching, isError: websiteVersionsIsError, error: websiteVersionsError, isSuccess: websiteVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
 
 // Get the lock status
 const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
@@ -72,28 +72,28 @@ const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching
 })
 
 
-// Create frontendVersion
-const showNewFrontendVersionForm = ref(false)
-const newFrontendVersionDescription = ref("")
-const newFrontendVersionStorageBackend = ref(null)
-const { isPending: newfrontendversionIsPending, isError: newfrontendversionIsError, error: newfrontendversionError, isSuccess: newfrontendversionIsSuccess, mutate: newfrontendversionMutate, reset: newfrontendversionReset } = useMutation({
+// Create websiteVersion
+const showNewWebsiteVersionForm = ref(false)
+const newWebsiteVersionDescription = ref("")
+const newWebsiteVersionStorageBackend = ref(null)
+const { isPending: newwebsiteversionIsPending, isError: newwebsiteversionIsError, error: newwebsiteversionError, isSuccess: newwebsiteversionIsSuccess, mutate: newwebsiteversionMutate, reset: newwebsiteversionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddWebsiteVersionTransaction(newFrontendVersionDescription.value, frontendVersionsData.value.totalCount - 1);
+    const transaction = await props.websiteClient.prepareAddWebsiteVersionTransaction(newWebsiteVersionDescription.value, websiteVersionsData.value.totalCount - 1);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    newFrontendVersionDescription.value = ""
-    showNewFrontendVersionForm.value = false
+    newWebsiteVersionDescription.value = ""
+    showNewWebsiteVersionForm.value = false
 
     return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
-const newfrontendversionFile = async () => {
-  newfrontendversionMutate()
+const newwebsiteversionFile = async () => {
+  newwebsiteversionMutate()
 }
 
 // Lock
@@ -130,16 +130,16 @@ const activateLockl = async () => {
     <div class="operations" v-if="isLockedLoaded && isLocked == false">
       <div class="op-add-new">
 
-        <div class="button-area" @click="showNewFrontendVersionForm = !showNewFrontendVersionForm; newFolderErrorLabel = ''">
+        <div class="button-area" @click="showNewWebsiteVersionForm = !showNewWebsiteVersionForm; newFolderErrorLabel = ''">
           <span class="button-text">
             <PlusLgIcon />
             Add new version
           </span>
         </div>
-        <div class="form-area" v-if="showNewFrontendVersionForm">
-          <input type="text" v-model="newFrontendVersionDescription" placeholder="Version description" />
+        <div class="form-area" v-if="showNewWebsiteVersionForm">
+          <input type="text" v-model="newWebsiteVersionDescription" placeholder="Version description" />
 
-          <select v-model="newFrontendVersionStorageBackend">
+          <select v-model="newWebsiteVersionStorageBackend">
             <option :value="null">- Select a storage backend -</option>
             <option v-for="storageBackendInfo in storageBackendsData" :key="storageBackendInfo.storageBackend" :value="storageBackendInfo.storageBackend">
               {{ storageBackendInfo.title }} ({{ storageBackendInfo.version }})
@@ -149,11 +149,11 @@ const activateLockl = async () => {
             Error loading storage backends: {{ storageBackendsError.shortMessage || storageBackendsError.message }}
           </div>
 
-          <button @click="newfrontendversionFile" :disabled="newFrontendVersionDescription == ''">Add new version</button>
+          <button @click="newwebsiteversionFile" :disabled="newWebsiteVersionDescription == ''">Add new version</button>
 
-          <div v-if="newfrontendversionIsError" class="text-danger text-90">
-            Error adding new version: {{ newfrontendversionError.shortMessage || newfrontendversionError.message }}
-            <a @click.stop.prevent="newfrontendversionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+          <div v-if="newwebsiteversionIsError" class="text-danger text-90">
+            Error adding new version: {{ newwebsiteversionError.shortMessage || newwebsiteversionError.message }}
+            <a @click.stop.prevent="newwebsiteversionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
           </div>
         </div>
       </div>

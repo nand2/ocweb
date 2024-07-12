@@ -138,7 +138,7 @@ const frontendABI = [
   },
   {
     "inputs":[],
-    "name":"frontendVersionsCount",
+    "name":"websiteVersionsCount",
     "outputs":[{"internalType":"uint256","name":"","type":"uint256"}],
     "stateMutability":"view","type":"function"
   },
@@ -249,8 +249,8 @@ let calls = []
 // New frontend
 if(true) {
   // // Lock previous frontend version, if any
-  // const frontendVersionsCount = await frontendContract.read.frontendVersionsCount()
-  // if(frontendVersionsCount > 0) {
+  // const websiteVersionsCount = await frontendContract.read.websiteVersionsCount()
+  // if(websiteVersionsCount > 0) {
   //   calls.push({
   //     methodName: 'lockLatestFrontendVersion',
   //     args: [],

@@ -2,18 +2,18 @@
 import { ref, computed, defineProps } from 'vue';
 
 import VersionableWebsiteEditor from './VersionableWebsiteEditor.vue';
-import FrontendVersionEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
+import WebsiteVersionEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
 
 const props = defineProps({
-  frontendVersion: {
+  websiteVersion: {
     type: [Object, null],
     required: true
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
-  frontendVersionIsFetching: {
+  websiteVersionIsFetching: {
     type: Boolean,
     required: true,
   },
@@ -38,10 +38,10 @@ const props = defineProps({
 
 <template>
   <div>
-    <FrontendVersionEditor 
-        :frontendVersion
-        :frontendVersionIndex
-        :frontendVersionIsFetching
+    <WebsiteVersionEditor 
+        :websiteVersion
+        :websiteVersionIndex
+        :websiteVersionIsFetching
         :contractAddress
         :chainId
         :websiteClient

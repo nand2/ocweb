@@ -279,7 +279,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "frontendVersions",
+    name: "websiteVersions",
     outputs: [
       {
         internalType: "contract IStorageBackend",
@@ -308,7 +308,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "frontendVersionsViewer",
+    name: "websiteVersionsViewer",
     outputs: [
       {
         internalType: "contract IDecentralizedApp",

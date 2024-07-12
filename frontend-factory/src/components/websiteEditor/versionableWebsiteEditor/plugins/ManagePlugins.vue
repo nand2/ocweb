@@ -14,11 +14,11 @@ import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.v
 import { abi as factoryABI } from '../../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
-  frontendVersion: {
+  websiteVersion: {
     type: [Object, null],
     required: true
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -60,7 +60,7 @@ const factoryContractClient = computed(() => {
 })
 
 // Get the list of installed plugins
-const { data: frontendVersionPlugins, isLoading: frontendVersionPluginsLoading, isFetching: frontendVersionPluginsFetching, isError: frontendVersionPluginsIsError, error: frontendVersionPluginsError, isSuccess: frontendVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)) 
+const { data: websiteVersionPlugins, isLoading: websiteVersionPluginsLoading, isFetching: websiteVersionPluginsFetching, isError: websiteVersionPluginsIsError, error: websiteVersionPluginsError, isSuccess: websiteVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)) 
 
 // Fetch the list of supported plugin interfaces
 const { data: supportedPluginInterfaces, isLoading: supportedPluginInterfacesLoading, isFetching: supportedPluginInterfacesFetching, isError: supportedPluginInterfacesIsError, error: supportedPluginInterfacesError, isSuccess: supportedPluginInterfacesLoaded } = useSupportedPluginInterfaces(props.contractAddress, props.chainId)
@@ -80,11 +80,11 @@ const { data: availablePlugins, isLoading: availablePluginsLoading, isFetching: 
 
 // Compute the list of availabe plugins not yet installed
 const availablePluginsNotInstalled = computed(() => {
-  if (frontendVersionPluginsLoaded.value == false || availablePluginsLoaded.value == false) {
+  if (websiteVersionPluginsLoaded.value == false || availablePluginsLoaded.value == false) {
     return []
   }
 
-  const result = availablePlugins.value.filter(plugin => !frontendVersionPlugins.value.find(p => p.plugin === plugin.plugin))
+  const result = availablePlugins.value.filter(plugin => !websiteVersionPlugins.value.find(p => p.plugin === plugin.plugin))
   return result;
 })
 
@@ -95,7 +95,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
   mutationFn: async (pluginAddress) => {
 
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddPluginTransaction(props.frontendVersionIndex, pluginAddress);
+    const transaction = await props.websiteClient.prepareAddPluginTransaction(props.websiteVersionIndex, pluginAddress);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
@@ -105,7 +105,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
     additionAddress.value = ''
     showForm.value = false
 
-    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex);
+    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex);
   }
 })
 const additionItem = async (pluginAddress) => {
@@ -117,14 +117,14 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
   mutationFn: async (pluginAddress) => {
 
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareRemovePluginTransaction(props.frontendVersionIndex, pluginAddress);
+    const transaction = await props.websiteClient.prepareRemovePluginTransaction(props.websiteVersionIndex, pluginAddress);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
     return await props.websiteClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.frontendVersionIndex);
+    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex);
   }
 })
 const removeItem = async (pluginAddress) => {
@@ -146,14 +146,14 @@ const removeItem = async (pluginAddress) => {
           Installed plugins
         </div>
 
-        <div v-if="frontendVersionPluginsIsError" class="text-danger text-90" style="text-align: center; padding: 1em;">
-          Error loading the installed plugins: {{ frontendVersionPluginsError.shortMessage || frontendVersionPluginsError.message }}
+        <div v-if="websiteVersionPluginsIsError" class="text-danger text-90" style="text-align: center; padding: 1em;">
+          Error loading the installed plugins: {{ websiteVersionPluginsError.shortMessage || websiteVersionPluginsError.message }}
         </div>
-        <div v-else-if="frontendVersionPluginsLoaded && frontendVersionPlugins.length == 0" class="no-entries">
+        <div v-else-if="websiteVersionPluginsLoaded && websiteVersionPlugins.length == 0" class="no-entries">
           No plugins installed
         </div>
-        <div v-else-if="frontendVersionPluginsLoaded" class="plugins-info">
-          <div v-for="pluginInfos in frontendVersionPlugins" :key="pluginInfos.plugin" class="plugin-info">
+        <div v-else-if="websiteVersionPluginsLoaded" class="plugins-info">
+          <div v-for="pluginInfos in websiteVersionPlugins" :key="pluginInfos.plugin" class="plugin-info">
             
             <div class="plugin-description">
               <div class="plugin-description-title">
@@ -183,7 +183,7 @@ const removeItem = async (pluginAddress) => {
             </div>
 
             <div class="plugin-operations">
-              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
+              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && removeIsPending == false">
                 <TrashIcon />
               </a>
               <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == pluginInfos.plugin" />
@@ -192,7 +192,7 @@ const removeItem = async (pluginAddress) => {
           </div>
         </div>
 
-        <div class="operations" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false">
+        <div class="operations" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false">
           <div class="op-add-new">
 
             <div class="button-area" @click="showForm = !showForm">
@@ -229,7 +229,7 @@ const removeItem = async (pluginAddress) => {
         <div v-if="availablePluginsIsError" class="text-danger text-90" style="text-align: center; padding: 1em;">
           Error loading the available plugins: {{ availablePluginsError.shortMessage || availablePluginsError.message }}
         </div>
-        <div v-else-if="availablePluginsLoaded && frontendVersionPluginsLoaded && availablePluginsNotInstalled.length == 0" class="no-entries">
+        <div v-else-if="availablePluginsLoaded && websiteVersionPluginsLoaded && availablePluginsNotInstalled.length == 0" class="no-entries">
           No plugins available
         </div>
         <div v-else-if="availablePluginsNotInstalled.length > 0" class="plugins-info">
@@ -263,7 +263,7 @@ const removeItem = async (pluginAddress) => {
             </div>
 
             <div class="plugin-operations">
-              <a @click.stop.prevent="additionItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false && additionIsPending == false">
+              <a @click.stop.prevent="additionItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && additionIsPending == false">
                 <PlusLgIcon />
               </a>
               <PlusLgIcon class="anim-pulse" v-if="additionIsPending && additionVariables == pluginInfos.plugin" />

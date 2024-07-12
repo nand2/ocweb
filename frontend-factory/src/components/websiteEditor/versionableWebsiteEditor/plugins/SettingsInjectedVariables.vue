@@ -10,11 +10,11 @@ import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
 import TrashIcon from '../../../../icons/TrashIcon.vue';
 
 const props = defineProps({
-  frontendVersion: {
+  websiteVersion: {
     type: [Object, null],
     required: true
   },
-  frontendVersionIndex: {
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -48,9 +48,9 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 
 // Get variables
 const { data: injectedVariables, isLoading: injectedVariablesLoading, isFetching: injectedVariablesFetching, isError: injectedVariablesIsError, error: injectedVariablesError, isSuccess: injectedVariablesLoaded } = useQuery({
-  queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, computed(() => props.frontendVersionIndex)],
+  queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
   queryFn: async () => {
-    const result = await injectedVariablesPluginClient.value.getVariables(props.frontendVersionIndex);
+    const result = await injectedVariablesPluginClient.value.getVariables(props.websiteVersionIndex);
     return result;
   },
   enabled: computed(() => injectedVariablesPluginClient.value != null),
@@ -64,7 +64,7 @@ const preAdditionError = ref('')
 const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await injectedVariablesPluginClient.value.prepareAddVariableTransaction(props.frontendVersionIndex, additionName.value, additionValue.value);
+    const transaction = await injectedVariablesPluginClient.value.prepareAddVariableTransaction(props.websiteVersionIndex, additionName.value, additionValue.value);
 
     const hash = await injectedVariablesPluginClient.value.executeTransaction(transaction);
 
@@ -75,7 +75,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
     additionValue.value = ""
     showForm.value = false
 
-    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.websiteVersionIndex] })
   }
 })
 const additionFile = async () => {
@@ -101,14 +101,14 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
   mutationFn: async (key) => {
 
     // Prepare the transaction
-    const transaction = await injectedVariablesPluginClient.value.prepareRemoveVariableTransaction(props.frontendVersionIndex, key);
+    const transaction = await injectedVariablesPluginClient.value.prepareRemoveVariableTransaction(props.websiteVersionIndex, key);
 
     const hash = await injectedVariablesPluginClient.value.executeTransaction(transaction);
 
     return await injectedVariablesPluginClient.value.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.frontendVersionIndex] })
+    return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPluginInjectedVariables', props.contractAddress, props.chainId, props.websiteVersionIndex] })
   }
 })
 const removeItem = async (key) => {
@@ -166,7 +166,7 @@ const removeItem = async (key) => {
           </code>
         </div>
         <div style="text-align: right">
-          <a @click.stop.prevent="removeItem(injectedVariable.key)" class="white" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false && removeIsPending == false">
+          <a @click.stop.prevent="removeItem(injectedVariable.key)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && removeIsPending == false">
             <TrashIcon />
           </a>
           <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == injectedVariable.key" />
@@ -181,7 +181,7 @@ const removeItem = async (key) => {
     </div>
 
 
-    <div class="operations" v-if="isLockedLoaded && isLocked == false && frontendVersion != null && frontendVersion.locked == false">
+    <div class="operations" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false">
       <div class="op-add-new">
 
         <div class="button-area" @click="showForm = !showForm; preAdditionError = ''">

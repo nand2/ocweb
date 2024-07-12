@@ -22,24 +22,24 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 
-// Get frontend versions
-const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetching: frontendVersionsFetching, isError: frontendVersionsIsError, error: frontendVersionsError, isSuccess: frontendVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
+// Get website versions
+const { data: websiteVersionsData, isLoading: websiteVersionsLoading, isFetching: websiteVersionsFetching, isError: websiteVersionsIsError, error: websiteVersionsError, isSuccess: websiteVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
 
 </script>
 
 <template>
   <div>
-    <div v-if="frontendVersionsLoading">
-      Loading frontend versions...
+    <div v-if="websiteVersionsLoading">
+      Loading website versions...
     </div>
-    <div v-else-if="frontendVersionsIsError" class="text-danger">
-      Error loading frontend versions: {{ frontendVersionsError.message }}
+    <div v-else-if="websiteVersionsIsError" class="text-danger">
+      Error loading website versions: {{ websiteVersionsError.message }}
     </div>
-    <div v-else-if="frontendVersionsLoaded">
-      <div v-for="(frontendVersion, index) in frontendVersionsData.versions" :key="index">
+    <div v-else-if="websiteVersionsLoaded">
+      <div v-for="(websiteVersion, index) in websiteVersionsData.versions" :key="index">
         <WebsiteVersionListLine
-          :frontendVersion="frontendVersion"
-          :frontendVersionIndex="index"
+          :websiteVersion="websiteVersion"
+          :websiteVersionIndex="index"
           :contractAddress
           :chainId
           :websiteClient />
