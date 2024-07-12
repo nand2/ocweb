@@ -46,7 +46,10 @@ contract ClonableOCWebsite is OCWebsite {
         // Add the plugins
         WebsiteVersion storage websiteVersion = websiteVersions[0];
         for(uint i = 0; i < _plugins.length; i++) {
-            websiteVersion.plugins.push(_plugins[i]);
+            websiteVersion.pluginNodes.push(LinkedListNodePlugin({
+                plugin: _plugins[i],
+                next: uint96(i != _plugins.length - 1 ? i + 1 : 0)
+            }));
         }
     }
 

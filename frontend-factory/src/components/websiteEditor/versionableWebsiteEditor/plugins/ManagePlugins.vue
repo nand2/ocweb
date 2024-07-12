@@ -12,6 +12,8 @@ import TrashIcon from '../../../../icons/TrashIcon.vue';
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
 import { abi as factoryABI } from '../../../../../../src/abi/factoryABI.js';
+import ChevronDownIcon from '../../../../icons/ChevronDownIcon.vue';
+import ChevronUpIcon from '../../../../icons/ChevronUpIcon.vue';
 
 const props = defineProps({
   websiteVersion: {
@@ -89,13 +91,13 @@ const availablePluginsNotInstalled = computed(() => {
 })
 
 // Add item
-const showForm = ref(false)
+const showAdditionForm = ref(false)
 const additionAddress = ref('')
 const { isPending: additionIsPending, isError: additionIsError, error: additionError, isSuccess: additionIsSuccess, mutate: additionMutate, reset: additionReset, variables: additionVariables } = useMutation({
   mutationFn: async (pluginAddress) => {
 
     // Prepare the transaction
-    const transaction = await props.websiteClient.prepareAddPluginTransaction(props.websiteVersionIndex, pluginAddress);
+    const transaction = await props.websiteClient.prepareAddPluginTransaction(props.websiteVersionIndex, pluginAddress, websiteVersionPlugins.value.length);
 
     const hash = await props.websiteClient.executeTransaction(transaction);
 
@@ -103,7 +105,7 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
   },
   onSuccess: async (data, variables, context) => {
     additionAddress.value = ''
-    showForm.value = false
+    showAdditionForm.value = false
 
     return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex);
   }
@@ -129,6 +131,63 @@ const { isPending: removeIsPending, isError: removeIsError, error: removeError, 
 })
 const removeItem = async (pluginAddress) => {
   removeMutate(pluginAddress)
+}
+
+// Reorder item
+const showReorderForm = ref(false)
+const reorderedPluginIndex = ref(-1)
+const reorderedPluginNewPosition = ref(-1)
+const reorderedWebsiteVersionPlugins = computed(() => {
+  if (websiteVersionPluginsLoaded.value == false) {
+    return []
+  }
+
+  // Clone the array
+  const result = websiteVersionPlugins.value.slice()
+  // Reorder the array
+  if(reorderedPluginIndex.value != -1 && reorderedPluginNewPosition.value != -1) {
+    const plugin = result.splice(reorderedPluginIndex.value, 1)[0]
+    result.splice(reorderedPluginNewPosition.value, 0, plugin)
+  }
+
+  return result
+})
+const reorderPlugin = (pluginIndex, direction) => {
+  // If reorderedPluginIndex was not set, initialize it
+  if(reorderedPluginIndex.value == -1) {
+    reorderedPluginIndex.value = pluginIndex
+    reorderedPluginNewPosition.value = pluginIndex + direction
+    return
+  }
+
+  reorderedPluginNewPosition.value = reorderedPluginNewPosition.value + direction
+
+  // If we are back to the original position, reset the reorder
+  if(reorderedPluginIndex.value == reorderedPluginNewPosition.value) {
+    reorderedPluginIndex.value = -1
+    reorderedPluginNewPosition.value = -1
+  }
+}
+const { isPending: reorderIsPending, isError: reorderIsError, error: reorderError, isSuccess: reorderIsSuccess, mutate: reorderMutate, reset: reorderReset, variables: reorderVariables } = useMutation({
+  mutationFn: async () => {
+
+    // Prepare the transaction
+    const transaction = await props.websiteClient.prepareReorderPluginTransaction(props.websiteVersionIndex, websiteVersionPlugins.value[reorderedPluginIndex.value].plugin, reorderedPluginNewPosition.value);
+
+    const hash = await props.websiteClient.executeTransaction(transaction);
+
+    return await props.websiteClient.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data, variables, context) => {
+    reorderedPluginIndex.value = -1
+    reorderedPluginNewPosition.value = -1
+    showReorderForm.value = false
+
+    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex);
+  }
+})
+const reorderItem = async () => {
+  reorderMutate()
 }
 
 </script>
@@ -193,15 +252,54 @@ const removeItem = async (pluginAddress) => {
         </div>
 
         <div class="operations" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false">
+          <div class="op-reorder">
+
+            <div class="button-area" @click="showReorderForm = !showReorderForm">
+              <span class="button-text">
+                <ChevronDownIcon />
+                <ChevronUpIcon />
+                Reorder plugins
+              </span>
+            </div>
+            <div class="form-area" v-if="showReorderForm">
+              <div class="text-90">
+                The plugins are executed in the order they are listed.
+              </div>
+
+              <div v-if="websiteVersionPluginsLoaded" class="plugins-info">
+                <div v-for="(pluginInfos, pluginIndex) in reorderedWebsiteVersionPlugins" :key="pluginInfos.plugin" class="plugin-info" style="display: flex; gap: 0.5em;">
+                  <a @click.stop.prevent="reorderPlugin(pluginIndex, 1)" class="white" :style="{visibility: pluginIndex < websiteVersionPlugins.length - 1 && (reorderedPluginNewPosition == -1 || reorderedPluginNewPosition == pluginIndex) ? 'visible' : 'hidden'}">
+                    <ChevronDownIcon />
+                  </a>
+                  <a @click.stop.prevent="reorderPlugin(pluginIndex, -1)" class="white" :style="{visibility: pluginIndex > 0 && (reorderedPluginNewPosition == -1 || reorderedPluginNewPosition == pluginIndex) ? 'visible' : 'hidden'}">
+                    <ChevronUpIcon />
+                  </a>
+                  <span :style="{'font-weight': reorderedPluginNewPosition == pluginIndex ? 'bold' : 'normal'}">
+                    {{ pluginInfos.infos.title }}
+                  </span>
+                </div>
+              </div>
+              
+              <button v-if="reorderedPluginIndex >= 0" @click="reorderItem()" :disabled="reorderIsPending">
+                Reorder the <strong>{{ websiteVersionPlugins[reorderedPluginIndex].infos.title }}</strong> plugin
+              </button>
+
+              <div v-if="reorderIsError" class="text-danger text-90">
+                Error reordering plugin: {{ reorderError.shortMessage || reorderError.message }}
+                <a @click.stop.prevent="reorderReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+              </div>
+            </div>
+
+          </div>
           <div class="op-add-new">
 
-            <div class="button-area" @click="showForm = !showForm">
+            <div class="button-area" @click="showAdditionForm = !showAdditionForm">
               <span class="button-text">
                 <PlusLgIcon />
                 Install custom plugin
               </span>
             </div>
-            <div class="form-area" v-if="showForm">
+            <div class="form-area" v-if="showAdditionForm">
               <div class="text-warning text-90">
                 <ExclamationTriangleIcon />
                 The plugin must implement one of the following interfaces: 
@@ -217,6 +315,7 @@ const removeItem = async (pluginAddress) => {
                 <a @click.stop.prevent="additionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
               </div>
             </div>
+
           </div>
         </div>
 
@@ -350,5 +449,8 @@ const removeItem = async (pluginAddress) => {
   text-decoration: underline;
 }
 
+.operations {
+  flex-direction: column;
+}
 
 </style>

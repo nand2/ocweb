@@ -40,6 +40,7 @@ import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariab
 import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
 import { FragmentRequestRewriterPlugin } from "../src/OCWebsite/plugins/FragmentRequestRewriterPlugin.sol";
 import { StaticFrontendPlugin } from "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
+import { IVersionableWebsite } from "../src/interfaces/IVersionableWebsite.sol";
 
 contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -154,7 +155,8 @@ contract OCWebsiteFactoryScript is Script {
             // Temporary, untill the fragment situaton is resolved
             { 
                 FragmentRequestRewriterPlugin fragmentRequestRewriterPlugin = new FragmentRequestRewriterPlugin();
-                factoryFrontend.addPlugin(0, fragmentRequestRewriterPlugin);
+                IVersionableWebsite.WebsiteVersion memory websiteVersion = factoryFrontend.getWebsiteVersion(0);
+                factoryFrontend.addPlugin(0, fragmentRequestRewriterPlugin, websiteVersion.pluginNodes.length);
             }
 
             // Set the website as the factory frontend

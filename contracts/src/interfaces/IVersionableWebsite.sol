@@ -6,11 +6,17 @@ import { IOwnable } from "./IOwnable.sol";
 import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 interface IVersionableWebsite is IDecentralizedApp, IOwnable {
+    struct LinkedListNodePlugin {
+        IVersionableWebsitePlugin plugin;
+        uint96 next;
+    }
     struct WebsiteVersion {
         string description;
 
         // The list of enabled plugins for this version
-        IVersionableWebsitePlugin[] plugins;
+        // Linked list for the execution order
+        LinkedListNodePlugin[] pluginNodes;
+        uint96 headPluginLinkedList;
         
         // When not the live version, a frontend version can be viewed by this address,
         // which is a clone of a cheap proxy contract
@@ -43,12 +49,13 @@ interface IVersionableWebsite is IDecentralizedApp, IOwnable {
     // Enable/disable the viewer, for a frontend version which is not the live one
     function enableViewerForFrontendVersion(uint256 frontendIndex, bool enable) external;
 
-    function addPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin) external;
+    function addPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin, uint position) external;
     struct IVersionableWebsitePluginWithInfos {
         IVersionableWebsitePlugin plugin;
         IVersionableWebsitePlugin.Infos infos;
     }
     function getPlugins(uint frontendIndex) external view returns (IVersionableWebsitePluginWithInfos[] memory pluginWithInfos);
+    function reorderPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin, uint newPosition) external;
     function removePlugin(uint frontendIndex, address plugin) external;
 }
 

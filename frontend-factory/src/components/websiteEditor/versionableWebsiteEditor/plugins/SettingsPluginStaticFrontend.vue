@@ -147,7 +147,7 @@ const editStorageBackend = async () => {
     </div>
 
     <div v-if="isLockedLoaded && isLocked == false && staticFrontendLoaded && staticFrontend.files.length > 0" class="text-90 text-muted">
-      The storage backend can only be edited when there are no files uploaded yet.
+      The storage backend can only be edited when there are no files uploaded.
     </div>
 
   </div>

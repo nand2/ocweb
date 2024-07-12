@@ -100,10 +100,17 @@ class VersionableWebsiteClient {
     }
   }
 
-  async prepareAddPluginTransaction(frontendIndex, pluginAddress) {
+  async prepareAddPluginTransaction(frontendIndex, pluginAddress, position) {
     return {
       functionName: 'addPlugin',
-      args: [frontendIndex, pluginAddress],
+      args: [frontendIndex, pluginAddress, position],
+    }
+  }
+
+  async prepareReorderPluginTransaction(frontendIndex, pluginAddress, pluginNewPosition) {
+    return {
+      functionName: 'reorderPlugin',
+      args: [frontendIndex, pluginAddress, pluginNewPosition],
     }
   }
 

@@ -47,21 +47,16 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         require(copyPluginsFromWebsiteVersionIndex <= websiteVersions.length, "Invalid index");
 
         // Add the new website version
-        websiteVersions.push(WebsiteVersion({
-            description: _description,
-            plugins: new IVersionableWebsitePlugin[](0),
-            viewer: IDecentralizedApp(address(0)),
-            isViewable: false,
-            locked: false
-        }));
+        websiteVersions.push();
+        WebsiteVersion storage newVersion = websiteVersions[websiteVersions.length - 1];
+        newVersion.description = _description;
         
         // Copy the plugins
         if(copyPluginsFromWebsiteVersionIndex != websiteVersions.length - 1) {
-            WebsiteVersion storage newVersion = websiteVersions[websiteVersions.length - 1];
             WebsiteVersion storage versionToCopyFrom = websiteVersions[copyPluginsFromWebsiteVersionIndex];
-            for(uint i = 0; i < versionToCopyFrom.plugins.length; i++) {
-                newVersion.plugins.push(versionToCopyFrom.plugins[i]);
-                newVersion.plugins[i].copyFrontendSettings(this, copyPluginsFromWebsiteVersionIndex, websiteVersions.length - 1);
+            for(uint i = 0; i < versionToCopyFrom.pluginNodes.length; i++) {
+                newVersion.pluginNodes.push(versionToCopyFrom.pluginNodes[i]);
+                newVersion.pluginNodes[i].plugin.copyFrontendSettings(this, copyPluginsFromWebsiteVersionIndex, websiteVersions.length - 1);
             }
         }
     }
@@ -141,7 +136,7 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
     // Plugins
     // 
 
-    function addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin) public override onlyOwner {
+    function addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint position) public override onlyOwner {
         // Ensure that the plugin support one of the requested interfaces
         bytes4[] memory supportedInterfaces = getSupportedPluginInterfaces();
         bool supported = false;
@@ -165,11 +160,32 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         require(websiteVersion.locked == false, "Website version is locked");
 
         // Ensure that the plugin is not already added
-        for(uint i = 0; i < websiteVersion.plugins.length; i++) {
-            require(address(websiteVersion.plugins[i]) != address(plugin), "Plugin already added");
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
+            require(address(websiteVersion.pluginNodes[i].plugin) != address(plugin), "Plugin already added");
         }
 
-        websiteVersion.plugins.push(plugin);
+        // Check that position is valid
+        require(position <= websiteVersion.pluginNodes.length, "Invalid position");
+
+        // Insert into the linked list
+        websiteVersion.pluginNodes.push(LinkedListNodePlugin({
+            plugin: plugin,
+            next: 0
+        }));
+
+        if(position == 0) {
+            websiteVersion.pluginNodes[websiteVersion.pluginNodes.length - 1].next = websiteVersion.headPluginLinkedList;
+            websiteVersion.headPluginLinkedList = uint96(websiteVersion.pluginNodes.length - 1);
+        }
+        else {
+            // Find the previous plugin
+            uint96 previous = websiteVersion.headPluginLinkedList;
+            for(uint i = 0; i < position - 1; i++) {
+                previous = websiteVersion.pluginNodes[previous].next;
+            }
+            websiteVersion.pluginNodes[websiteVersion.pluginNodes.length - 1].next = websiteVersion.pluginNodes[previous].next;
+            websiteVersion.pluginNodes[previous].next = uint96(websiteVersion.pluginNodes.length - 1);
+        }
     }
 
     function getPlugins(uint websiteVersionIndex) external view returns (IVersionableWebsitePluginWithInfos[] memory pluginWithInfos) {
@@ -178,10 +194,67 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
 
         WebsiteVersion storage websiteVersion = websiteVersions[websiteVersionIndex];
 
-        pluginWithInfos = new IVersionableWebsitePluginWithInfos[](websiteVersion.plugins.length);
-        for(uint i = 0; i < websiteVersion.plugins.length; i++) {
-            pluginWithInfos[i].plugin = websiteVersion.plugins[i];
-            pluginWithInfos[i].infos = websiteVersion.plugins[i].infos();
+        pluginWithInfos = new IVersionableWebsitePluginWithInfos[](websiteVersion.pluginNodes.length);
+        // Put them in the ordered way
+        uint96 current = websiteVersion.headPluginLinkedList;
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
+            pluginWithInfos[i].plugin = websiteVersion.pluginNodes[current].plugin;
+            pluginWithInfos[i].infos = websiteVersion.pluginNodes[current].plugin.infos();
+            current = websiteVersion.pluginNodes[current].next;
+        }
+    }
+
+    function reorderPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin, uint newPosition) public onlyOwner {
+        // Ensure that the global lock is not active
+        require(lockedAt == 0, "Frontend library is locked");
+
+        // Ensure that the websiteVersionIndex is within bounds
+        require(frontendIndex < websiteVersions.length, "Invalid website version index");
+
+        WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
+
+        // Ensure that the websiteVersion is not locked
+        require(websiteVersion.locked == false, "Website version is locked");
+
+        // Ensure that newPosition is valid
+        require(newPosition < websiteVersion.pluginNodes.length, "Invalid position");
+
+        // Find the plugin
+        uint96 previous = 0;
+        uint96 current = websiteVersion.headPluginLinkedList;
+        uint posInList = 0;
+        bool found = false;
+        for(posInList = 0; posInList < websiteVersion.pluginNodes.length; posInList++) {
+            if(address(websiteVersion.pluginNodes[current].plugin) == address(plugin)) {
+                found = true;
+                break;
+            }
+            previous = current;
+            current = websiteVersion.pluginNodes[current].next;
+        }
+        require(found, "Plugin not found");
+
+        // Remove from the linked list
+        if(posInList == 0) {
+            websiteVersion.headPluginLinkedList = websiteVersion.pluginNodes[current].next;
+        }
+        else {
+            websiteVersion.pluginNodes[previous].next = websiteVersion.pluginNodes[current].next;
+        }
+
+        // Insert at the new position
+        if(newPosition == 0) {
+            websiteVersion.pluginNodes[current].next = websiteVersion.headPluginLinkedList;
+            websiteVersion.headPluginLinkedList = current;
+        }
+        else {
+            // Find the previous plugin
+            uint96 newPrevious = websiteVersion.headPluginLinkedList;
+            for(uint i = 0; i < newPosition - 1; i++) {
+                newPrevious = websiteVersion.pluginNodes[newPrevious].next;
+            }
+            websiteVersion.pluginNodes[current].next = websiteVersion.pluginNodes[newPrevious].next;
+            websiteVersion.pluginNodes[newPrevious].next = current;
         }
     }
 
@@ -197,12 +270,45 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         // Ensure that the websiteVersion is not locked
         require(websiteVersion.locked == false, "Website version is locked");
 
-        IVersionableWebsitePlugin[] storage _plugins = websiteVersion.plugins;
-        for(uint i = 0; i < _plugins.length; i++) {
-            if(address(_plugins[i]) == plugin) {
-                _plugins[i] = _plugins[_plugins.length - 1];
-                _plugins.pop();
-                return;
+        // Find the plugin
+        uint96 previous = 0;
+        uint96 current = websiteVersion.headPluginLinkedList;
+        uint posInList = 0;
+        bool found = false;
+        for(posInList = 0; posInList < websiteVersion.pluginNodes.length; posInList++) {
+            if(address(websiteVersion.pluginNodes[current].plugin) == plugin) {
+                found = true;
+                break;
+            }
+            previous = current;
+            current = websiteVersion.pluginNodes[current].next;
+        }
+        require(found, "Plugin not found");
+
+        // Update the pointer: The previous point to the next
+        if(posInList == 0) {
+            // First entry is now the second one
+            websiteVersion.headPluginLinkedList = websiteVersion.pluginNodes[current].next;
+        }
+        else {
+            websiteVersion.pluginNodes[previous].next = websiteVersion.pluginNodes[current].next;
+        }
+
+        // Remove from the array, which move the last element to the current position
+        websiteVersion.pluginNodes[current] = websiteVersion.pluginNodes[websiteVersion.pluginNodes.length - 1];
+        websiteVersion.pluginNodes.pop();
+
+        // If headPluginLinkedList is pointing to pluginNodes.length, it should now point
+        // to current
+        if(websiteVersion.headPluginLinkedList == websiteVersion.pluginNodes.length) {
+            websiteVersion.headPluginLinkedList = current;
+        }
+        // Scan the pluginNodes: the one which is pointing to pluginNodes.length should now
+        // point to current
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
+            if(websiteVersion.pluginNodes[i].next == websiteVersion.pluginNodes.length) {
+                websiteVersion.pluginNodes[i].next = current;
+                break;
             }
         }
     }
@@ -288,26 +394,29 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         }
 
         WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
-        IVersionableWebsitePlugin[] storage plugins = websiteVersion.plugins;
 
         // Plugins: rewrite the request
-        for(uint i = 0; i < plugins.length; i++) {
+        uint96 current = websiteVersion.headPluginLinkedList;
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
             bool rewritten;
             string[] memory newResource;
             KeyValue[] memory newParams;
-            (rewritten, newResource, newParams) = plugins[i].rewriteWeb3Request(this, frontendIndex, resource, params);
+            (rewritten, newResource, newParams) = websiteVersion.pluginNodes[current].plugin.rewriteWeb3Request(this, frontendIndex, resource, params);
             if(rewritten) {
                 resource = newResource;
                 params = newParams;
             }
+            current = websiteVersion.pluginNodes[current].next;
         }
 
         // Plugins: return content before the static content
-        for(uint i = 0; i < plugins.length; i++) {
-            (statusCode, body, headers) = plugins[i].processWeb3Request(this, frontendIndex, resource, params);
+        current = websiteVersion.headPluginLinkedList;
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
+            (statusCode, body, headers) = websiteVersion.pluginNodes[current].plugin.processWeb3Request(this, frontendIndex, resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }
+            current = websiteVersion.pluginNodes[current].next;
         }
 
         // Default: Returning 404
