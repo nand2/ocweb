@@ -425,6 +425,9 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             require((LibStrings.compare(storageBackends[i].name(), storageBackend.name()) && LibStrings.compare(storageBackends[i].version(), storageBackend.version())) == false, "Storage backend name/version already used");
         }
 
+        // Ensure it supports the IStorageBackend interface
+        require(storageBackend.supportsInterface(type(IStorageBackend).interfaceId), "Does not support IStorageBackend");
+
         storageBackends.push(storageBackend);
     }
 
