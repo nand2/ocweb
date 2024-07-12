@@ -6,9 +6,9 @@ export const config = createConfig({
   chains: [mainnet, sepolia, holesky, hardhat],
   connectors: [
     injected(),
-    coinbaseWallet({
-      appName: 'OCWeb.eth',
-    }),
+    // coinbaseWallet({
+    //   appName: 'OCWeb.eth',
+    // }),
   ],
   // Storage: By default use localStorage, which is broken on EVM Browser
   storage: null,

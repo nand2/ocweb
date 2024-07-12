@@ -40,6 +40,7 @@ import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariab
 import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
 import { FragmentRequestRewriterPlugin } from "../src/OCWebsite/plugins/FragmentRequestRewriterPlugin.sol";
 import { StaticFrontendPlugin } from "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
+import { WelcomeHomepagePlugin } from "../src/OCWebsite/plugins/WelcomeHomepagePlugin.sol";
 import { IVersionableWebsite } from "../src/interfaces/IVersionableWebsite.sol";
 
 contract OCWebsiteFactoryScript is Script {
@@ -138,6 +139,10 @@ contract OCWebsiteFactoryScript is Script {
                 // Proxied websites plugin
                 ProxiedWebsitesPlugin proxiedWebsitesPlugin = new ProxiedWebsitesPlugin();
                 factory.addWebsitePlugin(proxiedWebsitesPlugin, true);
+
+                // Welcome plugin
+                WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin();
+                factory.addWebsitePlugin(welcomeHomepagePlugin, true);
             }
 
             // Create a website from the factory, to use as frontend for the factory itself

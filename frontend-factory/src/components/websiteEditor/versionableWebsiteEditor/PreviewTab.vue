@@ -213,6 +213,7 @@ const setIsViewable = async () => {
   width: calc(100% - 4px);
   height: 400px;
   border: 2px solid #ccc;
+  background-color: white;
 }
 
 .version-not-viewable {
