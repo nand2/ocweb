@@ -2,8 +2,8 @@
 import { ref, shallowRef, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
-import FrontendVersionListLine from './FrontendVersionListLine.vue';
-import { useWebsiteVersions } from '../../../utils/queries.js';
+import WebsiteVersionListLine from './WebsiteVersionListLine.vue';
+import { useWebsiteVersions } from '../../../../utils/queries.js';
 
 const props = defineProps({
   contractAddress: {
@@ -37,7 +37,7 @@ const { data: frontendVersionsData, isLoading: frontendVersionsLoading, isFetchi
     </div>
     <div v-else-if="frontendVersionsLoaded">
       <div v-for="(frontendVersion, index) in frontendVersionsData.versions" :key="index">
-        <FrontendVersionListLine
+        <WebsiteVersionListLine
           :frontendVersion="frontendVersion"
           :frontendVersionIndex="index"
           :contractAddress

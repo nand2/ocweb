@@ -8,8 +8,8 @@ import FilesTab from './FilesTab.vue';
 import PreviewTab from './PreviewTab.vue';
 import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
-import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
-import FrontendVersionsConfigEditor from './FrontendVersionsConfigEditor.vue';
+import FrontendVersionEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
+import FrontendVersionsConfigEditor from './websiteVersionsEditor/WebsiteVersionsConfigEditor.vue';
 import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
@@ -101,8 +101,8 @@ const showConfigPanel = ref(false)
     <div class="tabs">
       <a v-if="frontendVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
-      <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
+      <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
     
     <FilesTab 
@@ -229,7 +229,7 @@ const showConfigPanel = ref(false)
 
 }
 
-.tabSettings {
+.tabPlugins {
   margin-left: auto;
 }
 

@@ -4,14 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount, useConnectorClient } from '@wagmi/vue'
 import { getContract, publicActions } from 'viem'
 
-import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../utils/queries';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../../utils/queries.js';
 import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
-import TrashIcon from '../../../icons/TrashIcon.vue';
-import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
-import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import { abi as factoryABI } from '../../../../../src/abi/factoryABI.js';
+import TrashIcon from '../../../../icons/TrashIcon.vue';
+import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
+import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
+import { abi as factoryABI } from '../../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
   frontendVersion: {

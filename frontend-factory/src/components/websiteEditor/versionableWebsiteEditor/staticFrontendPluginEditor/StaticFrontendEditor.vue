@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/vue-query'
 import { useConnectorClient } from '@wagmi/vue'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
-import { useIsLocked, useStaticFrontendPluginClient } from '../../../utils/queries';
+import { useIsLocked, useStaticFrontendPluginClient } from '../../../../utils/queries.js';
 
-import { StaticFrontendPluginClient } from '../../../../../src/plugins/staticFrontendPluginClient.js';
+import { StaticFrontendPluginClient } from '../../../../../../src/plugins/staticFrontendPluginClient.js';
 import FolderChildren from './FolderChildren.vue';
 
 const props = defineProps({

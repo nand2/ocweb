@@ -3,16 +3,16 @@ import { ref, shallowRef, computed, defineProps } from 'vue';
 import { useQuery, useMutation } from '@tanstack/vue-query'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
-import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
-import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
-import PlayCircleIcon from '../../../icons/PlayCircleIcon.vue';
-import LockFillIcon from '../../../icons/LockFillIcon.vue';
-import UnlockFillIcon from '../../../icons/UnlockFillIcon.vue';
-import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
-import EyeIcon from '../../../icons/EyeIcon.vue';
-import EyeSlashIcon from '../../../icons/EyeSlashIcon.vue';
+import PencilSquareIcon from '../../../../icons/PencilSquareIcon.vue';
+import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
+import PlayCircleIcon from '../../../../icons/PlayCircleIcon.vue';
+import LockFillIcon from '../../../../icons/LockFillIcon.vue';
+import UnlockFillIcon from '../../../../icons/UnlockFillIcon.vue';
+import BoxArrowUpRightIcon from '../../../../icons/BoxArrowUpRightIcon.vue';
+import EyeIcon from '../../../../icons/EyeIcon.vue';
+import EyeSlashIcon from '../../../../icons/EyeSlashIcon.vue';
 
-import { useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, invalidateWebsiteVersionsQuery, invalidateWebsiteVersionQuery, useIsLocked } from '../../../utils/queries.js';
+import { useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, invalidateWebsiteVersionsQuery, invalidateWebsiteVersionQuery, useIsLocked } from '../../../../utils/queries.js';
 
 const props = defineProps({
   frontendVersion: {

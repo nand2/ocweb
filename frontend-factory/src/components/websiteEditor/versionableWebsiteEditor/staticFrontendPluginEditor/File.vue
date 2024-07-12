@@ -2,12 +2,12 @@
 import { ref, computed, defineProps } from 'vue';
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
-import FileEarmarkIcon from '../../../icons/FileEarmarkIcon.vue';
-import PencilSquareIcon from '../../../icons/PencilSquareIcon.vue';
-import TrashIcon from '../../../icons/TrashIcon.vue';
-import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
-import { invalidateWebsiteVersionQuery } from '../../../utils/queries.js';
+import FileEarmarkIcon from '../../../../icons/FileEarmarkIcon.vue';
+import PencilSquareIcon from '../../../../icons/PencilSquareIcon.vue';
+import TrashIcon from '../../../../icons/TrashIcon.vue';
+import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
+import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
+import { invalidateWebsiteVersionQuery } from '../../../../utils/queries.js';
 
 const props = defineProps({
   file: {

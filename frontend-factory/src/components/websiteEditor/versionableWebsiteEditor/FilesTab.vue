@@ -2,7 +2,7 @@
 import { ref, computed, defineProps } from 'vue';
 
 import VersionableWebsiteEditor from './VersionableWebsiteEditor.vue';
-import FrontendVersionEditor from './FrontendVersionFilesEditor.vue';
+import FrontendVersionEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
 
 const props = defineProps({
   frontendVersion: {

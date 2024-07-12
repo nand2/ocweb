@@ -5,13 +5,12 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 import { getContract, publicActions } from 'viem'
 
-import FrontendVersionList from './FrontendVersionList.vue';
-import FrontendVersionListLine from './FrontendVersionListLine.vue';
-import LockFillIcon from '../../../icons/LockFillIcon.vue';
-import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
-import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateWebsiteVersionsQuery, useWebsiteVersions, useSupportedStorageBackendInterfaces, useIsLocked, invalidateIsLockedQuery } from '../../../utils/queries';
-import { abi as factoryABI } from '../../../../../src/abi/factoryABI.js';
+import WebsiteVersionList from './WebsiteVersionList.vue';
+import LockFillIcon from '../../../../icons/LockFillIcon.vue';
+import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
+import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
+import { useContractAddresses, invalidateWebsiteVersionsQuery, useWebsiteVersions, useSupportedStorageBackendInterfaces, useIsLocked, invalidateIsLockedQuery } from '../../../../utils/queries.js';
+import { abi as factoryABI } from '../../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
   contractAddress: {
@@ -121,7 +120,7 @@ const activateLockl = async () => {
 <template>
   <div class="versions-body">
     <div class="list">
-      <FrontendVersionList 
+      <WebsiteVersionList 
         :contractAddress
         :chainId
         :websiteClient="websiteClient"

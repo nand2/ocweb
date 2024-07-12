@@ -3,11 +3,11 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
-import { useContractAddresses, invalidateWebsiteVersionQuery, useIsLocked } from '../../../utils/queries';
-import { ProxiedWebsitesPluginClient } from '../../../../../src/plugins/proxiedWebsitesPluginClient.js';
-import PlusLgIcon from '../../../icons/PlusLgIcon.vue';
-import ArrowRightIcon from '../../../icons/ArrowRightIcon.vue';
-import TrashIcon from '../../../icons/TrashIcon.vue';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useIsLocked } from '../../../../utils/queries.js';
+import { ProxiedWebsitesPluginClient } from '../../../../../../src/plugins/proxiedWebsitesPluginClient.js';
+import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
+import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
+import TrashIcon from '../../../../icons/TrashIcon.vue';
 
 const props = defineProps({
   frontendVersion: {

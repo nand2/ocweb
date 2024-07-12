@@ -2,8 +2,8 @@
 import { ref, computed, defineProps } from 'vue';
 
 import FolderChildren from './FolderChildren.vue';
-import ChevronRightIcon from '../../../icons/ChevronRightIcon.vue';
-import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
+import ChevronRightIcon from '../../../../icons/ChevronRightIcon.vue';
+import ChevronDownIcon from '../../../../icons/ChevronDownIcon.vue';
 
 const props = defineProps({
   folder: {

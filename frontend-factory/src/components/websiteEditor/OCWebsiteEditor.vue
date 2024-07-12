@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 
-import VersionableWebsiteEditor from './VersionableWebsiteEditor/VersionableWebsiteEditor.vue';
+import VersionableWebsiteEditor from './versionableWebsiteEditor/VersionableWebsiteEditor.vue';
 
 const props = defineProps({
   contractAddress: {
