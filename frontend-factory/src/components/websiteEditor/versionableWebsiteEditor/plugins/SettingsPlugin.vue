@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
 import { useContractAddresses, invalidateWebsiteVersionQuery } from '../../../../utils/queries';
-import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
-import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
+import SettingsPluginProxiedWebsites from './SettingsPluginProxiedWebsites.vue';
+import SettingsPluginInjectedVariables from './SettingsPluginInjectedVariables.vue';
+import SettingsPluginStaticFrontend from './SettingsPluginStaticFrontend.vue';
 import BoxArrowUpRightIcon from '../../../../icons/BoxArrowUpRightIcon.vue';
 
 const props = defineProps({
@@ -57,7 +58,7 @@ const openHomepageWithArgs = () => {
       </small>
     </div>
 
-    <SettingsProxiedWebsites 
+    <SettingsPluginProxiedWebsites 
       v-if="pluginInfos.infos.name == 'proxiedWebsites'"
       :websiteVersion
       :websiteVersionIndex
@@ -66,8 +67,17 @@ const openHomepageWithArgs = () => {
       :websiteClient
       :pluginInfos />
 
-    <SettingsInjectedVariables
+    <SettingsPluginInjectedVariables
       v-else-if="pluginInfos.infos.name == 'injectedVariables'"
+      :websiteVersion
+      :websiteVersionIndex
+      :contractAddress
+      :chainId
+      :websiteClient
+      :pluginInfos />
+    
+    <SettingsPluginStaticFrontend
+      v-else-if="pluginInfos.infos.name == 'staticFrontend'"
       :websiteVersion
       :websiteVersionIndex
       :contractAddress

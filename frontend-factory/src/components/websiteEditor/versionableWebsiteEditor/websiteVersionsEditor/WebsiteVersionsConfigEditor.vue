@@ -9,7 +9,7 @@ import WebsiteVersionList from './WebsiteVersionList.vue';
 import LockFillIcon from '../../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateWebsiteVersionsQuery, useWebsiteVersions, useSupportedStorageBackendInterfaces, useIsLocked, invalidateIsLockedQuery } from '../../../../utils/queries.js';
+import { useContractAddresses, invalidateWebsiteVersionsQuery, useWebsiteVersions, useIsLocked, invalidateIsLockedQuery } from '../../../../utils/queries.js';
 import { abi as factoryABI } from '../../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({
@@ -54,28 +54,10 @@ const factoryContractClient = computed(() => {
   })
 })
 
-// Fetch the list of supported storage backend interfaces
-const { data: supportedStorageBackendInterfaces, isLoading: supportedStorageBackendInterfacesLoading, isFetching: supportedStorageBackendInterfacesFetching, isError: supportedStorageBackendInterfacesIsError, error: supportedStorageBackendInterfacesError, isSuccess: supportedStorageBackendInterfacesLoaded } = useSupportedStorageBackendInterfaces(props.contractAddress, props.chainId)
-
-// Fetch the list of storage backends from the factory
-const { data: storageBackendsData, isLoading: storageBackendsLoading, isFetching: storageBackendsFetching, isError: storageBackendsIsError, error: storageBackendsError, isSuccess: storageBackendsLoaded } = useQuery({
-  queryKey: ['storageBackends', props.contractAddress, props.chainId, supportedStorageBackendInterfaces],
-  queryFn: async () => {
-    let result = await factoryContractClient.value.read.getStorageBackends([supportedStorageBackendInterfaces.value]);
-    // Filter out the ones with interfaceValid == false
-    result = result.filter(backend => backend.interfaceValid)
-
-    return result
-  },
-  staleTime: 3600 * 1000,
-  enabled: computed(() => factoryContractClient.value != null && supportedStorageBackendInterfacesLoaded.value),
-})
-
 
 // Create websiteVersion
 const showNewWebsiteVersionForm = ref(false)
 const newWebsiteVersionDescription = ref("")
-const newWebsiteVersionStorageBackend = ref(null)
 const { isPending: newwebsiteversionIsPending, isError: newwebsiteversionIsError, error: newwebsiteversionError, isSuccess: newwebsiteversionIsSuccess, mutate: newwebsiteversionMutate, reset: newwebsiteversionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
@@ -138,16 +120,6 @@ const activateLockl = async () => {
         </div>
         <div class="form-area" v-if="showNewWebsiteVersionForm">
           <input type="text" v-model="newWebsiteVersionDescription" placeholder="Version description" />
-
-          <select v-model="newWebsiteVersionStorageBackend">
-            <option :value="null">- Select a storage backend -</option>
-            <option v-for="storageBackendInfo in storageBackendsData" :key="storageBackendInfo.storageBackend" :value="storageBackendInfo.storageBackend">
-              {{ storageBackendInfo.title }} ({{ storageBackendInfo.version }})
-            </option>
-          </select>
-          <div v-if="storageBackendsIsError" class="text-danger text-90">
-            Error loading storage backends: {{ storageBackendsError.shortMessage || storageBackendsError.message }}
-          </div>
 
           <button @click="newwebsiteversionFile" :disabled="newWebsiteVersionDescription == ''">Add new version</button>
 

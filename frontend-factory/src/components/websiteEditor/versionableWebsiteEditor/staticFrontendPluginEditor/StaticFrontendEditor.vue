@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/vue-query'
 import { useConnectorClient } from '@wagmi/vue'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
-import { useIsLocked, useStaticFrontendPluginClient } from '../../../../utils/queries.js';
+import { useIsLocked } from '../../../../utils/queries.js';
+import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../utils/pluginStaticFrontendQueries.js';
 
-import { StaticFrontendPluginClient } from '../../../../../../src/plugins/staticFrontendPluginClient.js';
 import FolderChildren from './FolderChildren.vue';
 
 const props = defineProps({
@@ -55,17 +55,7 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 const globalEmptyFolders = ref([])
 
 // Fetch the static frontend
-const { data: staticFrontend, isLoading: staticFrontendLoading, isFetching: staticFrontendFetching, isError: staticFrontendIsError, error: staticFrontendError, isSuccess: staticFrontendLoaded } = useQuery({
-  queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
-  queryFn: async () => {
-    // Invalidate dependent query : sizes
-    queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, props.websiteVersionIndex] })
-
-    const result = await staticFrontendPluginClient.value.getStaticFrontend(props.websiteVersionIndex);
-    return result;
-  },
-  enabled: computed(() => props.websiteVersion != null && staticFrontendPluginClient.value != null && props.websiteVersionIsFetching == false),
-})
+const { data: staticFrontend, isLoading: staticFrontendLoading, isFetching: staticFrontendFetching, isError: staticFrontendIsError, error: staticFrontendError, isSuccess: staticFrontendLoaded } = useStaticFrontend(queryClient, props.contractAddress, props.chainId, props.pluginInfos.plugin, computed(() => props.websiteVersionIndex))
 
 
 // Fetch the frontend files extra metadata from the storage backend

@@ -38,7 +38,7 @@ contract UploadSstore2Frontend is Script {
             // Get the SSTORE2 storage backend
             IStorageBackend storageBackend;
             {
-                StaticFrontendPlugin.StorageBackendWithInfos[] memory storageBackends = staticFrontendPlugin.getStorageBackends(new bytes4[](0));
+                StaticFrontendPlugin.StorageBackendWithInfos[] memory storageBackends = staticFrontendPlugin.getStorageBackends();
                 for(uint256 i = 0; i < storageBackends.length; i++) {
                     if(LibStrings.compare(storageBackends[i].name, "sstore2") && LibStrings.compare(storageBackends[i].version, "0.1.0")) {
                         storageBackend = storageBackends[i].storageBackend;

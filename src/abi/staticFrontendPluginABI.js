@@ -18,7 +18,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -81,7 +81,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -132,7 +132,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       }
     ],
@@ -182,13 +182,7 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [
-      {
-        internalType: "bytes4[]",
-        name: "interfaceFilters",
-        type: "bytes4[]"
-      }
-    ],
+    inputs: [],
     name: "getStorageBackends",
     outputs: [
       {
@@ -212,11 +206,6 @@ export const abi = [
             internalType: "string",
             name: "version",
             type: "string"
-          },
-          {
-            internalType: "bool",
-            name: "interfaceValid",
-            type: "bool"
           }
         ],
         internalType: "struct StaticFrontendPlugin.StorageBackendWithInfos[]",
@@ -294,7 +283,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -362,7 +351,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -430,7 +419,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -469,7 +458,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       }
     ],
@@ -487,7 +476,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -510,7 +499,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -538,7 +527,7 @@ export const abi = [
       },
       {
         internalType: "uint256",
-        name: "frontendIndex",
+        name: "websiteVersionIndex",
         type: "uint256"
       },
       {
@@ -595,6 +584,29 @@ export const abi = [
       }
     ],
     stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IVersionableWebsite",
+        name: "website",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "websiteVersionIndex",
+        type: "uint256"
+      },
+      {
+        internalType: "contract IStorageBackend",
+        name: "storageBackend",
+        type: "address"
+      }
+    ],
+    name: "setStorageBackend",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function"
   },
   {

@@ -5,8 +5,8 @@ import { useSwitchChain, useAccount, useConnectorClient } from '@wagmi/vue'
 import { getContract, publicActions } from 'viem'
 
 import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../../utils/queries.js';
-import SettingsProxiedWebsites from './SettingsProxiedWebsites.vue';
-import SettingsInjectedVariables from './SettingsInjectedVariables.vue';
+import SettingsProxiedWebsites from './SettingsPluginProxiedWebsites.vue';
+import SettingsInjectedVariables from './SettingsPluginInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
 import TrashIcon from '../../../../icons/TrashIcon.vue';
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';

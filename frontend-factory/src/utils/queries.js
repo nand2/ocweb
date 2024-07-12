@@ -3,7 +3,6 @@ import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionRece
 import { computed, shallowRef } from 'vue'
 
 import { VersionableWebsiteClient } from '../../../src/index.js';
-import { StaticFrontendPluginClient } from '../../../src/plugins/staticFrontendPluginClient.js';
 
 function useInjectedVariables() {
   return useQuery({
@@ -70,45 +69,26 @@ function useVersionableWebsiteClient(websiteContractAddress) {
 }
 
 // FrontendIndex is a reactive value
-function useWebsiteVersionPlugins(contractAddress, chainId, frontendIndex) {
+function useWebsiteVersionPlugins(contractAddress, chainId, websiteVersionIndex) {
   const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
-    queryKey: ['OCWebsiteVersionPlugins', contractAddress, chainId, frontendIndex],
+    queryKey: ['OCWebsiteVersionPlugins', contractAddress, chainId, websiteVersionIndex],
     queryFn: async () => {
       // Switch chain if necessary
       await switchChainAsync({ chainId: chainId })
 
-      const result = await websiteClient.value.getFrontendVersionPlugins(frontendIndex.value)
+      const result = await websiteClient.value.getFrontendVersionPlugins(websiteVersionIndex.value)
       return result;
     },
     staleTime: 3600 * 1000,
-    enabled: computed(() => websiteClientLoaded.value != null && frontendIndex.value >= 0),
+    enabled: computed(() => websiteClientLoaded.value != null && websiteVersionIndex.value >= 0),
   })
 }
 
-function invalidateWebsiteVersionPluginsQuery(queryClient, contractAddress, chainId, frontendIndex) {
-  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPlugins', contractAddress, chainId, frontendIndex] })
-}
-
-function useStaticFrontendPluginClient(websiteContractAddress, pluginAddress) {
-  // Fetch the viem connector client
-  const { data: viemClient, isLoading, isSuccess, isError, error } = useConnectorClient()
-
-  return {
-    data: computed(() => {
-      let client = null;
-      if (isSuccess.value) {
-        client = new StaticFrontendPluginClient(viemClient.value, websiteContractAddress, pluginAddress)
-      }
-      return client
-    }),
-    isLoading,
-    isSuccess,
-    isError,
-    error,
-  }
+function invalidateWebsiteVersionPluginsQuery(queryClient, contractAddress, chainId, websiteVersionIndex) {
+  return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersionPlugins', contractAddress, chainId, websiteVersionIndex] })
 }
 
 
@@ -127,7 +107,7 @@ function useLiveWebsiteVersion(queryClient,contractAddress, chainId) {
 
       // We got a frontend version, prefill the cache of the individual frontend version
       await queryClient.prefetchQuery({
-        queryKey: ['OCWebsiteVersion', contractAddress, chainId, result.frontendIndex],
+        queryKey: ['OCWebsiteVersion', contractAddress, chainId, result.websiteVersionIndex],
         queryFn: () => { return result.websiteVersion },
       })
 
@@ -171,24 +151,6 @@ function invalidateWebsiteVersionsQuery(queryClient, contractAddress, chainId) {
   return queryClient.invalidateQueries({ queryKey: ['OCWebsiteVersions', contractAddress, chainId] })
 }
 
-function useSupportedStorageBackendInterfaces(contractAddress, chainId) {
-  const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
-  const { switchChainAsync } = useSwitchChain()
-
-  return useQuery({
-    queryKey: ['OCWebsiteSupportedStorageBackendInterfaces', contractAddress, chainId],
-    queryFn: async () => {
-      // Switch chain if necessary
-      await switchChainAsync({ chainId: chainId })
-
-      const result = await websiteClient.value.getSupportedStorageBackendInterfaces()
-      return result;
-    },
-    staleTime: 3600 * 1000,
-    enabled: websiteClientLoaded,
-  })
-}
-
 function useSupportedPluginInterfaces(contractAddress, chainId) {
   const { data: websiteClient, isSuccess: websiteClientLoaded} = useVersionableWebsiteClient(contractAddress)
   const { switchChainAsync } = useSwitchChain()
@@ -230,16 +192,18 @@ function invalidateIsLockedQuery(queryClient, contractAddress, chainId) {
 }
 
 
+
+
+
+
 export { 
   useInjectedVariables,
   useContractAddresses, 
   useVersionableWebsiteClient, 
-  useStaticFrontendPluginClient,
   useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, 
   invalidateWebsiteVersionQuery,
   useWebsiteVersions, invalidateWebsiteVersionsQuery,
   useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery,
-  useSupportedStorageBackendInterfaces,
   useSupportedPluginInterfaces,
   useIsLocked, invalidateIsLockedQuery
 }

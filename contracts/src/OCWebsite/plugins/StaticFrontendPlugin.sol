@@ -159,6 +159,25 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         return websiteVersionStaticFrontends[website][websiteVersionIndex];
     }
 
+    /**
+     * Set the storage backend of a website version
+     * Can only be done when there is no files uploaded yet
+     */
+    function setStorageBackend(IVersionableWebsite website, uint websiteVersionIndex, IStorageBackend storageBackend) public {
+        require(website.owner() == msg.sender, "Not the owner");
+
+        require(website.isLocked() == false, "Website is locked");
+
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
+
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
+        require(frontend.files.length == 0, "Files already uploaded");
+
+        frontend.storageBackend = storageBackend;
+    }
+
 
     // Add several files to a website version
     // If a file already exists, it is replaced
@@ -417,26 +436,16 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         string name;
         string title;
         string version;
-        bool interfaceValid;
     }
-    function getStorageBackends(bytes4[] memory interfaceFilters) public view returns (StorageBackendWithInfos[] memory) {
+    function getStorageBackends() public view returns (StorageBackendWithInfos[] memory) {
         StorageBackendWithInfos[] memory backends = new StorageBackendWithInfos[](storageBackends.length);
         for(uint i = 0; i < storageBackends.length; i++) {
-            // Is interface supported?
-            bool interfaceValid = (interfaceFilters.length == 0);
-            for(uint j = 0; j < interfaceFilters.length; j++) {
-                if(storageBackends[i].supportsInterface(interfaceFilters[j])) {
-                    interfaceValid = true;
-                    break;
-                }
-            }
 
             backends[i] = StorageBackendWithInfos({
                 storageBackend: storageBackends[i],
                 name: storageBackends[i].name(),
                 title: storageBackends[i].title(),
-                version: storageBackends[i].version(),
-                interfaceValid: interfaceValid
+                version: storageBackends[i].version()
             });
         }
 

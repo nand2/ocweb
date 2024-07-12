@@ -56,7 +56,14 @@ class StaticFrontendPluginClient {
   }
 
   async getStorageBackends() {
-    return await this.#viemWebsiteContract.read.getStorageBackends([[]])
+    return await this.#viemWebsiteContract.read.getStorageBackends([])
+  }
+
+  async prepareSetStorageBackendTransaction(version, storageBackend) {
+    return {
+      functionName: 'setStorageBackend',
+      args: [this.#websiteContractAddress, version, storageBackend],
+    }
   }
 
   /**
@@ -247,6 +254,7 @@ class StaticFrontendPluginClient {
     }
   }
 
+  
 
 
   /**

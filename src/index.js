@@ -47,10 +47,6 @@ class VersionableWebsiteClient {
     return await this.#viemWebsiteContract.read.getFrontendVersionsViewer()
   }
 
-  async getSupportedStorageBackendInterfaces() {
-    return await this.#viemWebsiteContract.read.getSupportedStorageBackendInterfaces()
-  }
-
   async getSupportedPluginInterfaces() {
     return await this.#viemWebsiteContract.read.getSupportedPluginInterfaces()
   }

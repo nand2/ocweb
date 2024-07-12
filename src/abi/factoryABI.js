@@ -513,13 +513,7 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [
-      {
-        internalType: "contract IStorageBackend",
-        name: "firstFrontendVersionStorageBackend",
-        type: "address"
-      }
-    ],
+    inputs: [],
     name: "mintWebsite",
     outputs: [
       {
