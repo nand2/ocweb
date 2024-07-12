@@ -226,7 +226,7 @@ contract StorageBackendEthStorage is ERC165, IStorageBackend {
      * @return result The data read.
      * @return nextChunkId The index of the next chunk to read from. 0 if the file is fully read.
      */
-    function read(address owner, uint index, uint startingChunkId) public view returns (bytes memory result, uint nextChunkId) {
+    function read(address owner, uint index, uint startingChunkId) external view returns (bytes memory result, uint nextChunkId) {
         require(index < files[owner].length, "File not found");
         File memory file = files[owner][index];
         require(file.deleted == false, "File is deleted");

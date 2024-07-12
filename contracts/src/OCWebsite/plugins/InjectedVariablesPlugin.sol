@@ -34,7 +34,7 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
         return (false, new string[](0), new KeyValue[](0));
     }
 
-    function processWeb3RequestBeforeStaticContent(
+    function processWeb3Request(
         IVersionableWebsite website,
         uint websiteVersionIndex,
         string[] memory resource,
@@ -61,17 +61,6 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
             headers[0].value = "application/json";
             return (statusCode, body, headers);
         }
-    }
-
-    function processWeb3RequestAfterStaticContent(
-        IVersionableWebsite website,
-        uint websiteVersionIndex,
-        string[] memory resource,
-        KeyValue[] memory params
-    )
-        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
-    {
-        return (0, "", new KeyValue[](0));
     }
 
     function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {

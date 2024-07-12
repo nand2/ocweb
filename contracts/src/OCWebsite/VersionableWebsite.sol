@@ -304,15 +304,7 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
 
         // Plugins: return content before the static content
         for(uint i = 0; i < plugins.length; i++) {
-            (statusCode, body, headers) = plugins[i].processWeb3RequestBeforeStaticContent(this, frontendIndex, resource, params);
-            if(statusCode != 0) {
-                return (statusCode, body, headers);
-            }
-        }
-
-        // Plugins: return content after the static content
-        for(uint i = 0; i < plugins.length; i++) {
-            (statusCode, body, headers) = plugins[i].processWeb3RequestAfterStaticContent(this, frontendIndex, resource, params);
+            (statusCode, body, headers) = plugins[i].processWeb3Request(this, frontendIndex, resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }

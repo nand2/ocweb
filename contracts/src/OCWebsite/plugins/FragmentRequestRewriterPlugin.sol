@@ -40,18 +40,7 @@ contract FragmentRequestRewriterPlugin is ERC165, IVersionableWebsitePlugin {
         return (false, new string[](0), new KeyValue[](0));
     }
 
-    function processWeb3RequestBeforeStaticContent(
-        IVersionableWebsite website,
-        uint frontendIndex,
-        string[] memory resource,
-        KeyValue[] memory params
-    )
-        external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
-    {
-        return (0, "", new KeyValue[](0));
-    }
-
-    function processWeb3RequestAfterStaticContent(
+    function processWeb3Request(
         IVersionableWebsite website,
         uint frontendIndex,
         string[] memory resource,
