@@ -8,7 +8,7 @@ function useInjectedVariables() {
   return useQuery({
     queryKey: ['injectedVariables'],
     queryFn: async () => {
-      const response = await fetch('/variables.json')
+      const response = await fetch('./variables.json')
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
