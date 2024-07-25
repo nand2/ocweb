@@ -17,6 +17,9 @@ remappings = [
 solc = "0.8.24"
 evm_version = "cancun"
 
-fs_permissions = [{ path = "dist/frontend-factory/", access = "read" }, { path = "dist/frontend-blog/", access = "read" }, { path = "assets/", access = "read" }]
+fs_permissions = [
+  { path = "dist/frontend-factory/", access = "read" }, 
+  { path = "dist/frontend-welcome/", access = "read" }, 
+  { path = "assets/", access = "read" }]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

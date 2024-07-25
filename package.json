@@ -6,7 +6,10 @@
   "scripts": {
     "dev-factory": "vite frontend-factory",
     "build-factory": "vite build frontend-factory",
-    "preview-factory": "vite preview frontend-factory"
+    "preview-factory": "vite preview frontend-factory",
+    "dev-welcome": "vite frontend-welcome",
+    "build-welcome": "vite build frontend-welcome",
+    "preview-welcome": "vite preview frontend-welcome"
   },
   "repository": {
     "type": "git",
@@ -20,7 +23,8 @@
   "homepage": "https://github.com/nand2/ocweb#readme",
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "vite-plugin-singlefile": "^2.0.2"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.45.0",

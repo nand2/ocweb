@@ -1,11 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../../interfaces/IVersionableWebsite.sol";
-import "../../library/LibStrings.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
+import "../../interfaces/IVersionableWebsite.sol";
+import "../../library/LibStrings.sol";
+import "../../interfaces/IDecentralizedApp.sol";
+
 contract WelcomeHomepagePlugin is ERC165, IVersionableWebsitePlugin {
+    IDecentralizedApp public adminWebsite;
+
+    constructor(IDecentralizedApp _adminWebsite) {
+        adminWebsite = _adminWebsite;
+    }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
@@ -37,18 +44,13 @@ contract WelcomeHomepagePlugin is ERC165, IVersionableWebsitePlugin {
     )
         external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        if(resource.length == 0) {
-            body = "<html><body>"
-                "<h1>TODO: Welcome to your on-chain website!</h1>"
-                "<p>This is the default homepage of your website.</p>"
-                "<p>You can go to /admin to administer your website (TODO, will link to the pre-opened ocweb.eth website customized for 1 website)</p>"
-                "<p>TODO: Add explanations, examples about web3://</p>"
-                "<p>Remove this plugin when you start building your website.</p>"
-            "</body></html>";
-            return (200, body, new KeyValue[](0));
-        }
+        // Only override index.html (which is packaged with the JS and CSS)
+        if(resource.length == 0 || (resource.length == 1 && LibStrings.compare(resource[0], "index.html"))) {
 
-        return (0, "", new KeyValue[](0));
+            (statusCode, body, headers) = adminWebsite.request(new string[](0), params);
+
+            return (statusCode, body, headers);
+        }
     }
 
     function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {

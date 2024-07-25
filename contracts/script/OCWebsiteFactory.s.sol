@@ -139,10 +139,6 @@ contract OCWebsiteFactoryScript is Script {
                 // Proxied websites plugin
                 ProxiedWebsitesPlugin proxiedWebsitesPlugin = new ProxiedWebsitesPlugin();
                 factory.addWebsitePlugin(proxiedWebsitesPlugin, false);
-
-                // Welcome plugin
-                WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin();
-                factory.addWebsitePlugin(welcomeHomepagePlugin, true);
             }
 
             // Create a website from the factory, to use as frontend for the factory itself
@@ -170,6 +166,13 @@ contract OCWebsiteFactoryScript is Script {
                 factoryFrontend.addPlugin(0, adminPlugin, websiteVersion.pluginNodes.length);
             }
             
+            // Add the welcome page plugin
+            {
+                OCWebsite welcomeFrontend = factory.mintWebsite();
+                WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin(welcomeFrontend);
+                factory.addWebsitePlugin(welcomeHomepagePlugin, true);
+            }
+
 
             console.log("OCWebsiteFactory: ", address(factory));
             // console.log("OCWebsiteFactoryToken: ", address(factoryToken));

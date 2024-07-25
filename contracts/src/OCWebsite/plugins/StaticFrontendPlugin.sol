@@ -386,8 +386,8 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
 
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
-        for(uint i = 0; i < frontend.files.length; i++) {
-            frontend.storageBackend.remove(frontend.files[i].contentKey);
+        for(int i = int(frontend.files.length) - 1; i >= 0 ; i--) {
+            frontend.storageBackend.remove(frontend.files[uint(i)].contentKey);
             frontend.files.pop();
         }
     }

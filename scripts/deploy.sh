@@ -14,7 +14,7 @@ fi
 # Will not work for local chain, as SSTORE2 frontends is used on local chain
 SECTION=${2:-all}
 # Check that section is in allowed values
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "frontend-website" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "frontend-welcome" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -209,9 +209,9 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   done
 
   # Fetch the address of the OCWebsiteFactory
-  OCWEBSITEFACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory")][0].contractAddress')
-  echo ""
-  echo "Detected OCWebsiteFactory: $OCWEBSITEFACTORY_ADDRESS"
+  # OCWEBSITEFACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory")][0].contractAddress')
+  # echo ""
+  # echo "Detected OCWebsiteFactory: $OCWEBSITEFACTORY_ADDRESS"
 
   # Fetch the address of the StaticFrontendPlugin
   STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin")][0].contractAddress')
@@ -239,6 +239,80 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
     FILE_ARGS=$(cast abi-encode "x((string,string,string,string)[])" "${SSTORE2_FILE_ARGS_SIG}")
 
     IFRONTEND_LIBRARY_CONTRACT_ADDRESS=$OCWEBSITEFACTORY_FRONTEND_ADDRESS \
+    STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
+    FILE_ARGS=$FILE_ARGS \
+    COMPRESSED_FILES_BASE_PATH=$COMPRESSED_FILES_BASE_PATH \
+    TARGET_CHAIN=$TARGET_CHAIN \
+    DOMAIN=$DOMAIN \
+    forge script UploadSstore2Frontend --private-key ${PRIVKEY} --rpc-url ${RPC_URL}  $FORGE_SCRIPT_OPTIONS
+  fi
+fi
+
+
+# Section frontend-welcome: Upload the welcome frontend
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-welcome" ]; then
+
+  # Build welcome
+  echo "Building welcome frontend..."
+  npm run build-welcome
+
+  # Compressing output
+  echo ""
+  echo "Compressing welcome frontend..."
+  mkdir -p dist/frontend-welcome/assets
+
+  # For each file in frontend-welcome/dist (except blogFactoryAddress.json), compress it, and
+  # add it to a list to be given to the SSTORE2 or EthStorage contract
+  SSTORE2_FILE_ARGS_SIG=""
+  ETHSTORAGE_FILE_ARGS=""
+  # Exclude blogFactoryAddress.json
+  FULL_FILES=$(find frontend-welcome/dist -type f | grep -v "variables.json")
+  for FULL_FILE in $FULL_FILES; do
+    # Remove the frontend-welcome/dist/ prefix
+    FILE=$(echo $FULL_FILE | sed "s|frontend-welcome/dist/||")
+    # If the file starts with "assets/", then remove it from file
+    SUBFOLDER=$(echo $FILE | grep -o "assets/" || true)
+    if [ ! -z "$SUBFOLDER" ]; then
+      FILE=$(echo $FILE | sed "s|assets/||")
+    fi
+    # Prepare the final compressed file name
+    COMPRESSED_FILE_NAME=${DOMAIN}-welcome-${TIMESTAMP}-${FILE}.gz
+    
+    # Compress the file
+    gzip -c $FULL_FILE > dist/frontend-welcome/${SUBFOLDER}/${COMPRESSED_FILE_NAME}
+
+    # For SSTORE2 (we will ABI-encode it)
+    SSTORE2_FILE_ARGS_SIG="${SSTORE2_FILE_ARGS_SIG}(${FILE},${COMPRESSED_FILE_NAME},$(get_file_mime_type $FULL_FILE),${SUBFOLDER:-''}),"
+    # For Ethstorage
+    ETHSTORAGE_FILE_ARGS="${ETHSTORAGE_FILE_ARGS} ${SUBFOLDER}${FILE}:dist/frontend-welcome/${SUBFOLDER}${COMPRESSED_FILE_NAME}"
+  done
+
+  # Fetch the address of the StaticFrontendPlugin
+  STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin")][0].contractAddress')
+  echo "Detected StaticFrontendPlugin: $STATIC_FRONTEND_PLUGIN_ADDRESS"
+
+  # Fetch the address of the WelcomeHomepagePlugin frontend
+  WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "WelcomeHomepagePlugin" and .transactionType == "CREATE")][0].arguments[0]')
+  echo "Uploading frontend to WelcomeHomepagePlugin frontend ($WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS) ..."
+
+  # EthStorage frontend
+  if [ "$TARGET_CHAIN" == "XXmainnet" ] || [ "$TARGET_CHAIN" == "XXsepolia" ] || [ "$TARGET_CHAIN" == "XXholesky" ]; then
+    echo "  EthStorage mode..."
+    node --env-file=.env scripts/upload-ethstorage-frontend.js \
+      $TARGET_CHAIN $WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS \
+      $ETHSTORAGE_FILE_ARGS
+  # SSTORE2 frontend
+  else
+    echo "  SSTORE2 mode..."
+
+    FILES_BASE_PATH=frontend-welcome/dist/
+    COMPRESSED_FILES_BASE_PATH=dist/frontend-welcome/
+
+    # ABI encode the file arguments
+    SSTORE2_FILE_ARGS_SIG="[${SSTORE2_FILE_ARGS_SIG}]"
+    FILE_ARGS=$(cast abi-encode "x((string,string,string,string)[])" "${SSTORE2_FILE_ARGS_SIG}")
+
+    IFRONTEND_LIBRARY_CONTRACT_ADDRESS=$WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS \
     STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
     FILE_ARGS=$FILE_ARGS \
     COMPRESSED_FILES_BASE_PATH=$COMPRESSED_FILES_BASE_PATH \
