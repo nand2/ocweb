@@ -27,6 +27,6 @@ const props = defineProps({
   flex-direction: column;
   background-color: #eee;
   width: 100%;
-  background-color: #303030;
+  background-color: var(--color-light-bg);
 }
 </style>

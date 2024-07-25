@@ -27,7 +27,10 @@ function useContractAddresses() {
   return useQuery({
     queryKey: ['contractAddresses'],
     queryFn: async () => {
-
+      if (isError.value) {
+        throw error.value
+      }
+      
       // Factories on various chains are stored with the key "factory-<chainShortName>"
       const factories = []
       for (const [key, value] of Object.entries(injectedVariables.value)) {
@@ -37,15 +40,18 @@ function useContractAddresses() {
         }
       }
 
+      // Self: extract the self address and chainId
+      const [selfAddress, selfChainId] = injectedVariables.value.self.split(':')
+
       const result = {
-        self: injectedVariables.self,
+        self: {address: selfAddress, chainId: parseInt(selfChainId)},
         factories: factories,
       }
 
       return result
     },
     staleTime: 24 * 3600 * 1000,
-    enabled: isSuccess
+    enabled: computed(() => isLoading.value == false)
   })
 }
 

@@ -12,7 +12,7 @@ import WebsiteVersionEditor from './staticFrontendPluginEditor/StaticFrontendEdi
 import WebsiteVersionsConfigEditor from './websiteVersionsEditor/WebsiteVersionsConfigEditor.vue';
 import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
-import ChevronUpIcon from '../../../icons/ChevronUpIcon.vue';
+import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -98,6 +98,62 @@ const showConfigPanel = ref(false)
 
 <template>
   <div class="versionable-static-website-editor">
+    <div class="header">
+      <div class="header-inner">
+        <span v-if="websiteVersionBeingEditedLoading">
+          Loading version...
+        </span>
+        <span v-else-if="websiteVersionBeingEditedIsError">
+          Error loading version: {{ websiteVersionBeingEditedError.shortMessage || websiteVersionBeingEditedError.message }}
+        </span>
+        <a v-else-if="websiteVersionBeingEditedLoaded" class="bg" @click.prevent.stop="showEditedWebsiteVersionSelector = !showEditedWebsiteVersionSelector">
+          
+          <span class="selected-version-label">
+            <span>
+              Version #{{ websiteVersionBeingEditedIndex }}: 
+              {{ websiteVersionBeingEdited.description }} 
+              <span class="badge" v-if="websiteVersionBeingEditedIndex == liveWebsiteVersionData.websiteVersionIndex">
+                Live
+              </span>
+            </span>
+            <ChevronDownIcon />
+          </span>
+
+          <div class="form-select-website-version-popup" v-if="showEditedWebsiteVersionSelector">
+            <div class="form-select-website-version-popup-inner">
+              <span v-if="websiteVersionsLoading" class="text-muted text-90">
+                Loading website versions...
+              </span>
+              <span v-else-if="websiteVersionsIsError" class="text-danger text-90">
+                Error loading website versions: {{ websiteVersionsError.message }}
+              </span>
+              <div v-else-if="websiteVersionsLoaded" class="entries">
+                <a v-for="(websiteVersion, index) in websiteVersionsData.versions" :key="index" class="bg entry" @click.prevent.stop="userSelectedWebsiteVersionBeingEditedIndex = index; showEditedWebsiteVersionSelector = false">
+                  Version #{{ index }}: 
+                  {{ websiteVersion.description }}
+                  <span class="badge" v-if="index == liveWebsiteVersionData.websiteVersionIndex">
+                    Live
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </a>
+        <a class="bg" style="display: flex; align-items: center; padding: 0.5em 1em;" @click.prevent.stop="showConfigPanel = !showConfigPanel">
+          <GearIcon />
+        </a>
+      </div>
+
+      <div class="versions-config-panel" v-if="showConfigPanel">
+        <WebsiteVersionsConfigEditor
+          :contractAddress
+          :chainId
+          :websiteClient="websiteClient"
+          />
+      </div>
+    </div>
+
     <div class="tabs">
       <a v-if="websiteVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
@@ -137,62 +193,6 @@ const showConfigPanel = ref(false)
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'plugins'" />
 
-
-    <div class="footer">
-      <div class="footer-inner">
-        <span v-if="websiteVersionBeingEditedLoading">
-          Loading version...
-        </span>
-        <span v-else-if="websiteVersionBeingEditedIsError">
-          Error loading version: {{ websiteVersionBeingEditedError.shortMessage || websiteVersionBeingEditedError.message }}
-        </span>
-        <a v-else-if="websiteVersionBeingEditedLoaded" class="bg" @click.prevent.stop="showEditedWebsiteVersionSelector = !showEditedWebsiteVersionSelector">
-            
-          <div class="form-select-website-version-popup" v-if="showEditedWebsiteVersionSelector">
-            <div class="form-select-website-version-popup-inner">
-              <span v-if="websiteVersionsLoading" class="text-muted text-90">
-                Loading website versions...
-              </span>
-              <span v-else-if="websiteVersionsIsError" class="text-danger text-90">
-                Error loading website versions: {{ websiteVersionsError.message }}
-              </span>
-              <div v-else-if="websiteVersionsLoaded" class="entries">
-                <a v-for="(websiteVersion, index) in websiteVersionsData.versions" :key="index" class="bg entry" @click.prevent.stop="userSelectedWebsiteVersionBeingEditedIndex = index; showEditedWebsiteVersionSelector = false">
-                  Version #{{ index }}: 
-                  {{ websiteVersion.description }}
-                  <span class="badge" v-if="index == liveWebsiteVersionData.websiteVersionIndex">
-                    Live
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <span class="selected-version-label">
-            <span>
-              Version #{{ websiteVersionBeingEditedIndex }}: 
-              {{ websiteVersionBeingEdited.description }} 
-              <span class="badge" v-if="websiteVersionBeingEditedIndex == liveWebsiteVersionData.websiteVersionIndex">
-                Live
-              </span>
-            </span>
-            <ChevronUpIcon />
-          </span>
-
-        </a>
-        <a class="bg" style="display: flex; align-items: center; padding: 0.5em 1em;" @click.prevent.stop="showConfigPanel = !showConfigPanel">
-          <GearIcon />
-        </a>
-      </div>
-
-      <div class="versions-config-panel" v-if="showConfigPanel">
-        <WebsiteVersionsConfigEditor
-          :contractAddress
-          :chainId
-          :websiteClient="websiteClient"
-          />
-      </div>
-    </div>
   </div>
 </template>
 
@@ -209,7 +209,7 @@ const showConfigPanel = ref(false)
   gap: 1em;
   padding-left: 1em;
   padding-right: 1em;
-  background-color: #303030;
+  background-color: var(--color-light-bg);
   justify-content: space-between;
   border-bottom: 1px solid var(--color-divider);
 }
@@ -234,12 +234,12 @@ const showConfigPanel = ref(false)
 }
 
 
-.footer {
-  margin-top: auto;
+.header {
+
 }
 
-.footer .footer-inner {
-  border-top: 1px solid var(--color-divider);
+.header .header-inner {
+  border-bottom: 1px solid var(--color-divider);
   display: flex;
   align-items: stretch;
   justify-content: space-between;
@@ -251,6 +251,7 @@ const showConfigPanel = ref(false)
   padding: 0.5em 1em;
   display: flex;
   gap: 1em;
+  align-items: center;
 }
 
 .form-select-website-version-popup {
@@ -259,7 +260,7 @@ const showConfigPanel = ref(false)
 
 .form-select-website-version-popup-inner {
   position: absolute;
-  bottom: 0;
+  top: 0;
   background-color: var(--color-root-bg);
   border-top: 1px solid var(--color-divider);
   border-right: 1px solid var(--color-divider);
@@ -284,6 +285,10 @@ const showConfigPanel = ref(false)
 
 .form-select-website-version-popup-inner .entries .entry {
 
+}
+
+.versions-config-panel {
+  border-bottom: 1px solid var(--color-divider);
 }
 
 </style>

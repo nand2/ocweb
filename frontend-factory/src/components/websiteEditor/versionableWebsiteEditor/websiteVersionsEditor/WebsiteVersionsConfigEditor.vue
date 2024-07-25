@@ -115,7 +115,7 @@ const activateLockl = async () => {
         <div class="button-area" @click="showNewWebsiteVersionForm = !showNewWebsiteVersionForm; newFolderErrorLabel = ''">
           <span class="button-text">
             <PlusLgIcon />
-            Add new version
+            Add new website version
           </span>
         </div>
         <div class="form-area" v-if="showNewWebsiteVersionForm">
@@ -134,7 +134,7 @@ const activateLockl = async () => {
         <div class="button-area" @click="showLocklForm = !showLocklForm; newFolderErrorLabel = ''">
           <span class="button-text">
             <LockFillIcon />
-            Global lock
+            Activate global lock
           </span>
         </div>
         <div class="form-area" v-if="showLocklForm">
@@ -144,8 +144,9 @@ const activateLockl = async () => {
               <ExclamationTriangleIcon v-else style="scale: 2; margin: 0em 1em;" />
             </div>
             <div>
-              Once the global lock is set, nothing can be edited anymore, and the website become immutable. It cannot be undone. <br />
-               Are you sure you want to proceed?
+              The global lock will lock the website permanently: nothing can be edited anymore, and the website becomes immutable. <br />
+              It cannot be undone. <br />
+              Are you sure you want to proceed?
             </div>
           </div>
           <div>
@@ -175,7 +176,6 @@ const activateLockl = async () => {
 .versions-body {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--color-divider-secondary);
   gap: 1em;
 }
 

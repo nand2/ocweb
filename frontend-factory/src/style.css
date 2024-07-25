@@ -2,8 +2,7 @@
   --color-root-bg: #242424;
   --color-primary: #e0a43a;
 
-  --color-popup-bg: var(--color-root-bg);
-  --color-panel-bg: #1a1a1a;
+  --color-light-bg: #303030;
 
   --color-heading: #dfdfdf;
   --color-divider: #8b8b8b;
@@ -201,7 +200,7 @@ button.sm {
   border-left: 1px solid #555;
   border-right: 1px solid #555;
   border-bottom: 1px solid #555;
-  background-color: var(--color-popup-bg);
+  background-color: var(--color-root-bg);
   font-size: 0.9em;
   padding: 0.75em 1em;
   display: flex;

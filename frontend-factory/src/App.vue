@@ -1,13 +1,20 @@
 <script setup>
+import { computed } from 'vue';
 import WalletConnect from './components/WalletConnect.vue'
+import WebsiteAdminView from './views/WebsiteAdminView.vue'
 import LayourTextWindowReverseIcon from './icons/LayoutTextWindowReverseIcon.vue'
 import MagicIcon from './icons/MagicIcon.vue';
+
+const isViewedAsWebsiteAdmin = computed(() => {
+  // It is viewed as website admin if it is on the /admin page
+  return window.location.pathname.startsWith('/admin')
+})
 </script>
 
 
 <template>
   <div class="app">
-    <div class="sidebar">
+    <div v-if="isViewedAsWebsiteAdmin == false" class="sidebar">
       
       <div class="brand">
         <img src="/logo.svg" class="logo" alt="Vue logo" />
@@ -22,13 +29,15 @@ import MagicIcon from './icons/MagicIcon.vue';
       </div>
 
     </div>
-    <div class="body">
+    <div :class="{body: true, 'viewed-as-website-admin': isViewedAsWebsiteAdmin}">
 
       <div class="body-top-menu">
         <WalletConnect />
       </div>
 
-      <RouterView />
+      <RouterView v-if="isViewedAsWebsiteAdmin == false" />
+
+      <WebsiteAdminView v-else />
 
     </div>
   </div>
@@ -124,6 +133,7 @@ import MagicIcon from './icons/MagicIcon.vue';
 }
 
 .body-top-menu {
+  background-color: var(--color-root-bg);
   padding: 1em 1.5em;
   border-bottom: 1px solid var(--color-divider);
   display: flex;
@@ -132,5 +142,9 @@ import MagicIcon from './icons/MagicIcon.vue';
 
 .body {
   width: 100%;
+}
+
+.body.viewed-as-website-admin {
+  background-color: var(--color-light-bg);
 }
 </style>

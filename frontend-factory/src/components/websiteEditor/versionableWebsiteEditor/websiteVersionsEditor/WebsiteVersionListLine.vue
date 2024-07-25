@@ -123,7 +123,7 @@ const { isPending: lockIsPending, isError: lockIsError, error: lockError, isSucc
   }
 })
 const lock = async () => {
-  if(confirm("WARNING: You are about to lock this version *permanently*. \n\n- You will no longer be able to add/remove files and configure plugins for this version.\n- You will keep the ability to set/unset this version as the live version. \n- You will keep the ability to activate/desactivate the viewer of this version.\n\nContinue?") == false) {
+  if(confirm("WARNING: You are about to lock this version *permanently*. \n\n- You will no longer be able to add/remove files and configure plugins for this version.\n- You will keep the ability to set/unset this version as the live version. \n- You will keep the ability to activate/desactivate the viewer of this version.\n- Other versions are not affected by this lock.\n\nContinue?") == false) {
     return
   }
 
