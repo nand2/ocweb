@@ -22,7 +22,11 @@ const { data: contractAddresses, isLoading: contractAddressesLoading, isSuccess:
     </div>
 
     <div v-else class="oc-website">
-      <OCWebsite :contractAddress="contractAddresses.self.address" :chainId="contractAddresses.self.chainId" />
+      <OCWebsite 
+        :contractAddress="contractAddresses.self.address" 
+        :chainId="contractAddresses.self.chainId"
+        :isOpened="true"
+        :showLinkAndCloseIcons="false" />
     </div>
   </div>
 </template>

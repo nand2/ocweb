@@ -19,8 +19,16 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  isOpened: {
+    type: Boolean,
+    default: false,
+  },
+  showLinkAndCloseIcons: {
+    type: Boolean,
+    default: true,
+  },
 })
-const isOpened = ref(false)
+const isOpened = ref(props.isOpened)
 
 const { isConnected, address } = useAccount();
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
@@ -87,10 +95,10 @@ const urlWithSlash = computed(() => {
           Copied!
         </span>
       </a>
-      <a :href="urlWithSlash" target="_blank" class="white header-icon">
+      <a v-if="showLinkAndCloseIcons" :href="urlWithSlash" target="_blank" class="white header-icon">
         <BoxArrowUpRightIcon />
       </a>
-      <a @click.stop.prevent="isOpened = false" class="white header-icon">
+      <a v-if="showLinkAndCloseIcons" @click.stop.prevent="isOpened = false" class="white header-icon">
         <XCircleIcon class="close"  />
       </a>
     </div>
