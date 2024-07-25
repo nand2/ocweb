@@ -4,12 +4,7 @@ import { getWeb3Address } from './index.js'
 
 document.querySelector('#app').innerHTML = `
   <div>
-    <a href="https://vitejs.dev" target="_blank">
-      
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${logo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
+    <img src="${logo}" class="logo vanilla" alt="JavaScript logo" />
     <h1>Welcome to your web3:// website</h1>
 
     <div id="your-address">
