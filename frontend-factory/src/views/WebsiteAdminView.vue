@@ -1,6 +1,7 @@
 <script setup>
 import { useAccount } from '@wagmi/vue';
 import { useContractAddresses } from '../utils/queries';
+import OCWebsite from '../components/OCWebsite.vue';
 import OCWebsiteEditor from '../components/websiteEditor/OCWebsiteEditor.vue';
 
 const { isConnected } = useAccount();
@@ -20,19 +21,25 @@ const { data: contractAddresses, isLoading: contractAddressesLoading, isSuccess:
       </div>
     </div>
 
-    <div v-else>
-      <OCWebsiteEditor :contractAddress="contractAddresses.self.address" :chainId="contractAddresses.self.chainId" />
+    <div v-else class="oc-website">
+      <OCWebsite :contractAddress="contractAddresses.self.address" :chainId="contractAddresses.self.chainId" />
     </div>
   </div>
 </template>
 
 <style scoped>
 .website-admin {
-  border-top: 1px solid var(--color-divider);
+  
 }
 
 .main-message {
   margin-top: 20vh;
   text-align: center;
+}
+
+.oc-website {
+  display: flex;
+  justify-content: center;
+  margin-top: 2em;
 }
 </style>

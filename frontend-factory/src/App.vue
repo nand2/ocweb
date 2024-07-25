@@ -35,7 +35,7 @@ const isViewedAsWebsiteAdmin = computed(() => {
       </div>
 
     </div>
-    <div :class="{body: true, 'viewed-as-website-admin': isViewedAsWebsiteAdmin}">
+    <div class="body">
 
       <div class="body-top-menu">
         <WalletConnect />
@@ -150,7 +150,4 @@ const isViewedAsWebsiteAdmin = computed(() => {
   width: 100%;
 }
 
-.body.viewed-as-website-admin {
-  background-color: var(--color-light-bg);
-}
 </style>

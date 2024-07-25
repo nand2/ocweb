@@ -11,10 +11,6 @@ import BoxArrowUpRightIcon from '../icons/BoxArrowUpRightIcon.vue';
 
 
 const props = defineProps({
-  tokenId: {
-    type: Number,
-    required: true,
-  },
   contractAddress: {
     type: String,
     required: true,

@@ -38,7 +38,6 @@ import { StorageBackendEthStorage } from "../src/OCWebsite/storageBackends/Stora
 import { LibStrings } from "../src/library/LibStrings.sol";
 import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariablesPlugin.sol";
 import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
-import { FragmentRequestRewriterPlugin } from "../src/OCWebsite/plugins/FragmentRequestRewriterPlugin.sol";
 import { StaticFrontendPlugin } from "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
 import { WelcomeHomepagePlugin } from "../src/OCWebsite/plugins/WelcomeHomepagePlugin.sol";
 import { IVersionableWebsite } from "../src/interfaces/IVersionableWebsite.sol";
@@ -156,14 +155,6 @@ contract OCWebsiteFactoryScript is Script {
                 injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x366891f435bE90EbceE403Bc7Ae90F3587D1f2bb), ":", LibStrings.toString(17000)));
             }
             // injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07), ":", LibStrings.toString(11155111)));
-
-
-            // Temporary, untill the fragment situaton is resolved
-            { 
-                FragmentRequestRewriterPlugin fragmentRequestRewriterPlugin = new FragmentRequestRewriterPlugin();
-                IVersionableWebsite.WebsiteVersion memory websiteVersion = factoryFrontend.getWebsiteVersion(0);
-                factoryFrontend.addPlugin(0, fragmentRequestRewriterPlugin, websiteVersion.pluginNodes.length);
-            }
 
             // Set the website as the factory frontend
             factory.setWebsite(factoryFrontend);
