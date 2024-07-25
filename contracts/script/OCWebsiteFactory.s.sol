@@ -42,6 +42,7 @@ import { FragmentRequestRewriterPlugin } from "../src/OCWebsite/plugins/Fragment
 import { StaticFrontendPlugin } from "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
 import { WelcomeHomepagePlugin } from "../src/OCWebsite/plugins/WelcomeHomepagePlugin.sol";
 import { IVersionableWebsite } from "../src/interfaces/IVersionableWebsite.sol";
+import { OCWebAdminPlugin } from "../src/OCWebsite/plugins/OCWebAdminPlugin.sol";
 
 contract OCWebsiteFactoryScript is Script {
     enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
@@ -138,7 +139,7 @@ contract OCWebsiteFactoryScript is Script {
 
                 // Proxied websites plugin
                 ProxiedWebsitesPlugin proxiedWebsitesPlugin = new ProxiedWebsitesPlugin();
-                factory.addWebsitePlugin(proxiedWebsitesPlugin, true);
+                factory.addWebsitePlugin(proxiedWebsitesPlugin, false);
 
                 // Welcome plugin
                 WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin();
@@ -167,7 +168,16 @@ contract OCWebsiteFactoryScript is Script {
             // Set the website as the factory frontend
             factory.setWebsite(factoryFrontend);
 
-            
+            // Add the admin plugin, which use the factory frontend as admin interface
+            {
+                // Admin plugin
+                OCWebAdminPlugin adminPlugin = new OCWebAdminPlugin(factory.website());
+                factory.addWebsitePlugin(adminPlugin, true);
+
+                // Add the admin plugin to the factory frontend
+                IVersionableWebsite.WebsiteVersion memory websiteVersion = factoryFrontend.getWebsiteVersion(0);
+                factoryFrontend.addPlugin(0, adminPlugin, websiteVersion.pluginNodes.length);
+            }
             
 
             console.log("OCWebsiteFactory: ", address(factory));

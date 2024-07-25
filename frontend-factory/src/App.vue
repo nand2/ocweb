@@ -6,8 +6,14 @@ import LayourTextWindowReverseIcon from './icons/LayoutTextWindowReverseIcon.vue
 import MagicIcon from './icons/MagicIcon.vue';
 
 const isViewedAsWebsiteAdmin = computed(() => {
-  // It is viewed as website admin if it is on the /admin page
-  return window.location.pathname.startsWith('/admin')
+  // We cannot use window.location.pathname as it does not work with web3:// address
+  // (e.g. it will return "//0xa37aE2b259D35aF4aBdde122eC90B204323ED304:31337/admin")
+  // Extract the path via a regexp
+  let matchResult = window.location.href.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/?]+)(:(?<chainId>[1-9][0-9]*))?(?<path>.*)?$/)
+  if(matchResult == null) {
+    throw false; // hmm
+  }
+  return matchResult.groups.path && matchResult.groups.path.startsWith('/admin');
 })
 </script>
 
