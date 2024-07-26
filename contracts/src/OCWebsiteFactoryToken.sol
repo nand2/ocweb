@@ -45,11 +45,7 @@ contract OCWebsiteFactoryToken {
         }
     }
 
-    function tokenSVGByVars(string memory addressStrPart1, string memory addressStrPart2) public view returns (string memory) {
-        // Prepare the colors
-        string memory color = "#e0a43a";
-        string memory colorShadow = "#b0802e";
-
+    function tokenSVGByVars(string memory subdomain, string memory addressStrPart1, string memory addressStrPart2) public view returns (string memory) {
         return string.concat(
             '<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">'
                 '<style>'
@@ -65,19 +61,22 @@ contract OCWebsiteFactoryToken {
                         'font-weight: bold;'
                         'font-style: normal;'
                         'fill : white;'
-                        'filter: drop-shadow(0px 0px 3px ', colorShadow, ');'
+                        'filter: drop-shadow(0px 0px 3px #b0802e);'
                     '}'
                 '</style>'
-                '<rect width="256" height="256" fill="', color, '" />'
-                '<text x="20" y="45" font-size="30">'
+                '<rect width="256" height="256" fill="#e0a43a" />'
+                '<text x="128" y="45" font-size="30" text-anchor="middle">'
+                    'OCWebsite'
+                '</text>'
+                '<text x="128" y="116" font-size="25" text-anchor="middle" dominant-baseline="middle">',
+                    subdomain,
+                '</text>'
+                '<text x="20" y="195" font-size="20">'
                     'web3://'
                 '</text>'
-                '<text x="20" y="90" font-size="15">'
+                '<text x="20" y="235" font-size="15">'
                     '<tspan x="20" dy="-1.2em">', addressStrPart1, '</tspan>'
                     '<tspan x="20" dy="1.2em">', addressStrPart2, '</tspan>'
-                '</text>'
-                '<text x="70" y="230" font-size="30">'
-                    'OCWebsite'
                 '</text>'
             '</svg>'
         );
@@ -87,6 +86,7 @@ contract OCWebsiteFactoryToken {
         require(tokenId < websiteFactory.totalSupply(), "Token does not exist");
 
         OCWebsite website = websiteFactory.websites(tokenId);
+        string memory subdomain = websiteFactory.websiteToSubdomain(website);
 
         // Prepare the address part
         string memory addressStr = tokenWeb3Address(tokenId);
@@ -94,7 +94,7 @@ contract OCWebsiteFactoryToken {
         string memory addressStrPart1 = LibStrings.substring(addressStr, 0, 24);
         string memory addressStrPart2 = LibStrings.substring(addressStr, 24, bytes(addressStr).length);
 
-        return tokenSVGByVars(addressStrPart1, addressStrPart2);
+        return tokenSVGByVars(subdomain, addressStrPart1, addressStrPart2);
     }
 
     function tokenURI(uint tokenId) public view returns (string memory) {

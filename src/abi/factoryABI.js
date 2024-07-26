@@ -513,7 +513,11 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [],
+    inputs: [{
+      internalType: "string",
+      name: "subdomain",
+      type: "string"
+    }],
     name: "mintWebsite",
     outputs: [
       {

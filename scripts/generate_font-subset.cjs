@@ -6,7 +6,7 @@ const fs = require('fs');
 
 // Thanks to https://www.fiveoutofnine.com/blog/on-chain-font for the tip!
 
-const charsToKeep = Array.from(new Set("OCWebsite web3://0x0123456789abcdef:"));
+const charsToKeep = Array.from(new Set("OCWebsite web3://0x0123456789abcdef:ghijklmnopqrstuvwxyz-"));
 const unicodes = charsToKeep.map(char => `U+${char.charCodeAt(0).toString(16).padStart(4, '0').toUpperCase()}`).join(',')
 
 // Run the pyftsubset command to generate a subset of the font

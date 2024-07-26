@@ -24,7 +24,7 @@ document.querySelector('#app').innerHTML = `
 try {
   const web3Address = await getWeb3Address()
   document.querySelector('#your-address').innerText = `${web3Address}`
-  document.querySelector('#admin-page-link').href = `${web3Address}/admin`
+  document.querySelector('#admin-page-link').href = `${web3Address}/admin/`
 }
 catch (e) {
   console.error(e)

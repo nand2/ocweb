@@ -23,13 +23,16 @@ contract OCWebsiteFactory is ERC721Enumerable {
     ClonableOCWebsite public immutable websiteImplementation;
 
     OCWebsite[] public websites;
-    mapping(OCWebsite=> uint) public websiteToIndex;
+    mapping(OCWebsite => uint) public websiteToIndex;
     event WebsiteCreated(uint indexed websiteId, address website);
     
     ClonableWebsiteVersionViewer public websiteVersionViewerImplementation;
 
     string public topdomain;
     string public domain;
+    string public domain2;
+    mapping(OCWebsite => string) public websiteToSubdomain;
+    mapping(bytes32 => OCWebsite) public subdomainNameHashToWebsite;
 
     // VersionableWebsite plugins
     IVersionableWebsitePlugin[] public websiteAvailablePlugins;
@@ -51,12 +54,14 @@ contract OCWebsiteFactory is ERC721Enumerable {
     /**
      * 
      * @param _topdomain eth
-     * @param _domain dblog
+     * @param _domain ocweb
+     * @param _domain2 <chainShortName>
      */
     struct ConstructorParams {
         address owner;
         string topdomain;
         string domain;
+        string domain2;
         OCWebsiteFactoryToken factoryToken;
         ClonableOCWebsite websiteImplementation;
         ClonableWebsiteVersionViewer websiteVersionViewerImplementation;
@@ -66,6 +71,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
 
         topdomain = _params.topdomain;
         domain = _params.domain;
+        domain2 = _params.domain2;
 
         factoryToken = _params.factoryToken;
         websiteImplementation = _params.websiteImplementation;
@@ -82,13 +88,23 @@ contract OCWebsiteFactory is ERC721Enumerable {
     /**
      * Mint a new website
      */
-    function mintWebsite() public payable returns(ClonableOCWebsite) {
+    function mintWebsite(string memory subdomain) public payable returns(ClonableOCWebsite) {
+
+        // Subdomain: Valid and available?
+        (bool isValidAndAvailable, string memory reason) = isSubdomainValidAndAvailable(subdomain);
+        require(isValidAndAvailable, reason);
 
         ClonableOCWebsite newWebsite = ClonableOCWebsite(Clones.clone(address(websiteImplementation)));
 
         newWebsite.initialize(msg.sender, address(this), websiteVersionViewerImplementation, newWebsiteDefaultPlugins);
         websites.push(newWebsite);
         websiteToIndex[newWebsite] = websites.length - 1;
+
+        // Subdomain: Adding the website -> subdomain mapping
+        websiteToSubdomain[newWebsite] = subdomain;
+        // Subdomain: Adding the namehash -> website mapping for our custom resolver
+        bytes32 subdomainNameHash = computeSubdomainNameHash(subdomain);
+        subdomainNameHashToWebsite[subdomainNameHash] = newWebsite;
 
         // Mint an ERC721 token
         _safeMint(msg.sender, websites.length - 1);
@@ -97,7 +113,6 @@ contract OCWebsiteFactory is ERC721Enumerable {
 
         return newWebsite;
     }
-
 
 
     //
@@ -174,6 +189,74 @@ contract OCWebsiteFactory is ERC721Enumerable {
 
 
     //
+    // Handle subdomains
+    //
+
+    /**
+     * Is a subdomain valid and available? If false, the reason is given, to be used by frontends.
+     */
+    function isSubdomainValidAndAvailable(string memory subdomain) public view returns (bool result, string memory reason) {
+        (result, reason) = isSubdomainValid(subdomain);
+        if (!result) {
+            return (result, reason);
+        }
+
+        bytes32 subdomainNameHash = computeSubdomainNameHash(subdomain);
+        if (address(subdomainNameHashToWebsite[subdomainNameHash]) != address(0)) {
+            return (false, "Subdomain is already used");
+        }
+
+        return (true, "");
+    }
+
+    /**
+     * Is a subdomain valid? If false, the reason is given, to be used by frontends.
+     * Ideally we should use the same normalization as ENS (ENSIP-15) but we aim at a very
+     * light frontend that will not be often updated (if ever), so we will use a simple
+     * and restrictive set of rules : a-z, 0-9, - chars, min 3 chars, max 20 chars
+     */
+    function isSubdomainValid(string memory subdomain) public pure returns (bool, string memory) {
+        bytes memory b = bytes(subdomain);
+        
+        if(b.length < 3) {
+            return (false, "Subdomain is too short (min 3 chars)");
+        } 
+        if(b.length > 14) {
+            return (false, "Subdomain is too long (max 14 chars)");
+        }
+        
+        for (uint i; i < b.length; i++) {
+            bytes1 char = b[i];
+            if (!(char >= 0x30 && char <= 0x39) && //9-0
+                !(char >= 0x61 && char <= 0x7A) && //a-z
+                !(char == 0x2D) //-
+            ) {
+                return (false, "Subdomain contains invalid characters. Only a-z, 0-9, - are allowed.");
+            }
+        }
+
+        return (true, "");
+    }
+
+    /**
+     * For a given subdomain of <domain2>.<domain>.eth, compute its namehash.
+     * If not subdomain is given, return the namehash of <domain2>.<domain>.eth
+     */
+    function computeSubdomainNameHash(string memory subdomain) public view returns (bytes32) {
+        bytes32 emptyNamehash = 0x00;
+        bytes32 topdomainNamehash = keccak256(abi.encodePacked(emptyNamehash, keccak256(abi.encodePacked(topdomain))));
+		bytes32 domainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
+        bytes32 domain2Namehash = keccak256(abi.encodePacked(domainNamehash, keccak256(abi.encodePacked(domain2))));
+
+        if(bytes(subdomain).length == 0) {
+            return domain2Namehash;
+        }
+		
+        return keccak256(abi.encodePacked(domain2Namehash, keccak256(abi.encodePacked(subdomain))));
+    }
+
+
+    //
     // ERC721
     //
 
@@ -202,12 +285,13 @@ contract OCWebsiteFactory is ERC721Enumerable {
     }
 
     function tokenSVGTemplate() public view returns (string memory) {
-        return factoryToken.tokenSVGByVars("{addressPart1}", "{addressPart2}");
+        return factoryToken.tokenSVGByVars("{subdomain}", "{addressPart1}", "{addressPart2}");
     }
 
     struct DetailedToken {
         uint tokenId;
         address contractAddress;
+        string subdomain;
     }
     function detailedTokensOfOwner(address user) public view returns (DetailedToken[] memory tokens) {
         uint tokenCount = balanceOf(user);
@@ -216,7 +300,8 @@ contract OCWebsiteFactory is ERC721Enumerable {
             uint tokenId = tokenOfOwnerByIndex(user, i);
             tokens[i] = DetailedToken({
                 tokenId: tokenId,
-                contractAddress: address(websites[tokenId])
+                contractAddress: address(websites[tokenId]),
+                subdomain: websiteToSubdomain[websites[tokenId]]
             });
         }
 

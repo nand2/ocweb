@@ -83,9 +83,6 @@ contract OCWebsiteFactoryScript is Script {
 
         vm.startBroadcast();
 
-        // Get ENS nameWrapper (will deploy ENS and register domain name if necessary)
-        (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController, PublicResolver publicResolver) = registerDomainAndGetEnsContracts(targetChain, domain);
-
         // Get EthStorage
         TestEthStorageContractKZG ethStorage = getEthStorage(targetChain);
 
@@ -107,6 +104,7 @@ contract OCWebsiteFactoryScript is Script {
                     owner: msg.sender,
                     topdomain: "eth",
                     domain: domain,
+                    domain2: getChainShortName(targetChain),
                     factoryToken: factoryToken,
                     websiteImplementation: websiteImplementation,
                     websiteVersionViewerImplementation: websiteVersionViewerImplementation
@@ -142,7 +140,7 @@ contract OCWebsiteFactoryScript is Script {
             }
 
             // Create a website from the factory, to use as frontend for the factory itself
-            OCWebsite factoryFrontend = factory.mintWebsite();
+            OCWebsite factoryFrontend = factory.mintWebsite("factory");
 
             // Add the factory contract address to the frontend
             injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
@@ -168,7 +166,7 @@ contract OCWebsiteFactoryScript is Script {
             
             // Add the welcome page plugin
             {
-                OCWebsite welcomeFrontend = factory.mintWebsite();
+                OCWebsite welcomeFrontend = factory.mintWebsite("welcome");
                 WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin(welcomeFrontend);
                 factory.addWebsitePlugin(welcomeHomepagePlugin, true);
             }
@@ -195,6 +193,9 @@ contract OCWebsiteFactoryScript is Script {
 
             // If local, point the domain to the factory website
             if(targetChain == TargetChain.LOCAL) {
+                // Get ENS nameWrapper (will deploy ENS and register domain name if necessary)
+                (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController, PublicResolver publicResolver) = registerDomainAndGetEnsContracts(targetChain, domain);
+
                 bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
                 bytes32 domainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
                 nameWrapper.setRecord(domainNamehash, msg.sender, address(publicResolver), 365 * 24 * 3600);

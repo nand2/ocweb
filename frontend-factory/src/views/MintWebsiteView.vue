@@ -18,7 +18,6 @@ import MintForm from '../components/MintForm.vue'
   }
 
   .mint-area {
-    max-width: 500px;
     margin: 0 auto;
   }
 </style>

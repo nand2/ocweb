@@ -14,13 +14,15 @@ function useSupportedChains() {
   return useQuery({
     queryKey: ['supportedChains'],
     queryFn: async () => {
-      await contractAddressesLoaded
-
       const supportedChains = []
       for (const factory of contractAddresses.value.factories) {
         for (const chain of chains.value) {
           if (factory.chainId === chain.id) {
-            supportedChains.push(chain)
+            const chainCopy = {...chain}
+            // Inject the short name of the chain
+            chainCopy.shortName = factory.chainShortName
+
+            supportedChains.push(chainCopy)
           }
         }
       }

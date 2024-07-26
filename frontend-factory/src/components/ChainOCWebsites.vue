@@ -26,12 +26,12 @@ const factoryChainId = computed(() => props.chain.id)
 const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
   queryKey: ['OCWebsiteList', factoryAddress, factoryChainId, address],
   queryFn: async () => {
-    const response = await fetch(`web3://${factoryAddress.value}:${factoryChainId.value}/detailedTokensOfOwner/${address.value}?returns=((uint256,address)[])`)
+    const response = await fetch(`web3://${factoryAddress.value}:${factoryChainId.value}/detailedTokensOfOwner/${address.value}?returns=((uint256,address,string)[])`)
     if (!response.ok) {
       throw new Error('Network response was not ok')
     }
     const decodedResponse = await response.json()
-    return decodedResponse[0].map(([tokenId, contractAddress]) => ({ tokenId: parseInt(tokenId, 16), contractAddress }))
+    return decodedResponse[0].map(([tokenId, contractAddress, subdomain]) => ({ tokenId: parseInt(tokenId, 16), contractAddress, subdomain }))
   },
   staleTime: 3600 * 1000,
   enabled: computed(() => contractAddressesLoaded.value && isConnected.value),
@@ -50,7 +50,11 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
     </div>
 
     <div v-else class="oc-websites">
-      <OCWebsite v-for="ocWebsite in ocWebsites" :key="ocWebsite.tokenId" :contractAddress="ocWebsite.contractAddress" :chainId="factoryChainId" />
+      <OCWebsite v-for="ocWebsite in ocWebsites" 
+        :key="ocWebsite.tokenId" 
+        :contractAddress="ocWebsite.contractAddress" 
+        :chainId="factoryChainId"
+        :subdomain="ocWebsite.subdomain" />
     </div>
   </div>
 </template>
