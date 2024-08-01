@@ -105,29 +105,44 @@ const resetMintForm = () => {
       <div>
         An OCWebsite is a website served by a blockchain, thanks to the <a href="web3://web3url.eth/">web3:// protocol</a>.
         <br />
-        Once minted, you can upload files, add/remove plugins, ...
+        Once minted, you will be able to access an admin interface to upload files, add/remove plugins, ...
       </div>
 
-      <div class="form">
-        <div v-if="isConnected">
-          <select v-model="mintChainId" class="chain-selector" :disabled="isPending || isConfirming">
-            <option :value="null" disabled>Select a blockchain</option>
-            <option v-for="chain in supportedChains" :value="chain.id">{{ chain.name }}</option>
-          </select>
+      <div v-if="isConnected == false" style="margin: 2em;">
+        <button disabled="disabled">
+          Connect your wallet first
+        </button>
+      </div>
+      <div class="form" v-else>
+        <div class="form-field">
+          <label>
+            Blockchain
+          </label>
+          <div>
+            <select v-model="mintChainId" class="chain-selector" :disabled="isPending || isConfirming">
+              <option :value="null" disabled>- select a blockchain -</option>
+              <option v-for="chain in supportedChains" :value="chain.id">{{ chain.name }}</option>
+            </select>
+          </div>
         </div>
 
-        <div v-if="isConnected">
-          <div class="subdomain-field">
-            <input type="text" v-model="subdomain" placeholder="subdomain" :disabled="isPending || isConfirming" maxlength="14" />
-            <div class="suffix">
-              .{{ mintChainId > 0 ? supportedChains.find(c => c.id == mintChainId).shortName : '<chain>' }}.ocweb.eth
+        <div class="form-field">
+          <label>
+            ocweb.eth subdomain
+          </label>
+          <div>
+            <div class="subdomain-field">
+              <input type="text" v-model="subdomain" placeholder="subdomain" :disabled="isPending || isConfirming" maxlength="14" />
+              <div class="suffix">
+                .{{ mintChainId > 0 ? supportedChains.find(c => c.id == mintChainId).shortName : '<chain>' }}.ocweb.eth
+              </div>
             </div>
-          </div>
-          <div v-if="subdomainError" class="text-danger text-80">
-            {{ subdomainError }}
-          </div>
-          <div v-else class="text-muted text-80">
-            Note: The ocweb.eth subdomain feature is not yet working (waiting for ENS v2), but you can still use your own .eth domain name.
+            <div v-if="subdomainError" class="text-danger text-80">
+              {{ subdomainError }}
+            </div>
+            <div v-else class="text-muted text-80">
+              Note: The ocweb.eth subdomain feature is not yet working (waiting for ENS v2).
+            </div>
           </div>
         </div>
 
@@ -193,6 +208,8 @@ const resetMintForm = () => {
 .main-area {
   text-align: center;
   max-width: 1000px;
+  margin-left: 1em;
+  margin-right: 1em;
 }
 
 .form {
@@ -206,6 +223,23 @@ const resetMintForm = () => {
   border-radius: 0.5em;
 }
 
+.form-field {
+  display: flex;
+  gap: 1em;
+  align-items: center;
+}
+@media (max-width: 700px) {
+  .form-field {
+    flex-direction: column;
+    gap: 0.5em;
+  }
+}
+
+.form-field label {
+  flex: 0 0 25%;
+  text-align: right;
+}
+
 .chain-selector {
   font-size: 1em;
 }
@@ -213,7 +247,11 @@ const resetMintForm = () => {
 .subdomain-field {
   display: flex;
   align-items: center;
-  justify-content: center;
+}
+@media (max-width: 700px) {
+  .subdomain-field {
+    flex-direction: column;
+  }
 }
 
 .subdomain-field input {
@@ -254,6 +292,12 @@ const resetMintForm = () => {
   display: flex;
   gap: 1em;
   justify-content: center;
+}
+
+@media (max-width: 700px) {
+  .website-infos {
+    flex-direction: column;
+  }
 }
 
 .website-infos-items {

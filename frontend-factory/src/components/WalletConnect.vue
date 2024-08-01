@@ -70,4 +70,14 @@ function formattedBalance() {
     border-top-left-radius: 0.5em;
     border-bottom-left-radius: 0.5em;
   }
+
+  @media (max-width: 700px) {
+    .address {
+      white-space: nowrap;
+    }
+
+    .balance {
+      display: none;
+    }
+  }
 </style>

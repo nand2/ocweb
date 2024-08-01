@@ -397,6 +397,11 @@ const reorderItem = async () => {
   display: flex;
   gap: 1em;
 }
+@media (max-width: 700px) {
+  .plugins-lists {
+    flex-direction: column;
+  }
+}
 
 .plugins-list {
   flex: 1;
@@ -433,6 +438,7 @@ const reorderItem = async () => {
 .plugin-description-others {
   font-size: 0.9em; 
   color: #ccc;
+  word-break: break-all;
 }
 
 .plugin-operations {

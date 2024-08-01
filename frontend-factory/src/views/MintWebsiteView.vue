@@ -17,6 +17,12 @@ import MintForm from '../components/MintForm.vue'
     height: calc(100vh - 5em);
   }
 
+  @media (max-width: 700px) {
+    .mint-area-container {
+      height: auto;
+    }
+  }
+
   .mint-area {
     margin: 0 auto;
   }

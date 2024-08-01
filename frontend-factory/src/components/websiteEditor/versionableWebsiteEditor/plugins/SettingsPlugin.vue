@@ -90,7 +90,7 @@ const openHomepageWithArgs = () => {
         <button @click="openHomepageWithArgs()" class="sm">Configure <BoxArrowUpRightIcon /></button>
       </div>
       <div v-else>
-        <div class="text-muted text-90">
+        <div class="text-muted text-80">
           The plugin did not provide an interface to configure it.
         </div>
       </div>
