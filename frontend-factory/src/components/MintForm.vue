@@ -146,6 +146,15 @@ const resetMintForm = () => {
           </div>
         </div>
 
+        <div class="form-field">
+          <label>
+            Price
+          </label>
+          <div>
+            0 ETH + gas fees
+          </div>
+        </div>
+
         <div>
           <button type="button" class="mint-button" @click="mint" 
             :disabled="contractAddressesLoaded == false || supportedChainsLoaded == false || isConnected == false || mintChainId == null || subdomain.length == 0 || subdomainError || isPending || isConfirming">
@@ -238,6 +247,7 @@ const resetMintForm = () => {
 .form-field label {
   flex: 0 0 25%;
   text-align: right;
+  font-weight: bold;
 }
 
 .chain-selector {

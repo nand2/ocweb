@@ -1,5 +1,5 @@
 import { http, createConfig } from '@wagmi/vue'
-import { mainnet, sepolia, holesky, hardhat } from '@wagmi/vue/chains'
+import { mainnet, sepolia, holesky, hardhat, arbitrum, arbitrumNova, optimism, base } from '@wagmi/vue/chains'
 import { injected, coinbaseWallet } from '@wagmi/vue/connectors'
 
 export const config = createConfig({
@@ -17,5 +17,9 @@ export const config = createConfig({
     [sepolia.id]: http(),
     [holesky.id]: http(),
     [hardhat.id]: http(),
+    [arbitrum.id]: http(),
+    [arbitrumNova.id]: http(),
+    [optimism.id]: http(),
+    [base.id]: http(),
   },
 })

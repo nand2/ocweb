@@ -23,7 +23,7 @@ const { isSuccess: supportedChainsLoaded, data: supportedChains } = useSupported
     <div v-else class="chains-oc-websites">
       <div v-for="chain in supportedChains" :key="chain.id" class="chain-oc-websites">
         <h3>
-          {{ chain.name }}
+          {{ chain.name }} <span v-if="chain.testnet">(testnet)</span>
         </h3>
         <ChainOCWebsites :chain="chain" />
       </div>
