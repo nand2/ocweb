@@ -31,6 +31,9 @@ const queryClient = useQueryClient()
 // Tabs handling. Default value will be set once the plugin list was loaded
 const activeTab = ref('');
 
+// Reference to the preview tab
+const previewTabRef = ref(null)
+
 // Fetch the website client
 const { data: websiteClient, isSuccess: websiteClientLoaded } = useVersionableWebsiteClient
 (props.contractAddress)
@@ -156,7 +159,7 @@ const showConfigPanel = ref(false)
 
     <div class="tabs">
       <a v-if="websiteVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
-      <a @click="activeTab = 'preview'" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
+      <a @click="activeTab = 'preview'; previewTabRef.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
@@ -172,6 +175,7 @@ const showConfigPanel = ref(false)
       :pluginInfos="staticFrontendInstalledPlugin"
       class="tab" v-show="activeTab == 'files'" />
     <PreviewTab 
+      ref="previewTabRef"
       :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 

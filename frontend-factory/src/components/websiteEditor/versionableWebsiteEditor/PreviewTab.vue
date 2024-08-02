@@ -95,6 +95,19 @@ const { isPending: setIsViewableIsPending, isError: setIsViewableIsError, error:
 const setIsViewable = async () => {
   setIsViewableMutate()
 }
+
+// Function to refresh the iframe
+// Exposed to be called by parents
+const iframe = ref(null)
+const refreshPreviewIframe = () => {
+  console.log("refreshing preview iframe")
+  if(iframe.value != null) {
+    iframe.value.src = iframe.value.src
+  }
+}
+defineExpose({
+  refreshPreviewIframe
+})
 </script>
 
 <template>
