@@ -55,6 +55,42 @@ function useContractAddresses() {
   })
 }
 
+// When embedded (e.g. in the /admin/ page), access the address and chain id of the website
+function useEmbeddorInjectedVariables() {
+  return useQuery({
+    queryKey: ['embeddorInjectedVariables'],
+    queryFn: async () => {
+      const response = await fetch('/variables.json')
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      const decodedResponse = await response.json()
+      return decodedResponse
+    },
+    staleTime: 24 * 3600 * 1000,
+  })
+}
+function useEmbeddorContractAddress() {
+  const { data: injectedVariables, isLoading, isSuccess, isError, error } = useEmbeddorInjectedVariables()
+
+  return useQuery({
+    queryKey: ['embeddorContractAddress'],
+    queryFn: async () => {
+      if (isError.value) {
+        throw error.value
+      }
+
+      // Self: extract the self address and chainId
+      const [selfAddress, selfChainId] = injectedVariables.value.self.split(':')
+
+      return {address: selfAddress, chainId: parseInt(selfChainId)}
+    },
+    staleTime: 24 * 3600 * 1000,
+    enabled: computed(() => isLoading.value == false)
+  })
+}
+
+
 function useVersionableWebsiteClient(websiteContractAddress) {
   // Fetch the viem connector client
   const { data: viemClient, isLoading, isSuccess, isError, error } = useConnectorClient()
@@ -205,6 +241,7 @@ function invalidateIsLockedQuery(queryClient, contractAddress, chainId) {
 export { 
   useInjectedVariables,
   useContractAddresses, 
+  useEmbeddorContractAddress,
   useVersionableWebsiteClient, 
   useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, 
   invalidateWebsiteVersionQuery,

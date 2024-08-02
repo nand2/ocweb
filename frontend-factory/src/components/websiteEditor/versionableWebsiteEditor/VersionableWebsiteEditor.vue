@@ -266,6 +266,7 @@ const showConfigPanel = ref(false)
   border-right: 1px solid var(--color-divider);
   border-bottom: 1px solid var(--color-divider-secondary);
   width: 100%;
+  z-index: 1;
 }
 
 .form-select-website-version-popup-inner > span {

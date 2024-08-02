@@ -168,7 +168,8 @@ const rootFolderChildren = computed(() => {
 
     <div v-else-if="staticFrontendPluginClientLoaded && staticFrontendLoaded">
       <div v-if="staticFrontend.files.length == 0" class="no-files">
-        No files
+        No files<br />
+        Start by uploading an index.html file!
       </div>
 
       <FolderChildren 

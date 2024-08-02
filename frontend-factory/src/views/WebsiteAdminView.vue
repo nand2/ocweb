@@ -1,11 +1,11 @@
 <script setup>
 import { useAccount } from '@wagmi/vue';
-import { useContractAddresses } from '../utils/queries';
+import { useEmbeddorContractAddress } from '../utils/queries';
 import OCWebsite from '../components/OCWebsite.vue';
 import OCWebsiteEditor from '../components/websiteEditor/OCWebsiteEditor.vue';
 
 const { isConnected } = useAccount();
-const { data: contractAddresses, isLoading: contractAddressesLoading, isSuccess: contractAddressesLoaded, isError: contractAddressesIsError, error: contractAddressesError } = useContractAddresses()
+const { data: embeddorContractAddress, isLoading: embeddorContractAddressLoading, isSuccess: embeddorContractAddressLoaded, isError: embeddorContractAddressIsError, error: embeddorContractAddressError } = useEmbeddorContractAddress()
 </script>
 
 <template>
@@ -14,17 +14,17 @@ const { data: contractAddresses, isLoading: contractAddressesLoading, isSuccess:
       Please connect your wallet
     </div>
 
-    <div v-else-if="contractAddressesLoaded == false" class="main-message">
+    <div v-else-if="embeddorContractAddressLoaded == false" class="main-message">
       Loading...
-      <div v-if="contractAddressesIsError" class="text-danger">
-          Error loading contract addresses: {{ contractAddressesError.message }}
+      <div v-if="embeddorContractAddressIsError" class="text-danger">
+          Error loading contract addresses: {{ embeddorContractAddressError.message }}
       </div>
     </div>
 
     <div v-else class="oc-website">
       <OCWebsite 
-        :contractAddress="contractAddresses.self.address" 
-        :chainId="contractAddresses.self.chainId"
+        :contractAddress="embeddorContractAddress.address" 
+        :chainId="embeddorContractAddress.chainId"
         :isOpened="true"
         :showLinkAndCloseIcons="false" />
     </div>

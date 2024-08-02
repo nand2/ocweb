@@ -146,9 +146,12 @@ contract OCWebsiteFactoryScript is Script {
             injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
             // Testing: Add hardcoded factory for sepolia && holesky
             if(targetChain != TargetChain.HOLESKY) {
-                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x366891f435bE90EbceE403Bc7Ae90F3587D1f2bb), ":", LibStrings.toString(17000)));
+                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0xb426E738830bDD643e57a2C8917D84c95307650e), ":", LibStrings.toString(17000)));
             }
-            // injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x9f0678BAa0b104d6be803aE8F53ed1e67F148c07), ":", LibStrings.toString(11155111)));
+            if(targetChain != TargetChain.SEPOLIA && targetChain != TargetChain.LOCAL) {
+                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "sep"), string.concat(LibStrings.toHexString(0x27D14546641278e8B097f3c7AbfC8e7609725f2F), ":", LibStrings.toString(11155111)));
+            }
+            
 
             // Set the website as the factory frontend
             factory.setWebsite(factoryFrontend);
