@@ -58,7 +58,7 @@ const factoryContractClient = computed(() => {
 // Create websiteVersion
 const showNewWebsiteVersionForm = ref(false)
 const newWebsiteVersionDescription = ref("")
-const { isPending: newwebsiteversionIsPending, isError: newwebsiteversionIsError, error: newwebsiteversionError, isSuccess: newwebsiteversionIsSuccess, mutate: newwebsiteversionMutate, reset: newwebsiteversionReset } = useMutation({
+const { isPending: newWebsiteVersionIsPending, isError: newWebsiteVersionIsError, error: newWebsiteVersionError, isSuccess: newWebsiteVersionIsSuccess, mutate: newWebsiteVersionMutate, reset: newWebsiteVersionReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
     const transaction = await props.websiteClient.prepareAddWebsiteVersionTransaction(newWebsiteVersionDescription.value, websiteVersionsData.value.totalCount - 1);
@@ -74,13 +74,13 @@ const { isPending: newwebsiteversionIsPending, isError: newwebsiteversionIsError
     return await invalidateWebsiteVersionsQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
-const newwebsiteversionFile = async () => {
-  newwebsiteversionMutate()
+const newWebsiteVersionFile = async () => {
+  newWebsiteVersionMutate()
 }
 
 // Lock
 const showLocklForm = ref(false)
-const { isPending: locklIsPending, isError: locklIsError, error: locklError, isSuccess: locklIsSuccess, mutate: locklMutate, reset: locklReset } = useMutation({
+const { isPending: globalLockIsPending, isError: globalLockIsError, error: globalLockError, isSuccess: globalLockIsSuccess, mutate: globalLockMutate, reset: globalLockReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
     const transaction = await props.websiteClient.prepareLockTransaction();
@@ -94,8 +94,8 @@ const { isPending: locklIsPending, isError: locklIsError, error: locklError, isS
     return await invalidateIsLockedQuery(queryClient, props.contractAddress, props.chainId)
   }
 })
-const activateLockl = async () => {
-  locklMutate()
+const activateGlobalLock = async () => {
+  globalLockMutate()
 }
 </script>
 
@@ -119,13 +119,13 @@ const activateLockl = async () => {
           </span>
         </div>
         <div class="form-area" v-if="showNewWebsiteVersionForm">
-          <input type="text" v-model="newWebsiteVersionDescription" placeholder="Version description" />
+          <input type="text" v-model="newWebsiteVersionDescription" :disabled="newWebsiteVersionIsPending" placeholder="Version description" />
 
-          <button @click="newwebsiteversionFile" :disabled="newWebsiteVersionDescription == ''">Add new version</button>
+          <button @click="newWebsiteVersionFile" :disabled="newWebsiteVersionIsPending || newWebsiteVersionDescription == ''">Add new version</button>
 
-          <div v-if="newwebsiteversionIsError" class="text-danger text-90">
-            Error adding new version: {{ newwebsiteversionError.shortMessage || newwebsiteversionError.message }}
-            <a @click.stop.prevent="newwebsiteversionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+          <div v-if="newWebsiteVersionIsError" class="text-danger text-90">
+            Error adding new version: {{ newWebsiteVersionError.shortMessage || newWebsiteVersionError.message }}
+            <a @click.stop.prevent="newWebsiteVersionReset()" style="color: inherit; text-decoration: underline;">Hide</a>
           </div>
         </div>
       </div>
@@ -140,7 +140,7 @@ const activateLockl = async () => {
         <div class="form-area" v-if="showLocklForm">
           <div class="text-danger" style="display: flex; align-items: center; gap: 1em;">
             <div>
-              <LockFillIcon v-if="locklIsPending" style="scale: 2; margin: 0em 1em;" class="anim-pulse" />
+              <LockFillIcon v-if="globalLockIsPending" style="scale: 2; margin: 0em 1em;" class="anim-pulse" />
               <ExclamationTriangleIcon v-else style="scale: 2; margin: 0em 1em;" />
             </div>
             <div>
@@ -150,10 +150,10 @@ const activateLockl = async () => {
             </div>
           </div>
           <div>
-            <button type="button" style="width: 100%" @click="activateLockl"><LockFillIcon /> Lock everything permanently</button>
+            <button type="button" style="width: 100%" @click="activateGlobalLock" :disabled="globalLockIsPending"><LockFillIcon /> Lock everything permanently</button>
           </div>
-          <div v-if="locklIsError" class="text-danger" style="font-size: 0.9em">
-            Error activating the global lock: {{ locklError.shortMessage || locklError.message }} <a @click.stop.prevent="locklReset()" style="color: inherit; text-decoration: underline;">Hide</a>
+          <div v-if="globalLockIsError" class="text-danger" style="font-size: 0.9em">
+            Error activating the global lock: {{ globalLockError.shortMessage || globalLockError.message }} <a @click.stop.prevent="globalLockReset()" style="color: inherit; text-decoration: underline;">Hide</a>
           </div>
 
         </div>
