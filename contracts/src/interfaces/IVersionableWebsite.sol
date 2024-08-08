@@ -72,6 +72,8 @@ interface IVersionableWebsitePlugin is IERC165 {
         string author;
         // Point to a web3:// address of the homepage, where it can be configured
         string homepage;
+        // Dependencies of this plugin
+        IVersionableWebsitePlugin[] dependencies;
     }
     function infos() external view returns (Infos memory);
 

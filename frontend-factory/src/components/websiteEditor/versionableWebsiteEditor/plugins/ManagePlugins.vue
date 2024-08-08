@@ -90,6 +90,26 @@ const availablePluginsNotInstalled = computed(() => {
   return result;
 })
 
+// Get a plugin name from an address: Lookup in the available plugins, then in the installed plugins
+const getPluginNameFromAddress = (pluginAddress) => {
+  if(websiteVersionPluginsLoaded.value == false || availablePluginsLoaded.value == false) {
+    return '';
+  }
+
+  const plugin = websiteVersionPlugins.value.find(p => p.plugin === pluginAddress) || availablePlugins.value.find(p => p.plugin === pluginAddress)
+  return plugin?.infos?.title || pluginAddress;
+}
+
+// Has a plugin installed dependents?
+const pluginHasInstalledDependents = (pluginAddress) => {
+  if(websiteVersionPluginsLoaded.value == false) {
+    return false;
+  }
+
+  return websiteVersionPlugins.value.find(p => p.infos.dependencies.includes(pluginAddress)) != null
+}
+
+
 // Add item
 const showAdditionForm = ref(false)
 const additionAddress = ref('')
@@ -234,6 +254,13 @@ const reorderItem = async () => {
                   </span>
               </div>
               <div class="plugin-description-others">
+                Dependencies: 
+                  <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
+                    None
+                  </span>
+                  <span v-for="dep in pluginInfos.infos.dependencies"> {{ getPluginNameFromAddress(dep) }} </span>
+              </div>
+              <div class="plugin-description-others">
                 Address: <small>{{ pluginInfos.plugin }}</small>
               </div>
               <div v-if="removeIsError && removeVariables == pluginInfos.plugin" class="mutation-error">
@@ -242,7 +269,7 @@ const reorderItem = async () => {
             </div>
 
             <div class="plugin-operations">
-              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && removeIsPending == false">
+              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && pluginHasInstalledDependents(pluginInfos.plugin) == false && removeIsPending == false">
                 <TrashIcon />
               </a>
               <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == pluginInfos.plugin" />
@@ -352,6 +379,13 @@ const reorderItem = async () => {
                   <span v-else class="text-muted">
                     Not provided
                   </span>
+              </div>
+              <div class="plugin-description-others">
+                Dependencies: 
+                  <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
+                    None
+                  </span>
+                  <span v-for="dep in pluginInfos.infos.dependencies"> {{ getPluginNameFromAddress(dep) }} </span>
               </div>
               <div class="plugin-description-others">
                 Address: <small>{{ pluginInfos.plugin }}</small>

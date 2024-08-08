@@ -159,7 +159,7 @@ contract OCWebsiteFactoryScript is Script {
             // Add the admin plugin, which use the factory frontend as admin interface
             {
                 // Admin plugin
-                OCWebAdminPlugin adminPlugin = new OCWebAdminPlugin(factory.website());
+                OCWebAdminPlugin adminPlugin = new OCWebAdminPlugin(factory.website(), injectedVariablesPlugin);
                 factory.addWebsitePlugin(adminPlugin, true);
 
                 // Add the admin plugin to the factory frontend

@@ -9,9 +9,11 @@ import "../../interfaces/IDecentralizedApp.sol";
 
 contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
     IDecentralizedApp public adminWebsite;
+    IVersionableWebsitePlugin public injectedVariablesPlugin;
 
-    constructor(IDecentralizedApp _adminWebsite) {
+    constructor(IDecentralizedApp _adminWebsite, IVersionableWebsitePlugin _injectedVariablesPlugin) {
         adminWebsite = _adminWebsite;
+        injectedVariablesPlugin = _injectedVariablesPlugin;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
@@ -21,6 +23,9 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
     }
 
     function infos() external view returns (Infos memory) {
+        IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](1);
+        dependencies[0] = injectedVariablesPlugin;
+
         return
             Infos({
                 name: "ocWebAdmin",
@@ -28,7 +33,8 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
                 title: "Admin interface",
                 subTitle: "Served at the /admin/ path",
                 author: "nand",
-                homepage: ""
+                homepage: "",
+                dependencies: dependencies
             });
     }
 

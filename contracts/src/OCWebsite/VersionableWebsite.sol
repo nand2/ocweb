@@ -270,6 +270,16 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         // Ensure that the websiteVersion is not locked
         require(websiteVersion.locked == false, "Website version is locked");
 
+        // Lookup all installed plugins: If one has the plugin as a dependency, it cannot be removed
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
+            IVersionableWebsitePlugin.Infos memory infos = websiteVersion.pluginNodes[i].plugin.infos();
+            for(uint j = 0; j < infos.dependencies.length; j++) {
+                if(address(infos.dependencies[j]) == address(plugin)) {
+                    revert("Plugin is a dependency of another installed plugin");
+                }
+            }
+        }
+
         // Find the plugin
         uint96 previous = 0;
         uint96 current = websiteVersion.headPluginLinkedList;

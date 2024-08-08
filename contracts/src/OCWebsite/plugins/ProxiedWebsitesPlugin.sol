@@ -28,7 +28,8 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableWebsitePlugin {
                 title: "Mappings to external websites",
                 subTitle: "Serve content from other websites",
                 author: "nand",
-                homepage: "web3://ocweb.eth/"
+                homepage: "web3://ocweb.eth/",
+                dependencies: new IVersionableWebsitePlugin[](0)
             });
     }
 

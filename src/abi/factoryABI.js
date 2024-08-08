@@ -463,6 +463,11 @@ export const abi = [
                 internalType: "string",
                 name: "homepage",
                 type: "string"
+              },
+              {
+                internalType: "IVersionableWebsitePlugin[]",
+                name: "dependencies",
+                type: "address[]"
               }
             ],
             internalType: "struct IVersionableWebsitePlugin.Infos",
