@@ -167,6 +167,24 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         // Check that position is valid
         require(position <= websiteVersion.pluginNodes.length, "Invalid position");
 
+
+        // If it has dependencies, ensure that they are installed : 
+        // If they are present, do nothing. Otherwise, install them.
+        IVersionableWebsitePlugin.Infos memory infos = plugin.infos();
+        for(uint i = 0; i < infos.dependencies.length; i++) {
+            bool found = false;
+            for(uint j = 0; j < websiteVersion.pluginNodes.length; j++) {
+                if(address(websiteVersion.pluginNodes[j].plugin) == address(infos.dependencies[i])) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                addPlugin(websiteVersionIndex, infos.dependencies[i], position);
+            }
+        }
+        
+
         // Insert into the linked list
         websiteVersion.pluginNodes.push(LinkedListNodePlugin({
             plugin: plugin,
