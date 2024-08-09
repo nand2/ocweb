@@ -2,7 +2,8 @@
   "name": "ocweb",
   "version": "0.0.1",
   "type": "module",
-  "description": "",
+  "description": "Interact with an OCWebsite",
+  "main": "src/cli.js",
   "scripts": {
     "dev-factory": "vite frontend-factory",
     "build-factory": "vite build frontend-factory",
@@ -21,6 +22,9 @@
     "url": "https://github.com/nand2/ocweb/issues"
   },
   "homepage": "https://github.com/nand2/ocweb#readme",
+  "bin": {
+    "ocweb": "./src/cli.js"
+  },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
     "vite": "^5.3.1",

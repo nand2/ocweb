@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 import { computed, shallowRef } from 'vue'
 
-import { StaticFrontendPluginClient } from '../../../src/plugins/staticFrontendPluginClient.js';
+import { StaticFrontendPluginClient } from '../../../src/plugins/staticFrontend/client.js';
 
 
 function useStaticFrontendPluginClient(websiteContractAddress, pluginAddress) {

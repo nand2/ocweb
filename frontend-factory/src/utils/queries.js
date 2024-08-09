@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 import { computed, shallowRef } from 'vue'
 
-import { VersionableWebsiteClient } from '../../../src/index.js';
+import { VersionableWebsiteClient } from '../../../src/versionableWebsiteClient.js';
 
 function useInjectedVariables() {
   return useQuery({

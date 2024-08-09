@@ -1,7 +1,7 @@
 import { getContract, toHex, walletActions, publicActions } from 'viem'
 
-import { abi as staticFrontendPluginABI } from '../abi/staticFrontendPluginABI.js'
-import { abi as storageBackendABI } from '../abi/storageBackendABI.js'
+import { abi as staticFrontendPluginABI } from './abi.js'
+import { abi as storageBackendABI } from '../../abi/storageBackendABI.js'
 
 
 class StaticFrontendPluginClient {

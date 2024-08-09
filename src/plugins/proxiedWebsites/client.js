@@ -1,9 +1,9 @@
 import { getContract, toHex, walletActions, publicActions } from 'viem'
 
-import { abi as injectedVariablesPluginABI } from '../abi/injectedVariablesPluginABI'
+import { abi as proxiedWebsitesPluginABI } from './abi.js'
 
 
-class InjectedVariablesPluginClient {
+class ProxiedWebsitesPluginClient {
   #viemClient = null
   #websiteContractAddress = null
   #pluginContractAddress = null
@@ -16,26 +16,30 @@ class InjectedVariablesPluginClient {
 
     this.#viemWebsiteContract = getContract({
       address: this.#pluginContractAddress,
-      abi: injectedVariablesPluginABI,
+      abi: proxiedWebsitesPluginABI,
       client: this.#viemClient,
     })
   }
 
-  async prepareAddVariableTransaction(frontendIndex, name, value) {
+  async prepareAddProxiedWebsiteTransaction(frontendIndex, localPrefix, remoteAddress, remotePrefix) {
+    // We split the local and remote prefixes into arrays of strings
+    const localPrefixArray = localPrefix.split('/').filter(s => s !== '')
+    const remotePrefixArray = remotePrefix.split('/').filter(s => s !== '')
+
     return {
-      functionName: 'addVariable',
-      args: [this.#websiteContractAddress, frontendIndex, name, value],
+      functionName: 'addProxiedWebsite',
+      args: [this.#websiteContractAddress, frontendIndex, remoteAddress, localPrefixArray, remotePrefixArray],
     }
   }
 
-  async getVariables(frontendIndex) {
-    return await this.#viemWebsiteContract.read.getVariables([this.#websiteContractAddress, frontendIndex])
+  async getProxiedWebsites(frontendIndex) {
+    return await this.#viemWebsiteContract.read.getProxiedWebsites([this.#websiteContractAddress, frontendIndex])
   }
 
-  async prepareRemoveVariableTransaction(frontendIndex, name) {
+  async prepareRemoveProxiedWebsiteTransaction(frontendIndex, proxiedWebsiteIndex) {
     return {
-      functionName: 'removeVariable',
-      args: [this.#websiteContractAddress, frontendIndex, name],
+      functionName: 'removeProxiedWebsite',
+      args: [this.#websiteContractAddress, frontendIndex, proxiedWebsiteIndex],
     }
   }
 
@@ -45,7 +49,7 @@ class InjectedVariablesPluginClient {
   async executeTransaction(transaction) {
     const { request } = await this.#viemClient.simulateContract({
       address: this.#pluginContractAddress,
-      abi: injectedVariablesPluginABI,
+      abi: proxiedWebsitesPluginABI,
       functionName: transaction.functionName,
       args: transaction.args,
     })
@@ -63,4 +67,4 @@ class InjectedVariablesPluginClient {
 
 }
 
-export { InjectedVariablesPluginClient };
+export { ProxiedWebsitesPluginClient };
