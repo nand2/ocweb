@@ -1,4 +1,4 @@
-import { getContract, toHex, walletActions, publicActions } from 'viem'
+import { getContract, toHex, walletActions, publicActions, fromHex } from 'viem'
 
 import { abi as staticFrontendPluginABI } from './abi.js'
 import { abi as storageBackendABI } from '../../abi/storageBackendABI.js'
@@ -22,8 +22,8 @@ class StaticFrontendPluginClient {
     })
   }
 
-  async getStaticFrontend(version) {
-    return await this.#viemWebsiteContract.read.getStaticFrontend([this.#websiteContractAddress, version])
+  async getStaticFrontend(websiteVersionIndex) {
+    return await this.#viemWebsiteContract.read.getStaticFrontend([this.#websiteContractAddress, websiteVersionIndex])
   }
 
   async getStaticFrontendFilesSizesFromStorageBackend(staticFrontend) {
@@ -31,7 +31,9 @@ class StaticFrontendPluginClient {
     const fileInfos = staticFrontend.files.map(file => {
       return {
         filePath: file.filePath,
+        contentType: file.contentType,
         contentKey: file.contentKey,
+        compressionAlgorithm: file.compressionAlgorithm,
       }
     })
     const contentKeys = fileInfos.map(fileInfo => fileInfo.contentKey)
@@ -55,6 +57,32 @@ class StaticFrontendPluginClient {
     return fileInfos;
   }
 
+  // Read a file fully. This will make multiple calls to readFile until the whole file is read
+  async readFileFully(websiteVersionIndex, filePath) {
+    let chunkId = 0
+    let data = new Uint8Array(0)
+    while(true) {
+      const {data: chunkData, nextChunkId} = await this.readFile(websiteVersionIndex, filePath, chunkId)
+      data = new Uint8Array([...data, ...chunkData])
+      if(nextChunkId == 0) {
+        break
+      }
+      chunkId = nextChunkId
+    }
+    return data
+  }
+
+  // Read a file. Return the data and the next chunk id, if any (0 if no more chunks)
+  // (So multiple calls can be needed to read a file)
+  async readFile(websiteVersionIndex, filePath, chunkId)  {
+    const result = await this.#viemWebsiteContract.read.readFile([this.#websiteContractAddress, websiteVersionIndex, filePath, chunkId])
+
+    return {
+      data: fromHex(result[0], 'bytes'),
+      nextChunkId: Number(result[1]),
+    }
+  }
+
   async getStorageBackends() {
     return await this.#viemWebsiteContract.read.getStorageBackends([])
   }
@@ -73,10 +101,12 @@ class StaticFrontendPluginClient {
    * - size: The size of the file
    * - contentType: The content type of the file. E.g. "text/html", "image/png"
    * - data: Uint8Array of the data of the file
-   * @returns An array of transactions to execute
-   *          Each transaction is an object with the necessary fields to execute it
-   *          Exception: "metadata", which is data meant to be displayed to the user to review
-   *          the transactions before executing them
+   * @returns 2 arrays : 
+   *          - One array of transactions to execute
+   *            Each transaction is an object with the necessary fields to execute it
+   *            Exception: "metadata", which is data meant to be displayed to the user to review
+   *            the transactions before executing them
+   *          - One array of fileInfos that were skipped because they were already uploaded
    */
   async prepareAddFilesToStaticFrontendTransactions(version, fileInfos) {
     // Fetch the staticFrontend for this version
@@ -129,11 +159,56 @@ class StaticFrontendPluginClient {
       }
     }
 
+    // Filter out the files that are already uploaded, and identical
+    // If already uploaded, but not identical, flag them as such
+    // For existing files collision check optimization : Fetch all the sizes of files
+    const fileInfosWithSize = await this.getStaticFrontendFilesSizesFromStorageBackend(staticFrontend);
+    // Do the filtering
+    let compressedFilesInfosToUpload = [];
+    let skippedCompressedFilesInfos = [];
+    for(const compressedFileInfo of compressedFilesInfos) {
+      // Find the file in the existing files
+      const existingFileInfo = fileInfosWithSize.find(fileInfo => fileInfo.filePath == compressedFileInfo.filePath);
+      // Add a flag indicating if the file is already present
+      compressedFileInfo.alreadyExists = (existingFileInfo != undefined);
+      
+      // File not present in remote frontend, or file present in remote frontend, 
+      // but different size: we need to upload it
+      if(compressedFileInfo.alreadyExists == false || existingFileInfo.size != compressedFileInfo.size) {
+        compressedFilesInfosToUpload.push(compressedFileInfo);
+        continue;
+      }
+
+      // Fetching remote file content
+      const remoteFileData = await this.readFileFully(version, compressedFileInfo.filePath);
+      // If the file data is not identical, it's a different file: we need to upload it
+      let isIdentical = true;
+      if (remoteFileData.length !== compressedFileInfo.data.length) {
+        // Theorically we should not enter here, but just in case
+        isIdentical = false;
+      } else {
+        for (let i = 0; i < remoteFileData.length; i++) {
+          if (remoteFileData[i] !== compressedFileInfo.data[i]) {
+            isIdentical = false;
+            break;
+          }
+        }
+      }
+      
+      if (!isIdentical) {
+        compressedFilesInfosToUpload.push(compressedFileInfo);
+        continue;
+      }
+
+      // Otherwise : we add it to the list of skipped files
+      skippedCompressedFilesInfos.push(compressedFileInfo);
+    }
+
     // Prepare the batch of transactions 
     const transactions = []
     let currentFileUploadInfos = []
     let currentFileUploadInfosMetadata = []
-    for (const fileInfo of compressedFilesInfos) {
+    for (const fileInfo of compressedFilesInfosToUpload) {
       // SSTORE2 handling
       if (storageBackendName.startsWith('sstore2')) {
         // Determine how much bytes do we already have in the current addFiles batch
@@ -194,6 +269,7 @@ class StaticFrontendPluginClient {
               sizeSent: chunkSize,
               chunkId,
               chunksCount: chunkSizes.length,
+              alreadyExists: fileInfo.alreadyExists,
             })
 
             // More than 1 chunk? We finalize the addFiles batch
@@ -234,7 +310,7 @@ class StaticFrontendPluginClient {
       })
     }
 
-    return transactions
+    return { transactions, skippedFiles: skippedCompressedFilesInfos }
   }
 
   async prepareRenameFilesInStaticFrontendTransaction(websiteVersion, oldFilePaths, newFilePaths) {

@@ -12,6 +12,7 @@ import { VersionableWebsiteClient } from './versionableWebsiteClient.js'
 import { StaticFrontendPluginClient } from './plugins/staticFrontend/client.js'
 import readline from 'node:readline/promises';
 import chalk from "chalk";
+import { exit } from "process";
 
 const y = yargs(hideBin(process.argv))
   .usage("ocweb [options] <command>")
@@ -145,7 +146,7 @@ const websiteVersionIndex = args.websiteVersion == "live" ? liveWebsiteVersionIn
 // Get the website version
 const websiteVersion = await websiteClient.getWebsiteVersion(websiteVersionIndex);
 
-console.log("Website version: " + chalk.bold(websiteVersionIndex) + chalk.bold(websiteVersionIndex == liveWebsiteVersionInfos.websiteVersionIndex ? " (live)" : "") + (websiteVersion.locked ? " (locked)" : ""))
+console.log("Website version: " + chalk.bold(websiteVersionIndex) + chalk.bold(websiteVersionIndex == liveWebsiteVersionInfos.websiteVersionIndex ? " (live version)" : "") + (websiteVersion.locked ? " (locked)" : ""))
 
 // Get the installed plugins
 const installedPlugins = await websiteClient.getFrontendVersionPlugins(websiteVersionIndex)
@@ -161,6 +162,7 @@ if(args._[0] == "upload") {
     process.exit()
   }
   console.log(chalk.bold(chalk.underline("Uploading files to static frontend")))
+  console.log("")
 
   // Prepare the StaticFrontendPluginClient
   const staticFrontendPluginClient = new StaticFrontendPluginClient(viemClient, contractAddress, staticFrontendPlugin.plugin);
@@ -174,6 +176,7 @@ if(args._[0] == "upload") {
   // Source is the rest
   const sources = args.arguments
 
+  
   // Prepare the files to upload : 
   // For each file in the source directory (if source is a directory), or the file itself (if source 
   // is a file), fetch the file size, content, content type, and relative path to the source directory, 
@@ -220,7 +223,7 @@ if(args._[0] == "upload") {
   })
 
   // Then, for each file, get the file size, content, content type
-  const fileInfos = filePaths.map(filePath => {
+  let fileInfos = filePaths.map(filePath => {
     // File data
     const data = new Uint8Array(fs.readFileSync(filePath.source))
     // File size
@@ -241,9 +244,13 @@ if(args._[0] == "upload") {
   })
 
   // Prepare the upload transactions
-  const uploadTransactions = await staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(websiteVersionIndex, fileInfos)
+  const { transactions: uploadTransactions, skippedFiles } = await staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(websiteVersionIndex, fileInfos)
 
-  // Print what is about to happen
+  // Print about the transactions
+  if(uploadTransactions.length == 0) {
+    console.log("All files are already uploaded. Nothing to do.")
+    process.exit()
+  }
   console.log(chalk.bold("" + uploadTransactions.length + " transaction(s) will be needed") + " Uploading " + Math.round(uploadTransactions.reduce((acc, tx) => acc + (tx.metadata.sizeSent || tx.metadata.files.reduce((acc, file) => acc + file.sizeSent, 0)), 0) / 1024) + "KB")
   console.log();
   const txFunctionToLabel = {
@@ -255,21 +262,35 @@ if(args._[0] == "upload") {
     
     if(transaction.functionName == "addFiles") {
       transaction.args[2].forEach((file, fileIndex) => {
-        if(transaction.metadata.files[fileIndex].chunksCount == 1) {
-          console.log(" - " + chalk.bold(file.filePath) + " " + Math.round(file.fileSize / 1024) + " KB " + chalk.dim("(zipped from " + Math.round(transaction.metadata.files[fileIndex].originalSize / 1024) + " KB)"))
+        let line = " - " + chalk.bold(file.filePath) + " ";
+        if(transaction.metadata.files[fileIndex].chunksCount > 1) {
+          line += Math.round(transaction.metadata.files[fileIndex].sizeSent / 1024) + "/";
         }
-        else {
-          console.log(" - " + chalk.bold(file.filePath) + " " + Math.round(transaction.metadata.files[fileIndex].sizeSent / 1024) + "/" + Math.round(file.fileSize / 1024) + " KB (chunk 1/" + transaction.metadata.files[fileIndex].chunksCount + ") " + chalk.dim("(zipped from " + Math.round(transaction.metadata.files[fileIndex].originalSize / 1024) + " KB)"))
+        line += Math.round(file.fileSize / 1024) + " KB";
+        if(transaction.metadata.files[fileIndex].chunksCount > 1) {
+          line += " (chunk 1/" + transaction.metadata.files[fileIndex].chunksCount + ")";
         }
+        line += " " + chalk.dim("(zipped from " + Math.round(transaction.metadata.files[fileIndex].originalSize / 1024) + " KB)")
+        if(transaction.metadata.files[fileIndex].alreadyExists) {
+          line += " " + chalk.yellow("Overwrite existing file")
+        }
+        console.log(line)
       })
     }
     else if(transaction.functionName == "appendToFile") {
       console.log("   " + chalk.bold(transaction.args[2]) + " +" + Math.round(transaction.metadata.sizeSent / 1024) + " KB (chunk " + (transaction.metadata.chunkId + 1) + "/" + transaction.metadata.chunksCount + ")")
     }
-    // console.log(transaction.args[2])
-    // console.log(transaction.metadata[0])
     console.log("")
   });
+
+  // Print about the skipped files
+  if(skippedFiles.length > 0) {
+    console.log(chalk.bold("Skipped files") + " (identical file already uploaded)")
+    skippedFiles.forEach(file => {
+      console.log(" - " + file.filePath)
+    })
+    console.log()
+  }
 
   // Ask for confirmation (if not requested to be skipped)
   if(args.skipTxConfirmation == false) {
@@ -277,7 +298,7 @@ if(args._[0] == "upload") {
       input: process.stdin,
       output: process.stdout
     });
-    const confirmationAnswer = await rl.question("Do you confirm? (y/n) ");
+    const confirmationAnswer = await rl.question("Transactions are about to be sent. Do you confirm? (y/n) ");
     rl.close();
     if(confirmationAnswer != "y") {
       console.log("Cancelled.")
@@ -294,7 +315,7 @@ if(args._[0] == "upload") {
     console.log("Submitting transaction " + (transactionIndex + 1) + "/" + uploadTransactions.length + "...")
     
     const hash = await staticFrontendPluginClient.executeTransaction(transaction);
-    console.log("Transaction submitted with hash " + chalk.bold(hash))
+    console.log("Transaction submitted with hash " + hash)
     console.log("Waiting for confirmation...");
 
     // Wait for the transaction to be mined

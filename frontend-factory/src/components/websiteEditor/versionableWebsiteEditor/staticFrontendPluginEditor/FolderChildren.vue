@@ -60,6 +60,7 @@ const operationsPaddingLeftForCSS = computed(() => {
 
 // Prepare the addition of files
 const filesAdditionTransactions = ref([])
+const skippedFilesAdditions = ref([])
 const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, error: prepareAddFilesError, isSuccess: prepareAddFilesIsSuccess, mutate: prepareAddFilesMutate, reset: prepareAddFilesReset } = useMutation({
   mutationFn: async () => {
     // Reset any previous upload
@@ -105,13 +106,14 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     fileInfos.sort((a, b) => a.size - b.size);
   
     // Prepare the transaction to upload the files
-    const transactions = await props.staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(props.websiteVersionIndex, fileInfos);
-    console.log(transactions);
+    const transactionsData = await props.staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(props.websiteVersionIndex, fileInfos);
+    console.log(transactionsData);
 
-    return transactions;
+    return transactionsData;
   },
   onSuccess: (data) => {
-    filesAdditionTransactions.value = data
+    filesAdditionTransactions.value = data.transactions
+    skippedFilesAdditions.value = data.skippedFiles
   }
 })
 const prepareAddFilesTransactions = async () => {
@@ -302,7 +304,22 @@ const addNewFolder = async () => {
                 </div>
               </div>
             </div>
-            <button type="button" v-if="addFileTransactionResults.length == 0 || addFileTransactionResults.length > 0 && addFilesIsPending" @click="executePreparedAddFilesTransactions" style="width: 100%" :disabled="addFilesIsPending">Upload files</button>
+
+            <div class="skipped-files" v-if="skippedFilesAdditions.length > 0">
+              <div>
+                <ExclamationTriangleIcon style="width: 1.2em; height: 0.9em;" />
+              </div>
+              <div>
+                <div class="skipped-files-title">
+                  <strong>Skipped files</strong> <span class="text-muted text-90">(Identical file already uploaded)</span>
+                </div>
+                <div v-for="file in skippedFilesAdditions" :key="file.filePath" class="skipped-file text-muted">
+                  <code>{{ file.filePath }}</code>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" v-if="addFileTransactionResults.length == 0 || addFileTransactionResults.length > 0 && addFilesIsPending" @click="executePreparedAddFilesTransactions" style="width: 100%" :disabled=" filesAdditionTransactions.length == 0 || addFilesIsPending">Upload files</button>
           </div>
         </div>
       </div>
@@ -404,6 +421,14 @@ const addNewFolder = async () => {
   font-size: 0.9em;
   margin-top: 0.3em;
 }
+
+.skipped-files {
+  padding: 0.5em 0em;
+  border-top: 1px solid #555;
+  display: flex;
+  gap: 0.75em;
+}
+
 
 /**
  * op-new-folder form
