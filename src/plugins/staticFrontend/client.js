@@ -68,7 +68,7 @@ class StaticFrontendPluginClient {
 
   /**
    * Prepare the addition of several files to a frontend version
-   * fileUploadInfos: An array of objects with the following properties:
+   * fileInfos: An array of objects with the following properties:
    * - filePath: The path of the file, without leading /. E.g. "index.html", "assets/logo.png"
    * - size: The size of the file
    * - contentType: The content type of the file. E.g. "text/html", "image/png"

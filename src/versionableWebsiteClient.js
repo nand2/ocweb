@@ -55,6 +55,12 @@ class VersionableWebsiteClient {
     return await this.#viemWebsiteContract.read.isLocked()
   }
 
+  async getFrontendVersionPlugins(frontendIndex) {
+    const result = await this.#viemWebsiteContract.read.getPlugins([frontendIndex])
+    return result;     
+  }
+
+
   async prepareSetLiveWebsiteVersionIndexTransaction(frontendIndex) {
     return {
       functionName: 'setLiveWebsiteVersionIndex',
@@ -83,12 +89,6 @@ class VersionableWebsiteClient {
     }
   }
 
-
-
-  async getFrontendVersionPlugins(frontendIndex) {
-    const result = await this.#viemWebsiteContract.read.getPlugins([frontendIndex])
-    return result;     
-  }
 
   /**
    * Prepare the global lock of the frontend library

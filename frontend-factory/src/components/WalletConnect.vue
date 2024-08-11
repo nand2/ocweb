@@ -9,7 +9,7 @@ const { data: balance, isSuccess: balanceFetchIsSuccess } = useBalance({ address
 
 // Balance with the last 4 digits
 function formattedBalance() {
-  return balanceFetchIsSuccess.value ? `${Number(balance.value.value / (BigInt(10) ** BigInt(balance.value.decimals - 5))) / 10000 } ${balance.value.symbol}` : '';
+  return balanceFetchIsSuccess.value ? `${Number(balance.value.value / (BigInt(10) ** BigInt(balance.value.decimals - 5))) / 100000 } ${balance.value.symbol}` : '';
 }
 </script>
 
