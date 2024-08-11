@@ -284,7 +284,7 @@ const addNewFolder = async () => {
                         (chunk 1 / {{ transaction.metadata.files[index].chunksCount }})
                       </span>
                     </span>
-                    <span v-if="(txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'success') == false && props.folderChildren.some(child => child.filePath === file.filePath)" class="text-warning filename-details">
+                    <span v-if="(txIndex <= addFileTransactionBeingExecutedIndex && addFileTransactionResults[txIndex].status == 'success') == false && transaction.metadata.files[index].alreadyExists" class="text-warning filename-details">
                       <ExclamationTriangleIcon style="width: 1.2em; height: 0.9em;" />Overwrite existing file
                     </span>
                   </div>
@@ -306,8 +306,8 @@ const addNewFolder = async () => {
             </div>
 
             <div class="skipped-files" v-if="skippedFilesAdditions.length > 0">
-              <div>
-                <ExclamationTriangleIcon style="width: 1.2em; height: 0.9em;" />
+              <div class="icon">
+                <CheckLgIcon />
               </div>
               <div>
                 <div class="skipped-files-title">
@@ -427,6 +427,10 @@ const addNewFolder = async () => {
   border-top: 1px solid #555;
   display: flex;
   gap: 0.75em;
+}
+
+.skipped-files .icon {
+  padding-top: 0.25em;
 }
 
 
