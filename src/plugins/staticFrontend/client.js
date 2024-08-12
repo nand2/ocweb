@@ -27,6 +27,11 @@ class StaticFrontendPluginClient {
   }
 
   async getStaticFrontendFilesSizesFromStorageBackend(staticFrontend) {
+    // If the static frontend was not even initialized, return an empty array
+    if(staticFrontend.storageBackend == "0x0000000000000000000000000000000000000000") {
+      return []
+    }
+
     // Gather the filename and content keys
     const fileInfos = staticFrontend.files.map(file => {
       return {

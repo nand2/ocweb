@@ -202,7 +202,7 @@ async function upload(staticFrontendPluginClient, websiteVersionIndex, staticFro
   }
 
   // Ask for confirmation (if not requested to be skipped)
-  if(args.skipTxConfirmation == false) {
+  if(args.skipTxValidation == false) {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
@@ -380,7 +380,7 @@ async function rm(staticFrontendPluginClient, websiteVersionIndex, staticFronten
   console.log("")
 
   // Ask for confirmation (if not requested to be skipped)
-  if(args.skipTxConfirmation == false) {
+  if(args.skipTxValidation == false) {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout

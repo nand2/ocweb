@@ -42,10 +42,9 @@ const y = yargs(hideBin(process.argv))
     default: 'live',
     description: "The version of your OCWebsite. Either 'live' or a version index."
   })
-  .option('skip-tx-confirmation', {
-    alias: 's',
+  .option('skip-tx-validation', {
     type: 'boolean',
-    description: "Skip the confirmation prompt for transactions",
+    description: "Skip the validation prompt for transactions. WARNING: This will make you sign transactions right away. Use with caution.",
     default: false
   })
   .command('upload [arguments..]', 
