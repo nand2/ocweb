@@ -13,6 +13,7 @@ import { StaticFrontendPluginClient } from './plugins/staticFrontend/client.js'
 import readline from 'node:readline/promises';
 import chalk from "chalk";
 import { exit } from "process";
+import { processCommand as processStaticFrontendPluginCommand } from './plugins/staticFrontend/commands.js'
 
 const y = yargs(hideBin(process.argv))
   .usage("ocweb [options] <command>")
@@ -71,6 +72,22 @@ const y = yargs(hideBin(process.argv))
         type: 'string',
         description: 'The folder/file to list',
         default: '/'
+      })
+    }
+  )
+  .command('rm <files..>',
+    'Remove a file from the static frontend',
+    (yargs) => {
+      // yargs.option('recursive', {
+      //   alias: 'R',
+      //   type: 'boolean',
+      //   description: 'Remove directories recursively',
+      //   default: false
+      // })
+      yargs.positional('files', {
+        type: 'string',
+        description: 'The files to remove',
+        array: true
       })
     }
   )
@@ -160,271 +177,8 @@ const installedPlugins = await websiteClient.getFrontendVersionPlugins(websiteVe
 console.log("")
 
 
-// Upload
-if(args._[0] == "upload") {
-  // Ensure the Static Frontend plugin is installed
-  const staticFrontendPlugin = installedPlugins.find(plugin => plugin.infos.name == "staticFrontend")
-  if(staticFrontendPlugin == null) {
-    console.error("The Static Frontend plugin is not installed on this website.")
-    process.exit(1)
-  }
-  console.log(chalk.bold(chalk.underline("Uploading files to static frontend")))
-  console.log("")
-
-  // Prepare the StaticFrontendPluginClient
-  const staticFrontendPluginClient = new StaticFrontendPluginClient(viemClient, contractAddress, staticFrontendPlugin.plugin);
-
-  // Process the arguments
-  if(args.arguments.length == 1) {
-    args.arguments.push("/")
-  }
-  // Destination is always the last argument
-  const destination = args.arguments.pop().replace(/^\/|\/$/g, '');
-  // Source is the rest
-  const sources = args.arguments
-
-  
-  // Prepare the files to upload : 
-  // For each file in the source directory (if source is a directory), or the file itself (if source 
-  // is a file), fetch the file size, content, content type, and relative path to the source directory, 
-  // and store them in fileInfos
-  
-  // First : get the list of files to upload
-  let filePaths = []
-  sources.forEach(source => {
-    let additionalFilePaths = []
-
-    // List all the files in the source directory
-    try {
-      fs.accessSync(source, fs.constants.R_OK)
-    }
-    catch(e) {
-      console.error("Cannot access " + source)
-      process.exit(1)
-    }
-    const lstat = fs.lstatSync(source)
-    if (lstat.isDirectory()) {
-      additionalFilePaths = fs.readdirSync(source, { withFileTypes: true, recursive: true })
-        .filter(dirent => dirent.isFile())
-        .map(dirent => path.join(dirent.parentPath, dirent.name));
-    } else if (lstat.isFile()) {
-      additionalFilePaths = [source]
-    }
-
-    // For each file: Make 2 entries: the file itself, and the destination on the website
-    additionalFilePaths = additionalFilePaths.map(sourceFilePath => {
-      // Compute the path on the website
-      let destinationFilePath = sourceFilePath
-      if(lstat.isDirectory()) {
-        destinationFilePath = path.relative(source, destinationFilePath)
-        destinationFilePath = path.join(path.basename(source), destinationFilePath)
-      }
-      else if(lstat.isFile()) {
-        destinationFilePath = path.basename(destinationFilePath)
-      }
-      if(destination.length > 0) {
-        destinationFilePath = path.join(destination, destinationFilePath)
-      }
-
-      return {
-        source: sourceFilePath,
-        destination: destinationFilePath
-      }
-    })
-
-    // Append to the list
-    filePaths = filePaths.concat(additionalFilePaths)
-  })
-
-  // Then, for each file, get the file size, content, content type
-  let fileInfos = filePaths.map(filePath => {
-    // File data
-    const data = new Uint8Array(fs.readFileSync(filePath.source))
-    // File size
-    const size = fs.statSync(filePath.source).size
-
-    // Content type detection
-    let contentType = mime.getType(filePath.source.split('.').pop())
-    if(contentType == "") {
-      contentType = "application/octet-stream"
-    }
-
-    return {
-      filePath: filePath.destination,
-      size,
-      contentType,
-      data,
-    }
-  })
-
-  // Prepare the upload transactions
-  const { transactions: uploadTransactions, skippedFiles } = await staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(websiteVersionIndex, fileInfos)
-
-  // Print about the transactions
-  if(uploadTransactions.length == 0) {
-    console.log("All files are already uploaded. Nothing to do.")
-    process.exit()
-  }
-  console.log(chalk.bold("" + uploadTransactions.length + " transaction(s) will be needed") + " Uploading " + Math.round(uploadTransactions.reduce((acc, tx) => acc + (tx.metadata.sizeSent || tx.metadata.files.reduce((acc, file) => acc + file.sizeSent, 0)), 0) / 1024) + "KB")
-  console.log();
-  const txFunctionToLabel = {
-    "addFiles": "Uploading files",
-    "appendToFile": "Add data to file",
-  }
-  uploadTransactions.forEach((transaction, transactionIndex) => {
-    console.log(chalk.bold(`Transaction ${transactionIndex + 1}:` + (txFunctionToLabel[transaction.functionName] ? ` ${txFunctionToLabel[transaction.functionName]}` : "Unrecognized function")))
-    
-    if(transaction.functionName == "addFiles") {
-      transaction.args[2].forEach((file, fileIndex) => {
-        let line = " - " + chalk.bold(file.filePath) + " ";
-        if(transaction.metadata.files[fileIndex].chunksCount > 1) {
-          line += Math.round(transaction.metadata.files[fileIndex].sizeSent / 1024) + "/";
-        }
-        line += Math.round(file.fileSize / 1024) + " KB";
-        if(transaction.metadata.files[fileIndex].chunksCount > 1) {
-          line += " (chunk 1/" + transaction.metadata.files[fileIndex].chunksCount + ")";
-        }
-        line += " " + chalk.dim("(zipped from " + Math.round(transaction.metadata.files[fileIndex].originalSize / 1024) + " KB)")
-        if(transaction.metadata.files[fileIndex].alreadyExists) {
-          line += " " + chalk.yellow("Overwrite existing file")
-        }
-        console.log(line)
-      })
-    }
-    else if(transaction.functionName == "appendToFile") {
-      console.log("   " + chalk.bold(transaction.args[2]) + " +" + Math.round(transaction.metadata.sizeSent / 1024) + " KB (chunk " + (transaction.metadata.chunkId + 1) + "/" + transaction.metadata.chunksCount + ")")
-    }
-    console.log("")
-  });
-
-  // Print about the skipped files
-  if(skippedFiles.length > 0) {
-    console.log(chalk.bold("Skipped files") + " (identical file already uploaded)")
-    skippedFiles.forEach(file => {
-      console.log(" - " + file.filePath)
-    })
-    console.log()
-  }
-
-  // Ask for confirmation (if not requested to be skipped)
-  if(args.skipTxConfirmation == false) {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-    const confirmationAnswer = await rl.question("Transactions are about to be sent, which will cost some ETH. Do you confirm? (y/n) ");
-    rl.close();
-    if(confirmationAnswer != "y") {
-      console.log("Cancelled.")
-      process.exit(1)
-    }
-    console.log("")
-  }
-
-  
-  
-  // Execute the transactions
-  for(let transactionIndex = 0; transactionIndex < uploadTransactions.length; transactionIndex++) {
-    const transaction = uploadTransactions[transactionIndex]
-    console.log("Submitting transaction " + (transactionIndex + 1) + "/" + uploadTransactions.length + "...")
-    
-    const hash = await staticFrontendPluginClient.executeTransaction(transaction);
-    console.log("Transaction submitted with hash " + hash)
-    console.log("Waiting for confirmation...");
-
-    // Wait for the transaction to be mined
-    await staticFrontendPluginClient.waitForTransactionReceipt(hash);
-    console.log("Transaction confirmed");
-    console.log("");
-  }
-    
-
-
+// Static frontend plugin commands
+if(["upload", "ls", "rm"].includes(args._[0])) {
+  await processStaticFrontendPluginCommand(args._[0], args, viemClient, contractAddress, websiteVersionIndex, installedPlugins);
 }
-// Ls
-else if(args._[0] == "ls") {
-  // Ensure the Static Frontend plugin is installed
-  const staticFrontendPlugin = installedPlugins.find(plugin => plugin.infos.name == "staticFrontend")
-  if(staticFrontendPlugin == null) {
-    console.error("The Static Frontend plugin is not installed on this website.")
-    process.exit(1)
-  }
 
-  // Prepare the StaticFrontendPluginClient
-  const staticFrontendPluginClient = new StaticFrontendPluginClient(viemClient, contractAddress, staticFrontendPlugin.plugin);
-
-  // Get the static frontend
-  const staticFrontend = await staticFrontendPluginClient.getStaticFrontend(websiteVersionIndex);
-
-  // staticFrontend.files is an array of objects containing the file path
-  // Make a tree structure out of it
-  let tree = {}
-  staticFrontend.files.forEach((file, fileIndex) => {
-    let pathParts = file.filePath.split('/')
-    let currentTree = tree
-    pathParts.forEach((part, index) => {
-      if(index == pathParts.length - 1) {
-        currentTree[part] = fileIndex
-      }
-      else {
-        if(currentTree[part] == undefined) {
-          currentTree[part] = {}
-        }
-        currentTree = currentTree[part]
-      }
-    })
-  })
-
-  // Find the folder to list
-  const folder = args.folder.replace(/^\/|\/$/g, '')
-  let currentTree = tree
-  if(folder.length > 0) {
-    folder.split('/').forEach(part => {
-      if(currentTree[part] == undefined) {
-        console.error("Folder not found")
-        process.exit(1)
-      }
-      currentTree = currentTree[part]
-    })
-  }
-
-  // List the files : Normal way
-  if(args.tree == false) {
-    if(typeof currentTree == "object") {
-      Object.entries(currentTree).forEach(([filePathPart, subTree]) => {
-        // If the subTree is an object, it is a folder
-        if(typeof subTree == "object") {
-          process.stdout.write(chalk.bold(chalk.blue(filePathPart)) + "  ");
-        }
-        // If the subTree is a number, it is a file
-        else {
-          process.stdout.write(filePathPart + "  ");
-        }
-      })
-    }
-    else if(typeof currentTree == "number") {
-      process.stdout.write(staticFrontend.files[currentTree].filePath);
-    }
-    console.log("")
-  }
-  // List the files : tree way
-  else if(args.tree == true) {
-    function printTree(tree, depth) {
-      Object.entries(tree).forEach(([filePathPart, subTree]) => {
-        // If the subTree is an object, it is a folder
-        if(typeof subTree == "object") {
-          process.stdout.write("  ".repeat(depth) + chalk.bold(chalk.blue(filePathPart)) + "\n");
-          printTree(subTree, depth + 1)
-        }
-        // If the subTree is a number, it is a file
-        else {
-          process.stdout.write("  ".repeat(depth) + filePathPart + "\n");
-        }
-      })
-    }
-    printTree(currentTree, 0)
-  }
-
-  // console.log(staticFrontend.files)
-  // console.log(tree)
-}
