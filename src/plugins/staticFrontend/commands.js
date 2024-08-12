@@ -140,7 +140,7 @@ async function upload(staticFrontendPluginClient, websiteVersionIndex, staticFro
   })
 
   // Prepare the upload transactions
-  const { transactions: uploadTransactions, skippedFiles } = await staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(websiteVersionIndex, fileInfos)
+  const { transactions: uploadTransactions, skippedFiles } = await staticFrontendPluginClient.prepareAddFilesTransactions(websiteVersionIndex, fileInfos)
 
   // Print about the transactions
   if(uploadTransactions.length > 0) {
@@ -241,16 +241,21 @@ async function ls(staticFrontendPluginClient, websiteVersionIndex, staticFronten
   // List the files : Normal way
   if(args.tree == false) {
     if(typeof currentTree == "object") {
-      Object.entries(currentTree).forEach(([filePathPart, subTree]) => {
-        // If the subTree is an object, it is a folder
-        if(typeof subTree == "object") {
-          process.stdout.write(chalk.bold(chalk.blue(filePathPart)) + "  ");
-        }
-        // If the subTree is a number, it is a file
-        else {
-          process.stdout.write(filePathPart + "  ");
-        }
-      })
+      if(Object.entries(currentTree).length == 0) {
+        console.log(chalk.dim("Empty directory"))
+      }
+      else {
+        Object.entries(currentTree).forEach(([filePathPart, subTree]) => {
+          // If the subTree is an object, it is a folder
+          if(typeof subTree == "object") {
+            process.stdout.write(chalk.bold(chalk.blue(filePathPart)) + "  ");
+          }
+          // If the subTree is a number, it is a file
+          else {
+            process.stdout.write(filePathPart + "  ");
+          }
+        })
+      }
     }
     else if(typeof currentTree == "number") {
       process.stdout.write(staticFrontend.files[currentTree].filePath);
@@ -279,33 +284,89 @@ async function ls(staticFrontendPluginClient, websiteVersionIndex, staticFronten
 async function rm(staticFrontendPluginClient, websiteVersionIndex, staticFrontend, fileTree, args) {
   // Process the arguments : List the files to remove
   let filesToRemove = []
-  args.files.forEach(file => {
-    // Search for the file in the staticFrontend.files array
-    let fileIndex = staticFrontend.files.findIndex(f => f.filePath == file)
-    if(fileIndex == -1) {
-      console.error("File not found: " + file)
-      process.exit(1)
+  let removeAllFiles = false;
+  // No usage of recursive option: All files given should be files
+  if(args.recursive == false) {
+    args.files.forEach(file => {
+      // Search for the file in the staticFrontend.files array
+      let fileIndex = staticFrontend.files.findIndex(f => f.filePath == file)
+      if(fileIndex == -1) {
+        console.error("File not found: " + file)
+        process.exit(1)
+      }
+      filesToRemove.push(file)
+    })
+  }
+  // Recursive option: All files given can be files or directories
+  else if(args.recursive == true) {
+    // If one of the files is ".", we remove all the files
+    if(args.files.includes(".")) {
+      removeAllFiles = true;
     }
-    filesToRemove.push(file)
-  })
+    // We remove a subsection of files
+    else {
+      args.files.forEach(file => {
+        // Search for the file in the staticFrontend.files array
+        let fileIndex = staticFrontend.files.findIndex(f => f.filePath == file)
+        if(fileIndex != -1) {
+          filesToRemove.push(file)
+        }
+        else {
+          // Search for the directory in the fileTree
+          let currentTree = fileTree
+          let pathParts = file.split('/')
+          pathParts.forEach(part => {
+            if(currentTree[part] == undefined) {
+              console.error("Directory not found: " + file)
+              process.exit(1)
+            }
+            currentTree = currentTree[part]
+          })
+
+          let directoryFiles = []
+          function getFiles(tree, currentPath = '') {
+            Object.entries(tree).forEach(([filePathPart, subTree]) => {
+              const filePath = path.join(currentPath, filePathPart);
+              if (typeof subTree == "number") {
+                directoryFiles.push(filePath);
+              } else {
+                getFiles(subTree, filePath);
+              }
+            });
+          }
+          getFiles(currentTree)
+          directoryFiles.forEach(directoryFile => {
+            filesToRemove.push(path.join(file, directoryFile))
+          })
+        }
+      })
+    }
+  }
+
   // Unduplicate the list
   filesToRemove = [...new Set(filesToRemove)]
 
-  // console.log("The following files will be removed:")
-  // filesToRemove.forEach(file => {
-  //   console.log(" - " + file)
-  // })
-
   // Prepare the remove transactions
-  const removeTransaction = await staticFrontendPluginClient.prepareRemoveFilesFromStaticFrontendTransaction(websiteVersionIndex, filesToRemove)
+  let removeTransaction = null
+  if(removeAllFiles) {
+    removeTransaction = await staticFrontendPluginClient.prepareRemoveAllFilesTransaction(websiteVersionIndex)
+  }
+  else {
+    removeTransaction = await staticFrontendPluginClient.prepareRemoveFilesTransaction(websiteVersionIndex, filesToRemove)
+  }
 
   // Print about the transaction
   console.log(chalk.bold("1 transaction will be needed"))
   console.log("")
-  console.log(chalk.bold("Transaction 1: Removing files"))
-  filesToRemove.forEach(file => {
-    console.log(" - " + file)
-  })
+  if(removeTransaction.functionName == "removeAllFiles") {
+    console.log(chalk.bold("Transaction 1: " + chalk.yellow("Removing all files")))
+  }
+  else if(removeTransaction.functionName == "removeFiles") {
+    console.log(chalk.bold("Transaction 1: Removing files"))
+    filesToRemove.forEach(file => {
+      console.log(" - " + file)
+    })
+  }
   console.log("")
 
   // Ask for confirmation (if not requested to be skipped)

@@ -9,9 +9,11 @@ import "../../interfaces/IDecentralizedApp.sol";
 
 contract WelcomeHomepagePlugin is ERC165, IVersionableWebsitePlugin {
     IDecentralizedApp public adminWebsite;
+    IVersionableWebsitePlugin public injectedVariablesPlugin;
 
-    constructor(IDecentralizedApp _adminWebsite) {
+    constructor(IDecentralizedApp _adminWebsite, IVersionableWebsitePlugin _injectedVariablesPlugin) {
         adminWebsite = _adminWebsite;
+        injectedVariablesPlugin = _injectedVariablesPlugin;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
@@ -21,6 +23,9 @@ contract WelcomeHomepagePlugin is ERC165, IVersionableWebsitePlugin {
     }
 
     function infos() external view returns (Infos memory) {
+        IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](1);
+        dependencies[0] = injectedVariablesPlugin;
+
         return
             Infos({
                 name: "welcomeHomepage",
@@ -29,7 +34,7 @@ contract WelcomeHomepagePlugin is ERC165, IVersionableWebsitePlugin {
                 subTitle: "Remove when starting to build your website!",
                 author: "nand",
                 homepage: "",
-                dependencies: new IVersionableWebsitePlugin[](0)
+                dependencies: dependencies
             });
     }
 

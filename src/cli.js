@@ -5,7 +5,7 @@ import { hideBin } from 'yargs/helpers'
 import fs from 'fs'
 import path from 'path'
 import mime from 'mime';
-import { createWalletClient, http, publicActions, toBlobs, toHex, setupKzg, encodeFunctionData, getContract } from 'viem'
+import { createWalletClient, http, publicActions, toBlobs, toHex, setupKzg, encodeFunctionData, getContract, formatEther } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import * as viemChains from 'viem/chains'
 import { VersionableWebsiteClient } from './versionableWebsiteClient.js'
@@ -78,12 +78,12 @@ const y = yargs(hideBin(process.argv))
   .command('rm <files..>',
     'Remove a file from the static frontend',
     (yargs) => {
-      // yargs.option('recursive', {
-      //   alias: 'R',
-      //   type: 'boolean',
-      //   description: 'Remove directories recursively',
-      //   default: false
-      // })
+      yargs.option('recursive', {
+        alias: 'R',
+        type: 'boolean',
+        description: 'Remove directories recursively',
+        default: false
+      })
       yargs.positional('files', {
         type: 'string',
         description: 'The files to remove',
@@ -147,8 +147,6 @@ if(args.rpc) {
   rpcUrl = args.rpc
 }
 
-console.log("OCWebsite: " + chalk.bold(contractAddress) + " on chain " + chalk.bold(viemChain.name) + " (id " + viemChain.id + ")")
-
 // Prepare the viem client
 const account = privateKeyToAccount(args.privateKey)
 const viemClient = createWalletClient({
@@ -156,6 +154,15 @@ const viemClient = createWalletClient({
   chain: viemChain,
   transport: http(rpcUrl)
 }).extend(publicActions)
+
+// Print the account address, and its balance
+const accountAddress = account.address
+const accountBalance = formatEther((await viemClient.getBalance({address: accountAddress})) / BigInt(10**13) * BigInt(10**13))
+console.log("Wallet: " + chalk.bold(accountAddress) + " Balance: " + chalk.bold(accountBalance + " " + viemChain.nativeCurrency.symbol))
+
+
+console.log("OCWebsite: " + chalk.bold(contractAddress) + " on chain " + chalk.bold(viemChain.name) + " (id " + viemChain.id + ")")
+
 
 // Prepare the VersionableWebsiteClient
 const websiteClient = new VersionableWebsiteClient(viemClient, contractAddress);

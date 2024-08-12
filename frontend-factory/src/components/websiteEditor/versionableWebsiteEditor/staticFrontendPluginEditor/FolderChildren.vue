@@ -106,7 +106,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     fileInfos.sort((a, b) => a.size - b.size);
   
     // Prepare the transaction to upload the files
-    const transactionsData = await props.staticFrontendPluginClient.prepareAddFilesToStaticFrontendTransactions(props.websiteVersionIndex, fileInfos);
+    const transactionsData = await props.staticFrontendPluginClient.prepareAddFilesTransactions(props.websiteVersionIndex, fileInfos);
     console.log(transactionsData);
 
     return transactionsData;

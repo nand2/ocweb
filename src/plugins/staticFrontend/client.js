@@ -108,7 +108,7 @@ class StaticFrontendPluginClient {
    *            the transactions before executing them
    *          - One array of fileInfos that were skipped because they were already uploaded
    */
-  async prepareAddFilesToStaticFrontendTransactions(version, fileInfos) {
+  async prepareAddFilesTransactions(version, fileInfos) {
     // Fetch the staticFrontend for this version
     const staticFrontend = await this.getStaticFrontend(version)
 
@@ -313,7 +313,7 @@ class StaticFrontendPluginClient {
     return { transactions, skippedFiles: skippedCompressedFilesInfos }
   }
 
-  async prepareRenameFilesInStaticFrontendTransaction(websiteVersion, oldFilePaths, newFilePaths) {
+  async prepareRenameFilesTransaction(websiteVersion, oldFilePaths, newFilePaths) {
     return {
       functionName: 'renameFiles',
       args: [this.#websiteContractAddress, websiteVersion, oldFilePaths, newFilePaths],
@@ -323,13 +323,19 @@ class StaticFrontendPluginClient {
   /**
    * filePaths: An array of strings, each string being the path of a file, without leading /. E.g. "index.html", "assets/logo.png"
    */
-  async prepareRemoveFilesFromStaticFrontendTransaction(websiteVersion, filePaths) {
+  async prepareRemoveFilesTransaction(websiteVersion, filePaths) {
     return {
       functionName: 'removeFiles',
       args: [this.#websiteContractAddress, websiteVersion, filePaths],
     }
   }
 
+  async prepareRemoveAllFilesTransaction(websiteVersion) {
+    return {
+      functionName: 'removeAllFiles',
+      args: [this.#websiteContractAddress, websiteVersion],
+    }
+  }
   
 
 

@@ -170,7 +170,7 @@ contract OCWebsiteFactoryScript is Script {
             // Add the welcome page plugin
             {
                 OCWebsite welcomeFrontend = factory.mintWebsite("welcome");
-                WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin(welcomeFrontend);
+                WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin(welcomeFrontend, injectedVariablesPlugin);
                 factory.addWebsitePlugin(welcomeHomepagePlugin, true);
             }
 
