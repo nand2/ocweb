@@ -26,13 +26,13 @@ const y = yargs(hideBin(process.argv))
     alias: 'k',
     type: 'string',
     requiresArg: true,
-    description: "The private key of the wallet to use for signing transactions"
+    description: "The private key of the wallet to use for signing transactions (Environment variable: PRIVATE_KEY)"
   })
   .option('web3-address', {
     alias: 'a',
     type: 'string',
     requiresArg: true,
-    description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337"
+    description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
   })
   .option('website-version', {
     alias: 'w',
@@ -56,16 +56,22 @@ const y = yargs(hideBin(process.argv))
         array: true,
         default: ['.', '/']
       })
-      // yargs.positional('source', {
-      //   type: 'string',
-      //   description: 'The file or directory to upload',
-      //   default: '.'
-      // })
-      // yargs.positional('destination', {
-      //   type: 'string',
-      //   description: 'The folder on the website to upload to',
-      //   default: '/'
-      // })
+    }
+  )
+  .command('ls [folder]', 
+    'List the files in the static frontend', 
+    (yargs) => {
+      yargs.option('tree', {
+        alias: 't',
+        type: 'boolean',
+        description: 'Display the files in a tree structure',
+        default: false
+      })
+      yargs.positional('folder', {
+        type: 'string',
+        description: 'The folder/file to list',
+        default: '/'
+      })
     }
   )
   .demandCommand(1)
@@ -83,8 +89,8 @@ if(args.web3Address == null) {
   args.web3Address = process.env.WEB3_ADDRESS
 }
 if(args.privateKey == null || args.web3Address == null) { 
-  console.error("Private key and web3 address are required. You can provide them as arguments, or set the PRIVATE_KEY and WEB3_ADDRESS environment variables.")
-  process.exit()
+  console.error("Private key and web3 address are required.")
+  process.exit(1)
 }
 
 // Website version: Ensure it is "live" or a number
@@ -92,7 +98,7 @@ if(args.websiteVersion != "live") {
   const versionNumber = parseInt(args.websiteVersion)
   if(isNaN(versionNumber)) {
     console.error("Invalid website version. Please use 'live' or a number.")
-    process.exit()
+    process.exit(1)
   }
   args.websiteVersion = versionNumber
 }
@@ -105,7 +111,7 @@ const web3AddressRegex = /^web3:\/\/(?<address>[0-9a-fA-Fx]{42})(:(?<chainId>[1-
 const web3AddressMatch = web3Address.match(web3AddressRegex)
 if(web3AddressMatch == null) {
   console.error("Invalid web3 address. Please use the format web3://<address>:<chain-id>")
-  process.exit()
+  process.exit(1)
 }
 const contractAddress = web3AddressMatch.groups.address
 const chainId = parseInt(web3AddressMatch.groups.chainId) || 1
@@ -150,16 +156,17 @@ console.log("Website version: " + chalk.bold(websiteVersionIndex) + chalk.bold(w
 
 // Get the installed plugins
 const installedPlugins = await websiteClient.getFrontendVersionPlugins(websiteVersionIndex)
-console.log("Installed plugins:", installedPlugins.map(plugin => plugin.infos.title).join(", "))
+// console.log("Installed plugins:", installedPlugins.map(plugin => plugin.infos.title).join(", "))
 console.log("")
 
 
+// Upload
 if(args._[0] == "upload") {
   // Ensure the Static Frontend plugin is installed
   const staticFrontendPlugin = installedPlugins.find(plugin => plugin.infos.name == "staticFrontend")
   if(staticFrontendPlugin == null) {
     console.error("The Static Frontend plugin is not installed on this website.")
-    process.exit()
+    process.exit(1)
   }
   console.log(chalk.bold(chalk.underline("Uploading files to static frontend")))
   console.log("")
@@ -188,6 +195,13 @@ if(args._[0] == "upload") {
     let additionalFilePaths = []
 
     // List all the files in the source directory
+    try {
+      fs.accessSync(source, fs.constants.R_OK)
+    }
+    catch(e) {
+      console.error("Cannot access " + source)
+      process.exit(1)
+    }
     const lstat = fs.lstatSync(source)
     if (lstat.isDirectory()) {
       additionalFilePaths = fs.readdirSync(source, { withFileTypes: true, recursive: true })
@@ -298,11 +312,11 @@ if(args._[0] == "upload") {
       input: process.stdin,
       output: process.stdout
     });
-    const confirmationAnswer = await rl.question("Transactions are about to be sent. Do you confirm? (y/n) ");
+    const confirmationAnswer = await rl.question("Transactions are about to be sent, which will cost some ETH. Do you confirm? (y/n) ");
     rl.close();
     if(confirmationAnswer != "y") {
       console.log("Cancelled.")
-      process.exit()
+      process.exit(1)
     }
     console.log("")
   }
@@ -326,4 +340,91 @@ if(args._[0] == "upload") {
     
 
 
+}
+// Ls
+else if(args._[0] == "ls") {
+  // Ensure the Static Frontend plugin is installed
+  const staticFrontendPlugin = installedPlugins.find(plugin => plugin.infos.name == "staticFrontend")
+  if(staticFrontendPlugin == null) {
+    console.error("The Static Frontend plugin is not installed on this website.")
+    process.exit(1)
+  }
+
+  // Prepare the StaticFrontendPluginClient
+  const staticFrontendPluginClient = new StaticFrontendPluginClient(viemClient, contractAddress, staticFrontendPlugin.plugin);
+
+  // Get the static frontend
+  const staticFrontend = await staticFrontendPluginClient.getStaticFrontend(websiteVersionIndex);
+
+  // staticFrontend.files is an array of objects containing the file path
+  // Make a tree structure out of it
+  let tree = {}
+  staticFrontend.files.forEach((file, fileIndex) => {
+    let pathParts = file.filePath.split('/')
+    let currentTree = tree
+    pathParts.forEach((part, index) => {
+      if(index == pathParts.length - 1) {
+        currentTree[part] = fileIndex
+      }
+      else {
+        if(currentTree[part] == undefined) {
+          currentTree[part] = {}
+        }
+        currentTree = currentTree[part]
+      }
+    })
+  })
+
+  // Find the folder to list
+  const folder = args.folder.replace(/^\/|\/$/g, '')
+  let currentTree = tree
+  if(folder.length > 0) {
+    folder.split('/').forEach(part => {
+      if(currentTree[part] == undefined) {
+        console.error("Folder not found")
+        process.exit(1)
+      }
+      currentTree = currentTree[part]
+    })
+  }
+
+  // List the files : Normal way
+  if(args.tree == false) {
+    if(typeof currentTree == "object") {
+      Object.entries(currentTree).forEach(([filePathPart, subTree]) => {
+        // If the subTree is an object, it is a folder
+        if(typeof subTree == "object") {
+          process.stdout.write(chalk.bold(chalk.blue(filePathPart)) + "  ");
+        }
+        // If the subTree is a number, it is a file
+        else {
+          process.stdout.write(filePathPart + "  ");
+        }
+      })
+    }
+    else if(typeof currentTree == "number") {
+      process.stdout.write(staticFrontend.files[currentTree].filePath);
+    }
+    console.log("")
+  }
+  // List the files : tree way
+  else if(args.tree == true) {
+    function printTree(tree, depth) {
+      Object.entries(tree).forEach(([filePathPart, subTree]) => {
+        // If the subTree is an object, it is a folder
+        if(typeof subTree == "object") {
+          process.stdout.write("  ".repeat(depth) + chalk.bold(chalk.blue(filePathPart)) + "\n");
+          printTree(subTree, depth + 1)
+        }
+        // If the subTree is a number, it is a file
+        else {
+          process.stdout.write("  ".repeat(depth) + filePathPart + "\n");
+        }
+      })
+    }
+    printTree(currentTree, 0)
+  }
+
+  // console.log(staticFrontend.files)
+  // console.log(tree)
 }
