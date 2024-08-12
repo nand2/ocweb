@@ -51,6 +51,13 @@ const y = yargs(hideBin(process.argv))
   .command('upload [arguments..]', 
     'Upload a static frontend to the website. Require the Static Frontend plugin installed.', 
     (yargs) => {
+      yargs.option('exclude', {
+        type: 'string',
+        description: 'Exclude files matching the pattern. Example: --exclude "*.map" --exclude "*.DS_Store"',
+        requiresArg: true,
+        array: true,
+        default: []
+      })
       yargs.positional('arguments', {
         type: 'string',
         description: 'The files or directories to upload, followed by the destination folder on the website. Examples: oweb upload ; ocweb upload ./folder ; ocweb upload ./img.jpg ; ocweb upload ./folder /remote-folder ; ocweb upload ./folder1 ./folder2 /remote-folder',

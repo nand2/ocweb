@@ -118,6 +118,16 @@ async function upload(staticFrontendPluginClient, websiteVersionIndex, staticFro
     filePaths = filePaths.concat(additionalFilePaths)
   })
 
+  // Apply the exclude options : Remove the files that match the exclude patterns
+  // Only do the matching on the filename part, and only the "*" wildcard is supported
+  if(args.exclude.length > 0) {
+    filePaths = filePaths.filter(filePath => {
+      return !args.exclude.some(pattern => {
+        return new RegExp("^" + pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + "$").test(path.basename(filePath.source))
+      })
+    })
+  }
+
   // Then, for each file, get the file size, content, content type
   let fileInfos = filePaths.map(filePath => {
     // File data
