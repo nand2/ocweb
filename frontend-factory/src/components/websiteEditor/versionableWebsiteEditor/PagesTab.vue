@@ -1,8 +1,7 @@
 <script setup>
 import { ref, computed, defineProps } from 'vue';
 
-import VersionableWebsiteEditor from './VersionableWebsiteEditor.vue';
-import StaticFrontendEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
+import PageEditorIndex from './pageEditor/PageEditorIndex.vue';
 
 const props = defineProps({
   websiteVersion: {
@@ -34,7 +33,7 @@ const props = defineProps({
 
 <template>
   <div>
-    <StaticFrontendEditor 
+    <PageEditorIndex 
         :websiteVersion
         :websiteVersionIndex
         :contractAddress

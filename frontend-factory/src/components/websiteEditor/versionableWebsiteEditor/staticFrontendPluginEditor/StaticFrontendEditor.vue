@@ -18,10 +18,6 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  websiteVersionIsFetching: {
-    type: Boolean,
-    required: true,
-  },
   contractAddress: {
     type: String,
     required: true,
@@ -44,7 +40,7 @@ const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
 
-// Ge the staticFrontendPluginClient
+// Get the staticFrontendPluginClient
 const { data: staticFrontendPluginClient, isLoading: staticFrontendPluginClientLoading, isFetching: staticFrontendPluginClientFetching, isError: staticFrontendPluginClientIsError, error: staticFrontendPluginClientError, isSuccess: staticFrontendPluginClientLoaded } = useStaticFrontendPluginClient(props.contractAddress, props.pluginInfos.plugin)
 
 // Get the lock status

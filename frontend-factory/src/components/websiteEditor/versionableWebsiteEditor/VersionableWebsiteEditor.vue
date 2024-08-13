@@ -13,6 +13,7 @@ import WebsiteVersionsConfigEditor from './websiteVersionsEditor/WebsiteVersions
 import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
+import PagesTab from './PagesTab.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -158,17 +159,26 @@ const showConfigPanel = ref(false)
     </div>
 
     <div class="tabs">
+      <a v-if="websiteVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'pages'" :class="{tabPages: true, active: activeTab == 'pages'}">Pages</a>
       <a v-if="websiteVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'preview'; previewTabRef.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
     
+    <PagesTab
+      v-if="staticFrontendInstalledPlugin"
+      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
+      :contractAddress 
+      :chainId 
+      :websiteClient="websiteClient"
+      :pluginInfos="staticFrontendInstalledPlugin"
+      class="tab" v-show="activeTab == 'pages'" />
     <FilesTab 
       v-if="staticFrontendInstalledPlugin"
       :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
-      :websiteVersionIsFetching="websiteVersionBeingEditedFetching"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
