@@ -267,16 +267,9 @@ const deleteFile = async () => {
 
 .mutation-error {
   padding: 0em 1em 0.5em v-bind('paddingLeftForCSS');
-  color: var(--color-text-danger);
-  line-height: 1em;
 }
 
 .mutation-error span {
   font-size: 0.8em;
-}
-
-.mutation-error a {
-  color: var(--color-text-danger);
-  text-decoration: underline;
 }
 </style>

@@ -50,6 +50,30 @@ function invalidateStaticFrontendQuery(queryClient, websiteContractAddress, chai
   return queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', websiteContractAddress, chainId, websiteVersionIndex] })
 }
 
+// fileInfos is reactive
+function useStaticFrontendFileContent(websiteContractAddress, chainId, pluginAddress, websiteVersionIndex, fileInfos) {
+  const { data: pluginClient, isSuccess: pluginClientLoaded} = useStaticFrontendPluginClient(websiteContractAddress, pluginAddress)
+  const { switchChainAsync } = useSwitchChain()
+
+  return useQuery({
+    queryKey: ['StaticFrontendPluginFileContent', websiteContractAddress, chainId, websiteVersionIndex, fileInfos.value?.filePath],
+    queryFn: async () => {
+      // Switch chain if necessary
+      await switchChainAsync({ chainId: chainId })
+
+      const result = await pluginClient.value.readFileFully(websiteVersionIndex, fileInfos.value, true);
+      return result;
+    },
+    staleTime: 3600 * 1000,
+    enabled: computed(() => pluginClientLoaded.value != null  && fileInfos.value != null),
+  })
+}
+
+function invalidateStaticFrontendFileContentQuery(queryClient, websiteContractAddress, chainId, websiteVersionIndex, fileInfos) {
+  return queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginFileContent', websiteContractAddress, chainId, websiteVersionIndex, fileInfos.filePath] })
+}
+
+
 function useStaticFrontendStorageBackends(websiteContractAddress, chainId, pluginAddress) {
   const { data: pluginClient, isSuccess: pluginClientLoaded} = useStaticFrontendPluginClient(websiteContractAddress, pluginAddress)
   const { switchChainAsync } = useSwitchChain()
@@ -68,9 +92,9 @@ function useStaticFrontendStorageBackends(websiteContractAddress, chainId, plugi
   })
 }
 
-
 export {
   useStaticFrontendPluginClient,
   useStaticFrontend, invalidateStaticFrontendQuery,
+  useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery,
   useStaticFrontendStorageBackends
 }

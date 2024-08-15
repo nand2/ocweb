@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 const { default: markdownit } = await import('markdown-it')
 // import markdownit from 'markdown-it'
 const { basicSetup: codeMirrorBasicSetup, EditorView } = await import("codemirror")
@@ -37,9 +37,9 @@ onMounted(() => {
     markdownEditorThemeCompartment.of(markdownEditorTheme(window.matchMedia('(prefers-color-scheme: dark)').matches)),
     // Theme override for both light and dark
     EditorView.theme({
-      "&": {
-        fontSize: "16px",
-      },
+      '&': { fontSize: "16px", maxHeight: '500px', cursor: "text" },
+      '.cm-gutter,.cm-content': { minHeight: '200px' },
+      '.cm-scroller': { overflow: 'auto' },
     }),
     // Readonly state, ready to be modified
     markdownEditorReadonlyCompartment.of(EditorState.readOnly.of(false)),
@@ -49,28 +49,30 @@ onMounted(() => {
   let markdownEditorReadonlyCompartment = new codeMirrorCompartment()
   let markdownEditorThemeCompartment = new codeMirrorCompartment()
 
-  const markdownEditor = new EditorView({
-    doc: text.value,
-    extensions: markdownEditorExtensions(),
-    parent: editor.value
-  })
+  let markdownEditor = EditorView.findFromDOM(editor.value)
+  if(markdownEditor == null) {
+    markdownEditor = new EditorView({
+      doc: "",
+      extensions: markdownEditorExtensions(),
+      parent: editor.value
+    })
+    // // Setup light/dark mode switch listener
+    // window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    //   markdownEditor.dispatch({
+    //     effects: markdownEditorThemeCompartment.reconfigure(
+    //       markdownEditorTheme(event.matches)
+    //     )
+    //   });
+    // })
+  }
 
-  // // Setup light/dark mode switch listener
-  // window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-  //   markdownEditor.dispatch({
-  //     effects: markdownEditorThemeCompartment.reconfigure(
-  //       markdownEditorTheme(event.matches)
-  //     )
-  //   });
-  // })
+  // Set the initial text
+  markdownEditor.setState(EditorState.create({doc: text.value, extensions: markdownEditorExtensions()}))
 
   return () => {
     view.destroy()
   }
 })
-
-
-
 
 
 </script>
@@ -84,5 +86,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
+.cm-editor {
+  min-height: 5em;
+}
 </style>

@@ -238,17 +238,13 @@ defineExpose({
 
 .mutation-error {
   padding-top: 0.2em;
-  color: var(--color-text-danger);
-  line-height: 1em;
+  padding-left: 0em;
+  padding-right: 0em;
+  padding-bottom: 0em;
 }
 
 .mutation-error span {
   font-size: 0.8em;
-}
-
-.mutation-error a {
-  color: var(--color-text-danger);
-  text-decoration: underline;
 }
 
 </style>

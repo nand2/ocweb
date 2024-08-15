@@ -22,51 +22,24 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  locked: {
+    type: Boolean,
+    required: true,
+  },
 })
+
+defineEmits(['pageEditRequested'])
 
 const queryClient = useQueryClient()
 
-
-// Rename file
-const showRenameForm = ref(false)
-const newFileName = ref(props.file.name)
-const preRenameError = ref('')
-const { isPending: renameIsPending, isError: renameIsError, error: renameError, isSuccess: renameIsSuccess, mutate: renameMutate, reset: renameReset } = useMutation({
-  mutationFn: async () => {
-    // Prepare the transaction to rename the file
-    const transaction = await props.staticFrontendPluginClient.prepareRenameFilesTransaction(props.websiteVersionIndex, [props.file.filePath], [newFileName.value]);
-
-    const hash = await props.staticFrontendPluginClient.executeTransaction(transaction);
-
-    return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
-  },
-  onSuccess: async (data, variables, context) => {
-    // Refresh the static website
-    return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
-  }
+const fileName = computed(() => {
+  return props.file.filePath.split('/').pop()
 })
-const renameFile = async () => {
-  preRenameError.value = ''
 
-  if(newFileName.value.trim() === '') {
-    return
-  }
+const fileDirectory = computed(() => {
+  return "/" + props.file.filePath.split('/').slice(0, -1).join('/')
+})
 
-  if(newFileName.value.trim() === props.file.name) {
-    showRenameForm.value = false
-    return
-  }
-
-  // Check that the name is not already taken
-  if(props.folderParentChildren.find(child => child.name === newFileName.value)) {
-    preRenameError.value = 'A file with this name already exists in this folder'
-    return
-  }
-
-  showRenameForm.value = false
-
-  renameMutate()
-}
 
 // Delete file
 const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, isSuccess: deleteIsSuccess, mutate: deleteMutate, reset: deleteReset } = useMutation({
@@ -84,7 +57,6 @@ const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, 
   }
 })
 const deleteFile = async () => {
-  showRenameForm.value = false
   deleteMutate()
 }
 
@@ -95,53 +67,29 @@ const deleteFile = async () => {
   <div>
     <div :class="{file: true, 'delete-pending': deleteIsPending}">
       <div class="filename">
-        <span v-if="showRenameForm" class="rename-form">
-          <PencilSquareIcon />
-          <input v-model="newFileName" type="text" />
-          <button @click="renameFile()" :disabled="renameIsPending" class="sm">Rename</button>
-        </span>
-        <a v-else :href="fileUrl" class="white" target="_blank">
+        <a @click.stop.prevent="$emit('pageEditRequested')" class="white">
           <span>
-            <PencilSquareIcon v-if="renameIsPending == true" class="anim-pulse" />
-            <TrashIcon v-else-if="deleteIsPending == true" class="anim-pulse" />
-            <ExclamationTriangleIcon v-else-if="file.size != file.uploadedSize" class="text-danger" />
+            <TrashIcon v-if="deleteIsPending == true" class="anim-pulse" />
             <FileEarmarkIcon v-else />
           </span>
-          <span :class="{'text-muted': renameIsPending}">
-            {{ file.filePath }}
-          </span>
-          <span v-if="renameIsPending">
-            <ArrowRightIcon />
-          </span>
-          <span v-if="renameIsPending">
-            {{ newFileName }}
+          <span>
+            {{ fileName.slice(0, -3) }}<span class="text-muted">{{ fileName.slice(-3) }}</span>
           </span>
         </a>
       </div>
-      <div class="type">
-        Page
+      <div class="directory">
+        {{ fileDirectory }}
       </div>
       <div class="actions">
-        <a @click.stop.prevent="showRenameForm = !showRenameForm; preRenameError = ''; newFileName = file.name" class="white" v-if="locked == false && renameIsPending == false && deleteIsPending == false">
+        <a @click.stop.prevent="$emit('pageEditRequested')" class="white" v-if="locked == false && deleteIsPending == false">
           <PencilSquareIcon />
         </a>
-        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="locked == false && renameIsPending == false && deleteIsPending == false">
+        <a @click.stop.prevent="deleteFile(file)" class="white" v-if="locked == false && deleteIsPending == false">
           <TrashIcon />
         </a>
       </div>
     </div>
 
-    <div v-if="preRenameError" class="mutation-error">
-      <span>
-        {{ preRenameError }}
-      </span>
-    </div>
-
-    <div v-if="renameIsError" class="mutation-error">
-      <span>
-        Error renaming the file: {{ renameError.shortMessage || renameError.message }} <a @click.stop.prevent="renameReset()">Hide</a>
-      </span>
-    </div>
 
     <div v-if="deleteIsError" class="mutation-error">
       <span>
@@ -154,7 +102,7 @@ const deleteFile = async () => {
 <style scoped>
 .file {
   display: grid;
-  grid-template-columns: 5fr 2fr 1.5fr 1fr 1fr;
+  grid-template-columns: 5fr 2fr 1fr;
   padding: 0.5em 0em;
   align-items: center;
 }
@@ -168,7 +116,7 @@ const deleteFile = async () => {
 }
 
 .file > .filename {
-  padding-left: v-bind('paddingLeftForCSS');
+  padding-left: 0;
 }
 
 .file > .filename a {
@@ -192,18 +140,19 @@ const deleteFile = async () => {
     grid-template-columns: 2fr max-content;
   }
 
-  .file > .type,
-  .file > .compression,
-  .file > .size {
+  .file > .directory {
     display: none;
   }
 }
 
-.file > .type,
-.file > .compression,
-.file > .size {
+.file > .directory {
   font-size: 0.9em;
   color: #bbb;
+}
+
+.file > .actions {
+  justify-self: end;
+  padding-right: 0em;
 }
 
 .file.delete-pending {
@@ -211,18 +160,8 @@ const deleteFile = async () => {
   text-decoration: line-through;
 }
 
-.mutation-error {
-  padding: 0em 1em 0.5em v-bind('paddingLeftForCSS');
-  color: var(--color-text-danger);
-  line-height: 1em;
-}
-
 .mutation-error span {
   font-size: 0.8em;
 }
 
-.mutation-error a {
-  color: var(--color-text-danger);
-  text-decoration: underline;
-}
 </style>

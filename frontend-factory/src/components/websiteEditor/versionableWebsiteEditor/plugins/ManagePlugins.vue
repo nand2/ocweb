@@ -480,13 +480,8 @@ const reorderItem = async () => {
 }
 
 .mutation-error {
-  color: var(--color-text-danger);
+  padding: 0em;
   font-size: 0.8em;
-}
-
-.mutation-error a {
-  color: var(--color-text-danger);
-  text-decoration: underline;
 }
 
 .operations {

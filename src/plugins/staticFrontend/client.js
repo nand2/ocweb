@@ -63,17 +63,32 @@ class StaticFrontendPluginClient {
   }
 
   // Read a file fully. This will make multiple calls to readFile until the whole file is read
-  async readFileFully(websiteVersionIndex, filePath) {
+  // Returns a Uint8Array of the file data
+  async readFileFully(websiteVersionIndex, fileInfos, decompress) {
     let chunkId = 0
     let data = new Uint8Array(0)
+
     while(true) {
-      const {data: chunkData, nextChunkId} = await this.readFile(websiteVersionIndex, filePath, chunkId)
+      const {data: chunkData, nextChunkId} = await this.readFile(websiteVersionIndex, fileInfos.filePath, chunkId)
       data = new Uint8Array([...data, ...chunkData])
       if(nextChunkId == 0) {
         break
       }
       chunkId = nextChunkId
     }
+
+    if(decompress) {
+      const compressionAlgorithm = fileInfos.compressionAlgorithm
+      if(compressionAlgorithm == 1 /* gzip */) {
+        const decompressedStream = new DecompressionStream('gzip')
+        const readableStream = new Response(new Blob([data])).body;
+        data = new Uint8Array(await new Response(readableStream.pipeThrough(decompressedStream)).arrayBuffer());
+      }
+      else if(compressionAlgorithm != 0 /* none */) {
+        throw new Error(`Unsupported compression algorithm: ${compressionAlgorithm == 2 ? "brotli" : compressionAlgorithm}`)
+      }
+    }
+
     return data
   }
 
@@ -185,7 +200,7 @@ class StaticFrontendPluginClient {
       }
 
       // Fetching remote file content
-      const remoteFileData = await this.readFileFully(version, compressedFileInfo.filePath);
+      const remoteFileData = await this.readFileFully(version, compressedFileInfo, false);
       // If the file data is not identical, it's a different file: we need to upload it
       let isIdentical = true;
       if (remoteFileData.length !== compressedFileInfo.data.length) {

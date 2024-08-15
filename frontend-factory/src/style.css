@@ -207,3 +207,19 @@ button.sm {
   flex-direction: column;
   gap: 0.5em;
 }
+
+
+.mutation-error {
+  padding: 0em 1em 0.5em 0em;
+  color: var(--color-text-danger);
+  line-height: 1em;
+}
+
+.mutation-error span {
+  font-size: 0.9em;
+}
+
+.mutation-error a {
+  color: var(--color-text-danger);
+  text-decoration: underline;
+}

@@ -169,6 +169,7 @@ const rootFolderChildren = computed(() => {
       </div>
 
       <FolderChildren 
+        class="folder-chidren-root"
         :folderChildren="rootFolderChildren" 
         :locked="isLockedLoaded && isLocked || websiteVersion.locked"
         :contractAddress 
@@ -219,6 +220,6 @@ const rootFolderChildren = computed(() => {
 }
 
 .folder-chidren-root {
-  margin-top: 0.5em;
+  margin-top: 0.25em;
 }
 </style>
