@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
-import MarkdownEditor from './MarkdownEditor.vue';
+import TextEditor from './TextEditor.vue';
 
 import { useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from '../../../../utils/pluginStaticFrontendQueries';
 
@@ -50,11 +50,14 @@ watch(fileContent, (newValue) => {
   text.value = decodeFileContentAsText(newValue)
 });
 
+const nameIsValid = computed(() => {
+  return name.value !== '' && name.value !== null && !name.value.includes('/');
+});
 
 
 // Prepare the addition of files
-const filesEditionTransactions = ref([])
-const skippedFilesEditions = ref([])
+const filesAdditionTransactions = ref([])
+const skippedFilesAdditions = ref([])
 const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, error: prepareAddFilesError, isSuccess: prepareAddFilesIsSuccess, mutate: prepareAddFilesMutate, reset: prepareAddFilesReset } = useMutation({
   mutationFn: async () => {
     // Reset any previous upload
@@ -103,8 +106,8 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     return transactionsData;
   },
   onSuccess: (data) => {
-    filesEditionTransactions.value = data.transactions
-    skippedFilesEditions.value = data.skippedFiles
+    filesAdditionTransactions.value = data.transactions
+    skippedFilesAdditions.value = data.skippedFiles
     // Execute right away, don't wait for user confirmation
     executePreparedAddFilesTransactions()
   }
@@ -145,7 +148,7 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     }
 
     // Emit the event when all transactions are done
-    if(addFileTransactionBeingExecutedIndex.value == filesEditionTransactions.value.length - 1) {
+    if(addFileTransactionBeingExecutedIndex.value == filesAdditionTransactions.value.length - 1) {
       emit('pageSaved')
     }
   },
@@ -155,7 +158,7 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
   }
 })
 const executePreparedAddFilesTransactions = async () => {
-  for(const [index, transaction] of filesEditionTransactions.value.entries()) {
+  for(const [index, transaction] of filesAdditionTransactions.value.entries()) {
     addFilesMutate({index, transaction})
   }
 }
@@ -172,19 +175,24 @@ const executePreparedAddFilesTransactions = async () => {
     </div>
 
     <div v-if="fileInfos == null || fileContentLoaded">
-      <div v-if="fileInfos == null">
-        <h3>New markdown page</h3>
-      </div>
-      <div v-else>
-        <h3>Markdown page edition</h3>
-      </div>
+      <h3 class="editor-title">
+        <span v-if="fileInfos == null">New markdown page</span>
+        <span v-else>Markdown page edition</span>
+      </h3>
 
       <div style="margin-bottom: 1em">
         <input type="text" v-model="name" placeholder="Name" class="name-field" />
       </div>
 
       <div class="text-editor-area">
-        <MarkdownEditor v-model:text="text" />
+        <TextEditor 
+          v-model:text="text" 
+          :content-type="fileInfos.contentType"
+          :contractAddress
+          :chainId
+          :pluginInfos
+          :websiteVersionIndex
+          :staticFrontendPluginClient />
       </div>
 
       <div v-if="prepareAddFilesIsError" class="mutation-error">
@@ -201,7 +209,7 @@ const executePreparedAddFilesTransactions = async () => {
 
       <div class="buttons">
         <button @click="$emit('editCancelled')" :disabled="prepareAddFilesIsPending || addFilesIsPending">Cancel</button>
-        <button @click="prepareAddFilesTransactions" :disabled="prepareAddFilesIsPending || addFilesIsPending">Save</button>
+        <button @click="prepareAddFilesTransactions" :disabled="nameIsValid == false ||  prepareAddFilesIsPending || addFilesIsPending">Save</button>
       </div>
       
     </div>
@@ -215,7 +223,7 @@ const executePreparedAddFilesTransactions = async () => {
   padding: 0em 1em 1em 1em;
 }
 
-.page-editor h3 {
+.editor-title {
   margin-bottom: 0.5em;
 }
 

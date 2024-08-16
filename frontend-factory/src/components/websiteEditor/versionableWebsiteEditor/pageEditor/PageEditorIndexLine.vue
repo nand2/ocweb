@@ -18,6 +18,14 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  contractAddress: {
+    type: String,
+    required: true,
+  },
+  chainId: {
+    type: Number,
+    required: true,
+  },
   staticFrontendPluginClient: {
     type: Object,
     required: true,

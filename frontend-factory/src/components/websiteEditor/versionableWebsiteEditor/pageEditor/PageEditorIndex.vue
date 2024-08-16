@@ -127,7 +127,9 @@ const fileInfosBeingEdited = computed(() => {
             class="page-list"
             v-for="(file, index) in markdownFiles" :key="index"
             :file="file"
-            :websiteVersionIndex="websiteVersionIndex"
+            :websiteVersionIndex
+            :contractAddress
+            :chainId
             :staticFrontendPluginClient
             :locked="isLockedLoaded && isLocked || websiteVersion.locked"
             @page-edit-requested="() => {showPageEditor = true; filePathBeingEdited = file.filePath}"
@@ -150,10 +152,10 @@ const fileInfosBeingEdited = computed(() => {
     <div class="page-editor" v-if="showPageEditor">
       <Suspense>
         <PageEditor
+          :websiteVersionIndex
           :contractAddress
           :chainId
           :pluginInfos
-          :websiteVersionIndex
           :staticFrontendPluginClient
           :fileInfos="fileInfosBeingEdited"
           @edit-cancelled="showPageEditor = false; filePathBeingEdited = null"
