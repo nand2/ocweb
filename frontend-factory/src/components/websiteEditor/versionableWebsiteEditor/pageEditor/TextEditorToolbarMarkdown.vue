@@ -3,6 +3,8 @@ import { ref, defineProps, defineEmits, computed } from 'vue';
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
 import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../utils/pluginStaticFrontendQueries.js';
+import Modal from '../../../utils/Modal.vue';
+import FilesUploadOperation from '../staticFrontendPluginEditor/FilesUploadOperation.vue';
 
 const props = defineProps({
   editor: {
@@ -125,125 +127,42 @@ const toggleHeading = (level) => {
   
 }
 
-const uploadImage = () => {
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.style.display = 'none';
-  fileInput.accept = 'image/*';
-  fileInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const data = e.target.result;
-      const blob = await fetch(data).then(res => res.blob());
-      const arrayBuffer = await new Response(blob).arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      prepareAddImageMutate({data: uint8Array, name: file.name, contentType: file.type});
-    }
-    reader.readAsDataURL(file);
-  }
-  document.body.appendChild(fileInput);
-  fileInput.click();
-  document.body.removeChild(fileInput); 
-}
+// Insert an image
+const insertImage = (filePath, altText) => {
+  const state = props.editor.viewState.state;
+  const range = state.selection.ranges[0];
+  const imageMarkdown = `![${altText}](${filePath})`;
+  // Ensure that the image is inserted on a line on its own
+  const before = state.doc.lineAt(range.to).text === '' ? '' : '\n';
+  const after = state.doc.lineAt(range.to).text === '' ? '' : '\n';
 
-// Prepare the addition of image
-const addImageTransactions = ref([])
-const skippedFilesAdditions = ref([])
-const newImageFilePath = ref('')
-const { isPending: prepareAddImageIsPending, isError: prepareAddImageIsError, error: prepareAddImageError, isSuccess: prepareAddImageIsSuccess, mutate: prepareAddImageMutate, reset: prepareAddImageReset } = useMutation({
-  mutationFn: async (args) => {
-    // Reset any previous upload
-    addImageTransactionBeingExecutedIndex.value = -1
-    addImageTransactionResults.value = []
-
-    // Prepare the filepath
-    // Ensure it does not exists yet
-    newImageFilePath.value = "images/" + args.name;
-    if(staticFrontend.value.files.find(file => file.filePath == newImageFilePath.value)) {
-      let i = 1;
-      while(staticFrontend.value.files.find(file => file.filePath == newImageFilePath.value + `-${i}`)) {
-        i++;
+  const imageMarkdownWithNewLines = `${before}${imageMarkdown}${after}`;
+  props.editor.dispatch({
+      changes: {
+          from: range.to,
+          to: range.to,
+          insert: imageMarkdownWithNewLines
+      },
+      selection: {
+          anchor: range.to + before.length,
+          head: range.to  + before.length + imageMarkdown.length
       }
-      newImageFilePath.value = newImageFilePath.value + `-${i}`;
-    }
-
-    // Prepare the files for upload
-    const fileInfos = [{
-      filePath: newImageFilePath.value,
-      size: args.data.length,
-      contentType: args.contentType,
-      data: args.data,
-    }]
-    console.log(fileInfos)
-  
-    // Prepare the transaction to upload the files
-    const transactionsData = await props.staticFrontendPluginClient.prepareAddFilesTransactions(props.websiteVersionIndex, fileInfos);
-
-    return transactionsData;
-  },
-  onSuccess: (data) => {
-    addImageTransactions.value = data.transactions
-    skippedFilesAdditions.value = data.skippedFiles
-    // Execute right away, don't wait for user confirmation
-    executePreparedAddFilesTransactions()
-  }
-})
-
-// Execute an upload transaction
-const addImageTransactionBeingExecutedIndex = ref(-1)
-const addImageTransactionResults = ref([])
-const { isPending: addImageIsPending, isError: addImageIsError, error: addImageError, isSuccess: addImageIsSuccess, mutate: addImageMutate, reset: addImageReset } = useMutation({
-  mutationFn: async ({index, transaction}) => {
-    // Store infos about the state of the transaction
-    addImageTransactionResults.value.push({status: 'pending'})
-    addImageTransactionBeingExecutedIndex.value = index
-
-    const hash = await props.staticFrontendPluginClient.executeTransaction(transaction);
-    console.log(hash);
-
-    // Wait for the transaction to be mined
-    return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
-  },
-  scope: {
-    // This scope will make the mutations run serially
-    id: 'addImage'
-  },
-  onSuccess: async (data) => {
-    // Mark the transaction as successful
-    addImageTransactionResults.value[addImageTransactionBeingExecutedIndex.value] = {status: 'success'}
-
-    // Refresh the static website
-    await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
-
-    // Insert the image in the editor, once all transactions have been done
-    if(addImageTransactionBeingExecutedIndex.value == addImageTransactions.value.length - 1) {
-      const state = props.editor.viewState.state;
-      const range = state.selection.ranges[0];
-      const imageMarkdown = `![${newImageFilePath.value}](${newImageFilePath.value})`;
-      props.editor.dispatch({
-          changes: {
-              from: range.from,
-              to: range.to,
-              insert: imageMarkdown
-          },
-          selection: {
-              anchor: range.from,
-              head: range.from + imageMarkdown.length
-          }
-      })
-    }
-  },
-  onError: (error) => {
-    // Mark the transaction as failed
-    addImageTransactionResults.value[addImageTransactionBeingExecutedIndex.value] = {status: 'error', error}
-  }
-})
-const executePreparedAddFilesTransactions = async () => {
-  for(const [index, transaction] of addImageTransactions.value.entries()) {
-    addImageMutate({index, transaction})
-  }
+  })
 }
+
+const showImageModal = ref(false)
+const showImageModalExistingImageSelector = ref(true)
+
+// Get the list of existing images
+const images = computed(() => {
+  if(staticFrontend.value == null) {
+    return [];
+  }
+
+  return staticFrontend.value.files.filter(file => file.contentType.startsWith('image/')).sort((a, b) => a.filePath.localeCompare(b.filePath));
+})
+// The existing image to insert
+const selectedExistingImageToInsert = ref(null)
 </script>
 
 <template>
@@ -253,7 +172,37 @@ const executePreparedAddFilesTransactions = async () => {
 
       <button @click="toggleHeading(1)" class="btn btn-primary">Heading 1</button>
       
-      <button @click="uploadImage()" class="btn btn-primary">Upload image</button>
+      <button @click="showImageModal = true" class="btn btn-primary">Insert image</button>
+      <Modal 
+        v-model:show="showImageModal" 
+        title="Inserting image" 
+        @close="">
+        <div class="image-modal-content">
+          <div class="operations">
+            <FilesUploadOperation 
+              :uploadFolder="'images/'" 
+              :contentTypeAccept="'image/*'"
+              :contractAddress
+              :chainId
+              :websiteVersionIndex
+              :staticFrontendPluginClient
+              @transaction-list-computed="showImageModalExistingImageSelector = false"
+              @complete-file-added="(filePath) => insertImage(filePath, '')"
+              @all-files-added="showImageModal = false"
+              @form-reinitialized="showImageModalExistingImageSelector = true" />
+          </div>
+          <div class="text-muted" v-if="showImageModalExistingImageSelector">
+            - or -
+          </div>
+          <div v-if="showImageModalExistingImageSelector">
+            <select v-model="selectedExistingImageToInsert" class="form-select" @change="insertImage(selectedExistingImageToInsert, ''); selectedExistingImageToInsert = null; showImageModal = false">
+              <option :value="null">- Select an existing image -</option>
+              <option v-for="image in images" :key="image.filePath" :value="image.filePath">{{ image.filePath }}</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
+
       <!-- <button @click="editor.toggleItalic()" class="btn btn-primary">Italic</button>
       <button @click="editor.toggleUnderline()" class="btn btn-primary">Underline</button>
       <button @click="editor.toggleStrikethrough()" class="btn btn-primary">Strikethrough</button>
@@ -277,27 +226,26 @@ const executePreparedAddFilesTransactions = async () => {
       <button @click="editor.toggleMarkdown()" class="btn btn-primary">Markdown</button> -->
     </div>
 
-    <div>
-      <div v-if="prepareAddImageIsError" class="mutation-error">
-        <span>
-          Error preparing the transaction: {{ prepareAddImageError.shortMessage || prepareAddImageError.message }} <a @click.stop.prevent="prepareAddImageReset()">Hide</a>
-        </span>
-      </div>
-      <div v-if="addImageIsError" class="mutation-error">
-        <span>
-          Error executing the transaction: {{ addImageError.shortMessage || addImageError.message }} <a @click.stop.prevent="addImageReset()">Hide</a>
-        </span>
-      </div>
-    </div>
   </div>
 </template>
 
 <style scoped>
-  .mutation-error {
+  /* .mutation-error {
     margin-top: 0.25em;
   }
 
   .mutation-error span {
     font-size: 0.8em;
+  } */
+
+
+  .image-modal-content {
+    display: flex;
+    gap: 1.5em;
+    align-items: center;
+  }
+
+  .image-modal-content .operations {
+    margin-top: 0em;
   }
 </style>
