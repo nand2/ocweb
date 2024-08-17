@@ -38,7 +38,15 @@ const props = defineProps({
     required: true,
   },
 })
-const emit = defineEmits(['transactionListComputed', 'completeFileAdded', 'allFilesAdded', 'formReinitialized'])
+const emit = defineEmits([
+  // The list of transactions to be done is computed and is shown to the user
+  'transactionListComputed', 
+  // A full file has been uploaded
+  'completeFileUploaded', 
+  // All files were uploaded (without error)
+  'allFilesUploaded', 
+  // The form was reinitialized
+  'formReinitialized'])
 
 const queryClient = useQueryClient()
 
@@ -105,7 +113,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     skippedFilesAdditions.value = data.skippedFiles
 
     // Emit the fact that we just computed the list of transactions
-    emit('transactionListComputed')
+    emit('transactionListComputed', data)
   }
 })
 const prepareAddFilesTransactions = async () => {
@@ -138,21 +146,21 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     // Refresh the static website
     await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
 
-    // Emit the completeFileAdded event when a file, with all his chunks, is uploaded
+    // Emit the completeFileUploaded event when a file, with all his chunks, is uploaded
     if(transaction.functionName == 'addFiles') {
       transaction.metadata.files.forEach((file, fileIndex) => {
         if(file.chunksCount == 1) {
-          emit('completeFileAdded', transaction.args[2][fileIndex].filePath)
+          emit('completeFileUploaded', transaction.args[2][fileIndex].filePath)
         }
       })
     }
     else if(transaction.functionName == 'appendToFile' && transaction.metadata.chunkId == transaction.metadata.chunksCount - 1) {
-      emit('completeFileAdded', transaction.args[2])
+      emit('completeFileUploaded', transaction.args[2])
     }
 
-    // Emit allFilesAdded when all transactions are done and were successful
+    // Emit allFilesUploaded when all transactions are done and were successful
     if(addFileTransactionBeingExecutedIndex.value == filesAdditionTransactions.value.length - 1) {
-      emit('allFilesAdded')
+      emit('allFilesUploaded')
     }
   },
   onError: (error) => {
@@ -265,12 +273,12 @@ const clearAddFilesForm = () => {
         </div>
 
         <div class="skipped-files" v-if="skippedFilesAdditions.length > 0">
-          <div class="icon">
+          <div class="icon text-muted">
             <CheckLgIcon />
           </div>
           <div>
             <div class="skipped-files-title">
-              <strong>Skipped files</strong> <span class="text-muted text-90">(Identical file already uploaded)</span>
+              <strong class="text-muted">Skipped files</strong> <span class="text-muted text-90">(Identical file already uploaded)</span>
             </div>
             <div v-for="file in skippedFilesAdditions" :key="file.filePath" class="skipped-file text-muted">
               <code>{{ file.filePath }}</code>

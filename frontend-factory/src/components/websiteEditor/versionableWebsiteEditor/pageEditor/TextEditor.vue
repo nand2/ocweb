@@ -69,6 +69,7 @@ let editorExtensions = () => [
   // Theme override for both light and dark
   EditorView.theme({
     '&': { fontSize: "16px", maxHeight: '500px', cursor: "text" },
+    "&.cm-focused": { outline: "none",},
     '.cm-gutter,.cm-content': { minHeight: '200px' },
     '.cm-scroller': { overflow: 'auto' },
   }),

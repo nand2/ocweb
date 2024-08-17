@@ -5,6 +5,12 @@ import { useQueryClient, useMutation } from '@tanstack/vue-query'
 import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../utils/pluginStaticFrontendQueries.js';
 import Modal from '../../../utils/Modal.vue';
 import FilesUploadOperation from '../staticFrontendPluginEditor/FilesUploadOperation.vue';
+import TypeBoldIcon from '../../../../icons/TypeBoldIcon.vue';
+import TypeItalicIcon from '../../../../icons/TypeItalicIcon.vue';
+import ImageIcon from '../../../../icons/ImageIcon.vue';
+import TypeH1Icon from '../../../../icons/TypeH1Icon.vue';
+import TypeH2Icon from '../../../../icons/TypeH2Icon.vue';
+import TypeH3Icon from '../../../../icons/TypeH3Icon.vue';
 
 const props = defineProps({
   editor: {
@@ -81,11 +87,14 @@ const toggleSurroundWithStrings = (startString, endString) => {
             insert: `${startString}${state.sliceDoc(range.from, range.to)}${endString}`
         },
         selection: {
-            anchor: range.from,
-            head: range.to + startString.length + endString.length
+            anchor: range.from + startString.length,
+            head: range.to + startString.length
         }
     })
   }
+
+  // Give back the focus to the editor
+  props.editor.focus();
 }
 
 const toggleHeading = (level) => {
@@ -125,6 +134,8 @@ const toggleHeading = (level) => {
     })
   }
   
+  // Give back the focus to the editor
+  props.editor.focus();
 }
 
 // Insert an image
@@ -132,10 +143,34 @@ const insertImage = (filePath, altText) => {
   const state = props.editor.viewState.state;
   const range = state.selection.ranges[0];
   const imageMarkdown = `![${altText}](${filePath})`;
-  // Ensure that the image is inserted on a line on its own
-  const before = state.doc.lineAt(range.to).text === '' ? '' : '\n';
-  const after = state.doc.lineAt(range.to).text === '' ? '' : '\n';
 
+  // We insert at range.to
+  // Ensure the image is surrounded by new lines
+  let before = '';
+  const line = state.doc.lineAt(range.to);
+  const textBeforeInLine = line.text.slice(0, range.to - line.from);
+  if(textBeforeInLine.trim() != '') {
+    before = '\n\n';
+  }
+  else if(line.number > 1) {
+    const previousLine = state.doc.line(line.number - 1);
+    if(previousLine.text.trim() != '') {
+      before = '\n';
+    }
+  }
+  let after = '';
+  const textAfterInLine = line.text.slice(range.to - line.from);
+  if(textAfterInLine.trim() != '') {
+    after = '\n\n';
+  }
+  else if(line.number < state.doc.lines) {
+    const nextLine = state.doc.line(line.number + 1);
+    if(nextLine.text.trim() != '') {
+      after = '\n';
+    }
+  }
+
+  // Insert the image
   const imageMarkdownWithNewLines = `${before}${imageMarkdown}${after}`;
   props.editor.dispatch({
       changes: {
@@ -148,11 +183,23 @@ const insertImage = (filePath, altText) => {
           head: range.to  + before.length + imageMarkdown.length
       }
   })
+
+  // Give back the focus to the editor
+  props.editor.focus();
 }
 
 const showImageModal = ref(false)
-const showImageModalExistingImageSelector = ref(true)
 
+const imageModalProcessComputedTransactionList = (transactionList) => {
+  showImageModalExistingImageSelector.value = false;
+
+  // For each file skipped (because alreayd uploaded), insert the image
+  for(const file of transactionList.skippedFiles) {
+    insertImage(file.filePath, '');
+  }
+}
+
+const showImageModalExistingImageSelector = ref(true)
 // Get the list of existing images
 const images = computed(() => {
   if(staticFrontend.value == null) {
@@ -167,65 +214,46 @@ const selectedExistingImageToInsert = ref(null)
 
 <template>
   <div>
-    <div>
-      <button @click="toggleSurroundWithStrings('**', '**')" class="btn btn-primary">Bold</button>
+    <div class="toolbar">
+      <a @click.prevent.stop="toggleSurroundWithStrings('**', '**')" class="white"><TypeBoldIcon /></a>
+      <a @click.prevent.stop="toggleSurroundWithStrings('*', '*')" class="white"><TypeItalicIcon /></a>
 
-      <button @click="toggleHeading(1)" class="btn btn-primary">Heading 1</button>
-      
-      <button @click="showImageModal = true" class="btn btn-primary">Insert image</button>
-      <Modal 
-        v-model:show="showImageModal" 
-        title="Inserting image" 
-        @close="">
-        <div class="image-modal-content">
-          <div class="operations">
-            <FilesUploadOperation 
-              :uploadFolder="'images/'" 
-              :contentTypeAccept="'image/*'"
-              :contractAddress
-              :chainId
-              :websiteVersionIndex
-              :staticFrontendPluginClient
-              @transaction-list-computed="showImageModalExistingImageSelector = false"
-              @complete-file-added="(filePath) => insertImage(filePath, '')"
-              @all-files-added="showImageModal = false"
-              @form-reinitialized="showImageModalExistingImageSelector = true" />
-          </div>
-          <div class="text-muted" v-if="showImageModalExistingImageSelector">
-            - or -
-          </div>
-          <div v-if="showImageModalExistingImageSelector">
-            <select v-model="selectedExistingImageToInsert" class="form-select" @change="insertImage(selectedExistingImageToInsert, ''); selectedExistingImageToInsert = null; showImageModal = false">
-              <option :value="null">- Select an existing image -</option>
-              <option v-for="image in images" :key="image.filePath" :value="image.filePath">{{ image.filePath }}</option>
-            </select>
-          </div>
-        </div>
-      </Modal>
+      <a @click.prevent.stop="toggleHeading(1)" class="white"><TypeH1Icon /></a>
+      <a @click.prevent.stop="toggleHeading(2)" class="white"><TypeH2Icon /></a>
+      <a @click.prevent.stop="toggleHeading(3)" class="white"><TypeH3Icon /></a>
 
-      <!-- <button @click="editor.toggleItalic()" class="btn btn-primary">Italic</button>
-      <button @click="editor.toggleUnderline()" class="btn btn-primary">Underline</button>
-      <button @click="editor.toggleStrikethrough()" class="btn btn-primary">Strikethrough</button>
-      <button @click="editor.toggleCode()" class="btn btn-primary">Code</button>
-      <button @click="editor.toggleBlockquote()" class="btn btn-primary">Blockquote</button>
-      <button @click="editor.toggleUnorderedList()" class="btn btn-primary">Unordered List</button>
-      <button @click="editor.toggleOrderedList()" class="btn btn-primary">Ordered List</button>
-      <button @click="editor.toggleHeading(1)" class="btn btn-primary">Heading 1</button>
-      <button @click="editor.toggleHeading(2)" class="btn btn-primary">Heading 2</button>
-      <button @click="editor.toggleHeading(3)" class="btn btn-primary">Heading 3</button>
-      <button @click="editor.toggleHeading(4)" class="btn btn-primary">Heading 4</button>
-      <button @click="editor.toggleHeading(5)" class="btn btn-primary">Heading 5</button>
-      <button @click="editor.toggleHeading(6)" class="btn btn-primary">Heading 6</button>
-      <button @click="editor.toggleLink()" class="btn btn-primary">Link</button>
-      <button @click="editor.toggleImage()" class="btn btn-primary">Image</button>
-      <button @click="editor.toggleTable()" class="btn btn-primary">Table</button>
-      <button @click="editor.toggleHorizontalRule()" class="btn btn-primary">Horizontal Rule</button>
-      <button @click="editor.toggleCodeBlock()" class="btn btn-primary">Code Block</button>
-      <button @click="editor.toggleMath()" class="btn btn-primary">Math</button>
-      <button @click="editor.toggleHtml()" class="btn btn-primary">HTML</button>
-      <button @click="editor.toggleMarkdown()" class="btn btn-primary">Markdown</button> -->
+      <a @click.prevent.stop="showImageModal = true" class="white"><ImageIcon /></a>
     </div>
 
+    <Modal 
+      v-model:show="showImageModal" 
+      title="Inserting image" 
+      @close="editor.focus()">
+      <div class="image-modal-content">
+        <div class="operations">
+          <FilesUploadOperation 
+            :uploadFolder="'images/'" 
+            :contentTypeAccept="'image/*'"
+            :contractAddress
+            :chainId
+            :websiteVersionIndex
+            :staticFrontendPluginClient
+            @transaction-list-computed="imageModalProcessComputedTransactionList"
+            @complete-file-uploaded="(filePath) => insertImage(filePath, '')"
+            @all-files-uploaded="showImageModal = false"
+            @form-reinitialized="showImageModalExistingImageSelector = true" />
+        </div>
+        <div class="text-muted" v-if="showImageModalExistingImageSelector">
+          - or -
+        </div>
+        <div v-if="showImageModalExistingImageSelector">
+          <select v-model="selectedExistingImageToInsert" class="form-select" @change="insertImage(selectedExistingImageToInsert, ''); selectedExistingImageToInsert = null; showImageModal = false">
+            <option :value="null">- Select an existing image -</option>
+            <option v-for="image in images" :key="image.filePath" :value="image.filePath">{{ image.filePath }}</option>
+          </select>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -237,6 +265,22 @@ const selectedExistingImageToInsert = ref(null)
   .mutation-error span {
     font-size: 0.8em;
   } */
+
+  .toolbar {
+    display: flex;
+    gap: 0.5em;
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+    padding-bottom: 0.25em;
+  }
+
+  .toolbar > a {
+    font-size: 1.5em;
+    background-color: var(--color-input-bg);
+    line-height: 0em;
+    padding: 0.2em;
+    border-radius: 0.25em;
+  }
 
 
   .image-modal-content {
