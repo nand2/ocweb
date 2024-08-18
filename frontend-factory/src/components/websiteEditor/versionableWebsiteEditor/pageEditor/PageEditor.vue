@@ -24,14 +24,24 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  fileInfos: {
-    type: Object,
-    default: null
-  },
   staticFrontendPluginClient: {
     type: Object,
     required: true,
   },
+  // If editing an existing file, provide the file infos
+  fileInfos: {
+    type: Object,
+    default: null
+  },
+  // Otherwise, infos about the new file
+  newFileContentType: {
+    type: String,
+    default: "text/markdown"
+  },
+  newFileFolder: {
+    type: String,
+    default: "pages/"
+  }
 })
 
 
@@ -79,7 +89,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
       }
     }
     else {
-      newFilePath = "pages/" + newFilePath;
+      newFilePath = props.newFileFolder + newFilePath;
     }
 
     // Prepare the files for upload
@@ -187,7 +197,7 @@ const executePreparedAddFilesTransactions = async () => {
       <div class="text-editor-area">
         <TextEditor 
           v-model:text="text" 
-          :content-type="fileInfos.contentType"
+          :content-type="fileInfos ? fileInfos.contentType : newFileContentType"
           :contractAddress
           :chainId
           :pluginInfos

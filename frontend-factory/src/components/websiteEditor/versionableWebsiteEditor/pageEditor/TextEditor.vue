@@ -41,7 +41,6 @@ const props = defineProps({
 // Initialize the markdown engine
 const markdownitEngine = markdownit()
 
-
 const editorDOMElement = ref(null)
 const editor = shallowRef(null)
 
@@ -53,6 +52,15 @@ let editorTheme = (isDark) => {
   //   },
   // })
   return codeMirrorOneDarkTheme;
+}
+let editorThemeOverride = () => {
+  let themeOverride = {}
+  if(fullscreen.value) {
+    themeOverride = {
+      '&': { maxHeight: 'none' },
+    }
+  }
+  return EditorView.theme(themeOverride)
 }
 let editorUpdateListenerExtension = EditorView.updateListener.of((update) => {
   if (update.docChanged) {
@@ -66,6 +74,8 @@ let editorExtensions = () => [
   EditorView.lineWrapping,
   // Theme, ready to be switched from light to dark
   editorThemeCompartment.of(editorTheme(window.matchMedia('(prefers-color-scheme: dark)').matches)),
+  // Dynamic theme overrides (need to be before the static theme overrides)
+  editorThemeOverrideCompartment.of(editorThemeOverride()),
   // Theme override for both light and dark
   EditorView.theme({
     '&': { fontSize: "16px", maxHeight: '500px', cursor: "text" },
@@ -78,6 +88,7 @@ let editorExtensions = () => [
   // Update listener: Update the preview
   editorUpdateListenerExtension
 ]
+let editorThemeOverrideCompartment = new codeMirrorCompartment()
 let editorReadonlyCompartment = new codeMirrorCompartment()
 let editorThemeCompartment = new codeMirrorCompartment()
 
@@ -108,22 +119,41 @@ onMounted(() => {
   }
 })
 
+const setFullscreen = (value) => {
+  fullscreen.value = value
 
+  // Reload the theme override
+  editor.value.dispatch({
+    effects: editorThemeOverrideCompartment.reconfigure(
+      editorThemeOverride()
+    )
+  });
+}
+
+const fullscreen = ref(false)
 </script>
 
 <template>
-  <div>
-    <div class="toolbar" v-if="editor != null && contentType == 'text/markdown'">
-      <TextEditorToolbarMarkdown 
-        :editor="editor"
-        :contractAddress
-        :chainId
-        :pluginInfos
-        :websiteVersionIndex
-        :staticFrontendPluginClient />
-    </div>
-    <div id="editor" ref="editorDOMElement">
-      <!-- Markdown editor goes here -->
+  <div class="editor-and-preview" :class="{'preview-active': fullscreen}">
+    <div class="editor-and-preview-inner">
+      <div class="editor-with-toolbar">
+        <div class="toolbar" v-if="editor != null && contentType == 'text/markdown'">
+          <TextEditorToolbarMarkdown 
+            :editor="editor"
+            :contractAddress
+            :chainId
+            :pluginInfos
+            :websiteVersionIndex
+            :staticFrontendPluginClient
+            @enter-fullscreen="setFullscreen(true)"
+            @exit-fullscreen="setFullscreen(false)" />
+        </div>
+        <div id="editor" ref="editorDOMElement">
+          <!-- Markdown editor goes here -->
+        </div>
+      </div>
+      <div class="preview" v-if="contentType == 'text/markdown'" v-html="markdownitEngine.render(text)">
+      </div>
     </div>
   </div>
 </template>
@@ -131,5 +161,57 @@ onMounted(() => {
 <style scoped>
 .cm-editor {
   min-height: 5em;
+}
+
+.editor-and-preview {
+}
+
+.editor-with-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+#editor {
+  overflow-y: auto;
+}
+
+.preview {
+  display: none;
+}
+
+.editor-and-preview.preview-active {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;  
+  z-index: 1;
+}
+
+.editor-and-preview.preview-active .editor-and-preview-inner {
+  background-color: var(--color-root-bg);
+  /* border-radius: 5px; */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-height: calc(100% - 2em);
+  z-index: 1;
+  padding: 1.5em 1em;
+  display: flex;
+  gap: 2em;
+}
+
+.editor-and-preview.preview-active .editor-and-preview-inner .editor-with-toolbar {
+  flex: 0 0 50%;
+}
+
+.editor-and-preview.preview-active .editor-and-preview-inner .preview {
+  display: block;
+  flex: 1 1 50%;
+  overflow-y: auto;
 }
 </style>

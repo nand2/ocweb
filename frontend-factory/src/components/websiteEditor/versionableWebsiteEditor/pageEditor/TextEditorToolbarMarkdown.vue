@@ -11,6 +11,8 @@ import ImageIcon from '../../../../icons/ImageIcon.vue';
 import TypeH1Icon from '../../../../icons/TypeH1Icon.vue';
 import TypeH2Icon from '../../../../icons/TypeH2Icon.vue';
 import TypeH3Icon from '../../../../icons/TypeH3Icon.vue';
+import ArrowsFullscreenIcon from '../../../../icons/ArrowsFullscreenIcon.vue';
+import FullscreenExitIcon from '../../../../icons/FullscreenExitIcon.vue';
 
 const props = defineProps({
   editor: {
@@ -38,6 +40,7 @@ const props = defineProps({
     required: true,
   },
 })
+const emit = defineEmits(['enterFullscreen', 'exitFullscreen'])
 
 const queryClient = useQueryClient()
 
@@ -142,7 +145,7 @@ const toggleHeading = (level) => {
 const insertImage = (filePath, altText) => {
   const state = props.editor.viewState.state;
   const range = state.selection.ranges[0];
-  const imageMarkdown = `![${altText}](${filePath})`;
+  const imageMarkdown = `![${altText}](/${filePath.replace(/ /g, '%20')})`;
 
   // We insert at range.to
   // Ensure the image is surrounded by new lines
@@ -189,7 +192,6 @@ const insertImage = (filePath, altText) => {
 }
 
 const showImageModal = ref(false)
-
 const imageModalProcessComputedTransactionList = (transactionList) => {
   showImageModalExistingImageSelector.value = false;
 
@@ -201,7 +203,7 @@ const imageModalProcessComputedTransactionList = (transactionList) => {
 
 const showImageModalExistingImageSelector = ref(true)
 // Get the list of existing images
-const images = computed(() => {
+const existingImages = computed(() => {
   if(staticFrontend.value == null) {
     return [];
   }
@@ -210,6 +212,17 @@ const images = computed(() => {
 })
 // The existing image to insert
 const selectedExistingImageToInsert = ref(null)
+
+const fullScreen = ref(false)
+const toggleFullscreen = () => {
+  fullScreen.value = !fullScreen.value;
+  if(fullScreen.value) {
+    emit('enterFullscreen');
+  }
+  else {
+    emit('exitFullscreen');
+  }
+}
 </script>
 
 <template>
@@ -223,6 +236,12 @@ const selectedExistingImageToInsert = ref(null)
       <a @click.prevent.stop="toggleHeading(3)" class="white"><TypeH3Icon /></a>
 
       <a @click.prevent.stop="showImageModal = true" class="white"><ImageIcon /></a>
+
+      <a @click.prevent.stop="toggleFullscreen()" class="white">
+        <ArrowsFullscreenIcon v-if="fullScreen == false" />
+        <FullscreenExitIcon v-else />
+        Preview
+      </a>
     </div>
 
     <Modal 
@@ -249,7 +268,7 @@ const selectedExistingImageToInsert = ref(null)
         <div v-if="showImageModalExistingImageSelector">
           <select v-model="selectedExistingImageToInsert" class="form-select" @change="insertImage(selectedExistingImageToInsert, ''); selectedExistingImageToInsert = null; showImageModal = false">
             <option :value="null">- Select an existing image -</option>
-            <option v-for="image in images" :key="image.filePath" :value="image.filePath">{{ image.filePath }}</option>
+            <option v-for="image in existingImages" :key="image.filePath" :value="image.filePath">{{ image.filePath }}</option>
           </select>
         </div>
       </div>
@@ -269,17 +288,21 @@ const selectedExistingImageToInsert = ref(null)
   .toolbar {
     display: flex;
     gap: 0.5em;
-    padding-left: 0.25em;
-    padding-right: 0.25em;
-    padding-bottom: 0.25em;
   }
 
   .toolbar > a {
-    font-size: 1.5em;
+    font-size: 0.9em;
     background-color: var(--color-input-bg);
-    line-height: 0em;
-    padding: 0.2em;
+    /* line-height: 0em; */
+    padding: 0.2em 0.4em;
     border-radius: 0.25em;
+    display: flex;
+    gap: 0.5em;
+  }
+
+  .toolbar > a > svg {
+    display: block;
+    height: 100%;
   }
 
 
