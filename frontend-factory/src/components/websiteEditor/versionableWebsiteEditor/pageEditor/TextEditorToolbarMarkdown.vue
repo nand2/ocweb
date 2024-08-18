@@ -14,6 +14,7 @@ import TypeH3Icon from '../../../../icons/TypeH3Icon.vue';
 import ArrowsFullscreenIcon from '../../../../icons/ArrowsFullscreenIcon.vue';
 import FullscreenExitIcon from '../../../../icons/FullscreenExitIcon.vue';
 import Link45DegIcon from '../../../../icons/Link45DegIcon.vue';
+import ListUlIcon from '../../../../icons/ListUlIcon.vue';
 
 const props = defineProps({
   editor: {
@@ -179,7 +180,7 @@ const insertLink = () => {
     if(startLinkIndex !== -1 && endLinkIndex !== -1) {
       // Extract the text between the "[" and the "]" (including them), and check if it is a link
       const linkText = line.text.slice(startLinkIndex, cursorPosition - line.from + endLinkIndex + 1);
-      const linkMatch = linkText.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      const linkMatch = linkText.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
       if(linkMatch) {
         props.editor.dispatch({
           changes: {
@@ -212,6 +213,49 @@ const insertLink = () => {
         }
     })
     processingDone = true;
+  }
+
+  // Give back the focus to the editor
+  props.editor.focus();
+}
+
+// Insert a UL list entry
+const insertListEntry = () => {
+  const state = props.editor.viewState.state;
+  const range = state.selection.ranges[0];
+  const cursorPosition = state.selection.main.head;
+  const line = state.doc.lineAt(cursorPosition);
+  const textBeforeInLine = line.text.slice(0, cursorPosition - line.from);
+  const textAfterInLine = line.text.slice(cursorPosition - line.from);
+
+  // If the cursor is already in a list, remove the list
+  const listMatch = textBeforeInLine.match(/^(\s*)- /);
+  if(listMatch) {
+    props.editor.dispatch({
+      changes: {
+        from: line.from + listMatch[1].length,
+        to: line.from + listMatch[1].length + 2,
+        insert: ''
+      },
+      selection: {
+        anchor: cursorPosition - 2,
+        head: cursorPosition - 2
+      }
+    })
+  }
+  // Otherwise, add the list
+  else {
+    props.editor.dispatch({
+      changes: {
+        from: line.from,
+        to: line.from,
+        insert: `- `
+      },
+      selection: {
+        anchor: cursorPosition + 2,
+        head: cursorPosition + 2
+      }
+    })
   }
 
   // Give back the focus to the editor
@@ -312,6 +356,7 @@ const toggleFullscreen = () => {
       <a @click.prevent.stop="toggleHeading(2)" class="white"><TypeH2Icon /></a>
       <a @click.prevent.stop="toggleHeading(3)" class="white"><TypeH3Icon /></a>
 
+      <a @click.prevent.stop="insertListEntry()" class="white"><ListUlIcon /></a>
       
       <a @click.prevent.stop="insertLink()" class="white"><Link45DegIcon /></a>
 
