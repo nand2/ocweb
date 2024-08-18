@@ -13,6 +13,7 @@ import TypeH2Icon from '../../../../icons/TypeH2Icon.vue';
 import TypeH3Icon from '../../../../icons/TypeH3Icon.vue';
 import ArrowsFullscreenIcon from '../../../../icons/ArrowsFullscreenIcon.vue';
 import FullscreenExitIcon from '../../../../icons/FullscreenExitIcon.vue';
+import Link45DegIcon from '../../../../icons/Link45DegIcon.vue';
 
 const props = defineProps({
   editor: {
@@ -141,6 +142,82 @@ const toggleHeading = (level) => {
   props.editor.focus();
 }
 
+// Insert a link around the currently selected text
+const insertLink = () => {
+  const state = props.editor.viewState.state;
+  const range = state.selection.ranges[0];
+  const cursorPosition = state.selection.main.head;
+  const selectedText = state.sliceDoc(range.from, range.to);
+
+  let processingDone = false;
+  // If the selected text is a link, remove the link
+  const linkMatch = selectedText.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+  if(linkMatch) {
+    props.editor.dispatch({
+      changes: {
+        from: range.from,
+        to: range.to,
+        insert: linkMatch[1]
+      },
+      selection: {
+        anchor: range.from,
+        head: range.from + linkMatch[1].length
+    }
+    })
+    processingDone = true;
+  }
+  // Otherwise : check if the cursor is inside a link: if so, remove the link
+  else {
+    const line = state.doc.lineAt(cursorPosition);
+    const textBeforeInLine = line.text.slice(0, cursorPosition - line.from);
+    const textAfterInLine = line.text.slice(cursorPosition - line.from);
+
+    // Find the first "[" before the cursor
+    let startLinkIndex = textBeforeInLine.lastIndexOf('[');
+    // Find the first ")" after the cursor
+    let endLinkIndex = textAfterInLine.indexOf(')');
+    if(startLinkIndex !== -1 && endLinkIndex !== -1) {
+      // Extract the text between the "[" and the "]" (including them), and check if it is a link
+      const linkText = line.text.slice(startLinkIndex, cursorPosition - line.from + endLinkIndex + 1);
+      const linkMatch = linkText.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      if(linkMatch) {
+        props.editor.dispatch({
+          changes: {
+            from: line.from + startLinkIndex,
+            to: line.from + startLinkIndex + linkText.length,
+            insert: linkMatch[1]
+          },
+          selection: {
+            anchor: line.from + startLinkIndex,
+            head: line.from + startLinkIndex + linkMatch[1].length
+          }
+        })
+        processingDone = true;
+      }
+    }
+  }
+  
+  // Otherwise, add the link
+  if(processingDone === false) {
+    const urlPlaceholder = 'url';
+    props.editor.dispatch({
+        changes: {
+          from: range.from,
+          to: range.to,
+          insert: `[${selectedText}](${urlPlaceholder})`
+        },
+        selection: {
+          anchor: range.from + selectedText.length + 3,
+          head: range.from + selectedText.length + 3 + urlPlaceholder.length
+        }
+    })
+    processingDone = true;
+  }
+
+  // Give back the focus to the editor
+  props.editor.focus();
+}
+
 // Insert an image
 const insertImage = (filePath, altText) => {
   const state = props.editor.viewState.state;
@@ -234,6 +311,9 @@ const toggleFullscreen = () => {
       <a @click.prevent.stop="toggleHeading(1)" class="white"><TypeH1Icon /></a>
       <a @click.prevent.stop="toggleHeading(2)" class="white"><TypeH2Icon /></a>
       <a @click.prevent.stop="toggleHeading(3)" class="white"><TypeH3Icon /></a>
+
+      
+      <a @click.prevent.stop="insertLink()" class="white"><Link45DegIcon /></a>
 
       <a @click.prevent.stop="showImageModal = true" class="white"><ImageIcon /></a>
 
