@@ -15,6 +15,8 @@ import ArrowsFullscreenIcon from '../../../../icons/ArrowsFullscreenIcon.vue';
 import FullscreenExitIcon from '../../../../icons/FullscreenExitIcon.vue';
 import Link45DegIcon from '../../../../icons/Link45DegIcon.vue';
 import ListUlIcon from '../../../../icons/ListUlIcon.vue';
+import CodeSlashIcon from '../../../../icons/CodeSlashIcon.vue';
+import QuoteIcon from '../../../../icons/QuoteIcon.vue';
 
 const props = defineProps({
   editor: {
@@ -139,6 +141,46 @@ const toggleHeading = (level) => {
     })
   }
   
+  // Give back the focus to the editor
+  props.editor.focus();
+}
+
+const toggleBlockquote = () => {
+  const state = props.editor.viewState.state;
+  const range = state.selection.ranges[0];
+  const line = state.doc.lineAt(range.from);
+  const textBeforeInLine = line.text.slice(0, range.from - line.from);
+
+  // If the line where the cursor is already start with a blockquote, remove it
+  const match = textBeforeInLine.match(/^> /);
+  if (match) {
+    props.editor.dispatch({
+        changes: {
+            from: line.from + match.index,
+            to: line.from + match.index + 2,
+            insert: ''
+        },
+        selection: {
+            anchor: range.from - 2,
+            head: range.to - 2
+        }
+    })
+  }
+  // Otherwise, add the blockquote
+  else {
+    props.editor.dispatch({
+        changes: {
+            from: line.from,
+            to: line.from,
+            insert: `> `
+        },
+        selection: {
+            anchor: range.from + 2,
+            head: range.to + 2
+        }
+    })
+  }
+
   // Give back the focus to the editor
   props.editor.focus();
 }
@@ -357,6 +399,10 @@ const toggleFullscreen = () => {
       <a @click.prevent.stop="toggleHeading(3)" class="white"><TypeH3Icon /></a>
 
       <a @click.prevent.stop="insertListEntry()" class="white"><ListUlIcon /></a>
+
+      <a @click.prevent.stop="toggleSurroundWithStrings('\n```\n', '\n```\n')" class="white"><CodeSlashIcon /></a>
+
+      <a @click.prevent.stop="toggleBlockquote()" class="white"><QuoteIcon /></a>
       
       <a @click.prevent.stop="insertLink()" class="white"><Link45DegIcon /></a>
 

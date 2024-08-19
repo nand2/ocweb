@@ -21,6 +21,9 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
     // Storage backends
     IStorageBackend[] public storageBackends;
 
+    // Content keys reference counter
+    mapping(IStorageBackend => mapping(uint => uint)) public contentKeysRefCounters;
+
 
 
 
@@ -143,6 +146,13 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
 
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][fromFrontendIndex];
         websiteVersionStaticFrontends[website][toFrontendIndex].storageBackend = frontend.storageBackend;
+
+        for(uint i = 0; i < frontend.files.length; i++) {
+            websiteVersionStaticFrontends[website][toFrontendIndex].files.push(frontend.files[i]);
+
+            // Increment the content key reference counter
+            contentKeysRefCounters[frontend.storageBackend][frontend.files[i].contentKey]++;
+        }
     }
 
     function getStaticFrontend(IVersionableWebsite website, uint websiteVersionIndex) public view returns (StaticFrontend memory) {
@@ -235,11 +245,15 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             // (we do it before the create, as remove() may free a slot for the new file in the
             // storage backend)
             if(fileFound) {
-                frontend.storageBackend.remove(frontend.files[fileIndex].contentKey);
+                contentKeysRefCounters[frontend.storageBackend][frontend.files[fileIndex].contentKey]--;
+                if(contentKeysRefCounters[frontend.storageBackend][frontend.files[fileIndex].contentKey] == 0) {
+                    frontend.storageBackend.remove(frontend.files[fileIndex].contentKey);
+                }
             }
 
             // Create the new file on the storage backend
             (uint contentKey, uint fundsUsed) = frontend.storageBackend.create(fileUploadInfos[i].data, fileUploadInfos[i].fileSize);
+            contentKeysRefCounters[frontend.storageBackend][contentKey]++;
             totalFundsUsed += fundsUsed;
 
             // If the file was found, reuse the existing fileInfos entry
@@ -365,7 +379,12 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePaths[i]);
             require(fileFound, "File not found");
 
-            frontend.storageBackend.remove(frontend.files[fileIndex].contentKey);
+            // Decrement the content key reference counter. If 0, remove the content from the storage backend
+            contentKeysRefCounters[frontend.storageBackend][frontend.files[fileIndex].contentKey]--;
+            if(contentKeysRefCounters[frontend.storageBackend][frontend.files[fileIndex].contentKey] == 0) {
+                frontend.storageBackend.remove(frontend.files[fileIndex].contentKey);
+            }
+
             frontend.files[fileIndex] = frontend.files[frontend.files.length - 1];
             frontend.files.pop();
         }
@@ -388,7 +407,11 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         for(int i = int(frontend.files.length) - 1; i >= 0 ; i--) {
-            frontend.storageBackend.remove(frontend.files[uint(i)].contentKey);
+            // Decrement the content key reference counter. If 0, remove the content from the storage backend
+            contentKeysRefCounters[frontend.storageBackend][frontend.files[uint(i)].contentKey]--;
+            if(contentKeysRefCounters[frontend.storageBackend][frontend.files[uint(i)].contentKey] == 0) {
+                frontend.storageBackend.remove(frontend.files[uint(i)].contentKey);
+            }
             frontend.files.pop();
         }
     }
