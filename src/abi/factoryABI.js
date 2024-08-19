@@ -238,6 +238,11 @@ export const abi = [
             internalType: "address",
             name: "contractAddress",
             type: "address"
+          },
+          {
+            internalType: "string",
+            name: "subdomain",
+            type: "string"
           }
         ],
         internalType: "struct OCWebsiteFactory.DetailedToken[]",

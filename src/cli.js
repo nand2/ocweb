@@ -13,6 +13,7 @@ import { StaticFrontendPluginClient } from './plugins/staticFrontend/client.js'
 import readline from 'node:readline/promises';
 import chalk from "chalk";
 import { exit } from "process";
+import { processCommand } from "./commands.js";
 import { processCommand as processStaticFrontendPluginCommand } from './plugins/staticFrontend/commands.js'
 
 const y = yargs(hideBin(process.argv))
@@ -21,7 +22,7 @@ const y = yargs(hideBin(process.argv))
     alias: 'r',
     type: 'string',
     requiresArg: true,
-    description: "The RPC provider URL. Example: https://your.provider.com/"
+    description: "Override the default RPC provider URL. Example: https://your.provider.com/"
   })
   .option('private-key', {
     alias: 'k',
@@ -29,27 +30,59 @@ const y = yargs(hideBin(process.argv))
     requiresArg: true,
     description: "The private key of the wallet to use for signing transactions (Environment variable: PRIVATE_KEY)"
   })
-  .option('web3-address', {
-    alias: 'a',
-    type: 'string',
-    requiresArg: true,
-    description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
-  })
-  .option('website-version', {
-    alias: 'w',
-    type: 'string',
-    requiresArg: true,
-    default: 'live',
-    description: "The version of your OCWebsite. Either 'live' or a version index."
-  })
   .option('skip-tx-validation', {
     type: 'boolean',
     description: "Skip the validation prompt for transactions. WARNING: This will make you sign transactions right away. Use with caution.",
     default: false
   })
+  .command('mint <chainId> <subdomain>',
+    'Mint a new OCWebsite on a blockchain',
+    (yargs) => {
+      yargs.option('factory-address', {
+        type: 'string',
+        requiresArg: true,
+        description: "The factory contract address of the OCWebsite. Example: 0x1234567890abcdef1234567890abcdef12345678"
+      })
+      yargs.positional('chainId', {
+        type: 'number',
+        description: 'The chain id of the blockchain where to mint. Example: 10 (Optimism mainnet)'
+      })
+      yargs.positional('subdomain', {
+        type: 'string',
+        description: 'The subdomain in the <subdomain>.<chain>.ocweb.eth domain of the new website. Example: mywebsite'
+      })
+    }
+  )
+  .command('list <chainId>',
+    'List the OCWebsites owned by the wallet',
+    (yargs) => {
+      yargs.option('factory-address', {
+        type: 'string',
+        requiresArg: true,
+        description: "The factory contract address of the OCWebsite. Example: 0x1234567890abcdef1234567890abcdef12345678"
+      })
+      yargs.positional('chainId', {
+        type: 'number',
+        description: 'The chain id of the blockchain where to mint. Example: 10 (Optimism mainnet)'
+      })
+    }
+  )
   .command('upload [arguments..]', 
     'Upload a static frontend to the website. Require the Static Frontend plugin installed.', 
     (yargs) => {
+      yargs.option('web3-address', {
+        alias: 'a',
+        type: 'string',
+        requiresArg: true,
+        description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
+      })
+      yargs.option('website-version', {
+        alias: 'w',
+        type: 'string',
+        requiresArg: true,
+        default: 'live',
+        description: "The version of your OCWebsite. Either 'live' or a version index."
+      })
       yargs.option('exclude', {
         type: 'string',
         description: 'Exclude files matching the pattern. Example: --exclude "*.map" --exclude "*.DS_Store"',
@@ -68,6 +101,19 @@ const y = yargs(hideBin(process.argv))
   .command('ls [folder]', 
     'List the files in the static frontend', 
     (yargs) => {
+      yargs.option('web3-address', {
+        alias: 'a',
+        type: 'string',
+        requiresArg: true,
+        description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
+      })
+      yargs.option('website-version', {
+        alias: 'w',
+        type: 'string',
+        requiresArg: true,
+        default: 'live',
+        description: "The version of your OCWebsite. Either 'live' or a version index."
+      })
       yargs.option('tree', {
         alias: 't',
         type: 'boolean',
@@ -84,6 +130,19 @@ const y = yargs(hideBin(process.argv))
   .command('rm <files..>',
     'Remove a file from the static frontend',
     (yargs) => {
+      yargs.option('web3-address', {
+        alias: 'a',
+        type: 'string',
+        requiresArg: true,
+        description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
+      })
+      yargs.option('website-version', {
+        alias: 'w',
+        type: 'string',
+        requiresArg: true,
+        default: 'live',
+        description: "The version of your OCWebsite. Either 'live' or a version index."
+      })
       yargs.option('recursive', {
         alias: 'R',
         type: 'boolean',
@@ -97,20 +156,75 @@ const y = yargs(hideBin(process.argv))
       })
     }
   )
+  .wrap(yargs().terminalWidth())
   .demandCommand(1)
   .strict()
 let args = y.parse()
 
-
-
-// Private key and web3 address are required
-// Fetch from the arguments, and if not provided, from the environment variables
+// Some arguments are also fetched from environment variables
 if(args.privateKey == null) {
   args.privateKey = process.env.PRIVATE_KEY
 }
 if(args.web3Address == null) {
   args.web3Address = process.env.WEB3_ADDRESS
 }
+
+
+
+//
+// First handle the mint/list commands : they do not require an existing website as an argument
+//
+
+if(["mint", "list"].includes(args._[0])) {
+  // Ensure we have a private key
+  if(args.privateKey == null) {
+    console.error("Private key is required.")
+    process.exit(1)
+  }
+
+  // Validate the chain id
+  let chainId = args.chainId || null
+  if(chainId == null) {
+    console.error("Chain id is required.")
+    process.exit(1)
+  }
+  const viemChain = Object.values(viemChains).find(chain => chain.id == chainId)
+  if(viemChain == null) {
+    console.error("Invalid chain id", chainId)
+    process.exit()
+  }
+
+  // Determine the RPC we use
+  let rpcUrl = viemChain.rpcUrls.default.http[0]
+  // If overriden by the command line, use the provided RPC
+  if(args.rpc) {
+    rpcUrl = args.rpc
+  }
+
+  // Prepare the viem client
+  const account = privateKeyToAccount(args.privateKey)
+  const viemClient = createWalletClient({
+    account,
+    chain: viemChain,
+    transport: http(rpcUrl)
+  }).extend(publicActions)
+
+  // Print the account address, and its balance
+  const accountAddress = account.address
+  const accountBalance = formatEther((await viemClient.getBalance({address: accountAddress})) / BigInt(10**13) * BigInt(10**13))
+  console.log("Wallet: " + chalk.bold(accountAddress) + " Balance: " + chalk.bold(accountBalance + " " + viemChain.nativeCurrency.symbol))
+
+  await processCommand(args._[0], args, viemClient);
+
+  process.exit(0)
+}
+
+
+//
+// Commands requiring an existing website
+//
+
+// Private key and web3 address are required
 if(args.privateKey == null || args.web3Address == null) { 
   console.error("Private key and web3 address are required.")
   process.exit(1)
