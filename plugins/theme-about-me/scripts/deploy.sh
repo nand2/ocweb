@@ -1,3 +1,7 @@
+# 2 modes
+# Deploy new
+# Deploy update
+
 # Build vitejs files
 # mint ocwebsite (optional)
 # Upload files

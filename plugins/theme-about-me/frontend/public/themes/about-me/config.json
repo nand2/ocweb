@@ -1,0 +1,28 @@
+{
+  "title": "My name",
+  "subtitle": "My job",
+  "email": "xx@xx.com",
+  "location": "this place",
+  "menu": [
+    {
+      "title": "Home",
+      "path": "/",
+      "markdownFile": "pages/home.md"
+    },
+    {
+      "title": "Publications",
+      "path": "/publications",
+      "markdownFile": "pages/publications.md"
+    }
+  ],
+  "externalLinks": [
+    {
+      "title": "Github",
+      "url": "web3://xxx.eth/xxx"
+    },
+    {
+      "title": "Twitter",
+      "url": "https://twitter.com/xxx"
+    }
+  ]
+}

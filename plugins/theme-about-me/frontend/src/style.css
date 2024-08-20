@@ -3,9 +3,20 @@
   line-height: 1.5;
   font-weight: 400;
 
+  --color-root-bg: #242424;
+  --color-light-bg: #303030;
+
+  --color-divider: #8b8b8b;
+
+  --color-text: #ffffffdd;
+  --color-text-muted: #888;
+  --color-text-danger: #ff4d4f;
+  --color-link: #646cff;
+  --color-link-hover: #535bf2;
+
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--color-text);
+  background-color: var(--color-root-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,65 +26,105 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--color-link);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--color-link-hover);
 }
 
 body {
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
 
 .card {
   padding: 2em;
 }
 
 #app {
-  max-width: 1280px;
+  width: 860px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --color-root-bg: #ffffff;
+    --color-text: #213547;
+    --color-link-hover: #747bff;
   }
-  a:hover {
-    color: #747bff;
+}
+
+/** 
+ * EVM browser specific workaround: 
+ * As a workaround to another issue, in dark mode electron, EVM browser put pre color as black.
+ */
+ @media (prefers-color-scheme: dark) {pre {color: rgba(255, 255, 255, 0.87)}}
+
+.text-danger {
+  color: var(--color-text-danger);
+}
+
+
+
+/** Markdown entry content. Aiming to look like github */
+
+.page-content {
+  overflow-wrap: break-word;
+}
+
+/* .page-content h1, .page-content h2 {
+  border-bottom: 1px solid var(--color-divider);
+} */
+
+.page-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .page-content img {
+    width: 100%;
   }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+.page-content blockquote {
+  color: var(--color-text-muted);
+  border-left: .25em solid var(--color-divider);
+  padding: 0 1em;
+  margin: 0;
+}
+
+.page-content code {
+  background-color: var(--color-light-bg);
+  padding: .2em .4em;
+  border-radius: 6px;
+}
+
+.page-content pre {
+  padding: 16px;
+  background-color: var(--color-light-bg);
+  overflow-y: auto;
+}
+
+.page-content pre code {
+  padding: 0;
+}
+
+.page-content table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+.page-content table tr:nth-child(2n) {
+  background-color: var(--color-light-bg);
+}
+
+.page-content table th, 
+.page-content table td {
+  padding: 6px 13px;
+  border: 1px solid var(--color-divider);
 }
