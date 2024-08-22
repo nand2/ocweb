@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Interacts with OCWebsites from web3://ocweb.eth",
   "main": "src/cli.js",
+  "files": [
+    "src"
+  ],
   "scripts": {
     "dev-factory": "vite frontend-factory",
     "build-factory": "vite build frontend-factory",
