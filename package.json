@@ -2,7 +2,7 @@
   "name": "ocweb",
   "version": "0.0.1",
   "type": "module",
-  "description": "Interact with an OCWebsite",
+  "description": "Interacts with OCWebsites from web3://ocweb.eth",
   "main": "src/cli.js",
   "scripts": {
     "dev-factory": "vite frontend-factory",
