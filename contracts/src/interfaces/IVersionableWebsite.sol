@@ -60,6 +60,33 @@ interface IVersionableWebsite is IDecentralizedApp, IOwnable {
 }
 
 interface IVersionableWebsitePlugin is IERC165 {
+    enum AdminPanelType {
+        Primary,
+        Secondary
+    }
+    // Represent an admin panel for this plugin
+    // 2 types : 
+    // - An autonomous webpage (which can be iframed by global admin panels)
+    // - A ES/UMD module which is loaded by a global admin panel
+    //   In this case, the moduleForGlobalAdminPanel is the address of the
+    //   admin panel plugin for which this plugin is a module
+    struct AdminPanel {
+        // Title of the panel, can be empty
+        string title;
+        // The web3:// URL of the panel (either a HTML webpage, or a JS module)
+        string url;
+
+        // If the panel is a module, this is the address of the admin panel plugin
+        // for which this plugin is a module
+        address moduleForGlobalAdminPanel;
+
+        // The type of the panel
+        // This is mostly an hint on how to embed the panel
+        // Primary will be for a full page, Secondary will be for being inserted inside
+        // a common Settings page
+        AdminPanelType panelType;
+    }
+
     struct Infos {
         // Technical name
         string name;
@@ -70,10 +97,14 @@ interface IVersionableWebsitePlugin is IERC165 {
         string subTitle;
         // Author
         string author;
-        // Point to a web3:// address of the homepage, where it can be configured
+        // Point to a web3:// address of the homepage
         string homepage;
+
         // Dependencies of this plugin
         IVersionableWebsitePlugin[] dependencies;
+
+        // Admin panels
+        AdminPanel[] adminPanels;
     }
     function infos() external view returns (Infos memory);
 

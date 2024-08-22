@@ -1,15 +1,28 @@
 <script setup>
 import { ref } from 'vue'
+import { useQueryClient, useMutation } from '@tanstack/vue-query'
+import { useConnect } from '@wagmi/vue'
+import { injected } from '@wagmi/connectors'
 
 defineProps({
   msg: String,
 })
+
+const queryClient = useQueryClient()
+console.log("queryClient", queryClient)
+
+const { connect, connectors } = useConnect()
+console.log("connect", connect)
 
 const count = ref(0)
 </script>
 
 <template>
   <h1>{{ msg }}</h1>
+
+  <button v-for="connector in connectors" :key="connector.id" @click="connect({ connector })">
+      {{ connector.name }}
+    </button>
 
   <div class="card">
     <button type="button" @click="count++">count is {{ count }}</button>

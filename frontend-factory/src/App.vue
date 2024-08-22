@@ -4,6 +4,7 @@ import WalletConnect from './components/WalletConnect.vue'
 import WebsiteAdminView from './views/WebsiteAdminView.vue'
 import LayourTextWindowReverseIcon from './icons/LayoutTextWindowReverseIcon.vue'
 import MagicIcon from './icons/MagicIcon.vue';
+import RemoteAsyncComponent from './components/utils/RemoteAsyncComponent.vue';
 
 const isViewedAsWebsiteAdmin = computed(() => {
   // We cannot use window.location.pathname as it does not work with web3:// address
