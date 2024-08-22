@@ -27,7 +27,8 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
                 subTitle: "Variables accessible via the /variables.json path",
                 author: "nand",
                 homepage: "web3://ocweb.eth/",
-                dependencies: new IVersionableWebsitePlugin[](0)
+                dependencies: new IVersionableWebsitePlugin[](0),
+                adminPanels: new AdminPanel[](0)
             });
     }
 

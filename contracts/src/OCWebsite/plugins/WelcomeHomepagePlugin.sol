@@ -34,7 +34,8 @@ contract WelcomeHomepagePlugin is ERC165, IVersionableWebsitePlugin {
                 subTitle: "Remove when starting to build your website!",
                 author: "nand",
                 homepage: "",
-                dependencies: dependencies
+                dependencies: dependencies,
+                adminPanels: new AdminPanel[](0)
             });
     }
 

@@ -42,7 +42,8 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
                 subTitle: "Host and serve static files",
                 author: "nand",
                 homepage: "web3://ocweb.eth/",
-                dependencies: new IVersionableWebsitePlugin[](0)
+                dependencies: new IVersionableWebsitePlugin[](0),
+                adminPanels: new AdminPanel[](0)
             });
     }
 

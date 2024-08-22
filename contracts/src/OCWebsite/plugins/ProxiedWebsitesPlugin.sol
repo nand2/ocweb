@@ -29,7 +29,8 @@ contract ProxiedWebsitesPlugin is ERC165, IVersionableWebsitePlugin {
                 subTitle: "Serve content from other websites",
                 author: "nand",
                 homepage: "web3://ocweb.eth/",
-                dependencies: new IVersionableWebsitePlugin[](0)
+                dependencies: new IVersionableWebsitePlugin[](0),
+                adminPanels: new AdminPanel[](0)
             });
     }
 
