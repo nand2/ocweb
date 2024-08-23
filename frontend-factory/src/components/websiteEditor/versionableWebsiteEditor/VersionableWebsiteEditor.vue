@@ -14,6 +14,7 @@ import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions,
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
 import PagesTab from './PagesTab.vue';
+import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -73,10 +74,40 @@ const { data: websiteVersionBeingEdited, isLoading: websiteVersionBeingEditedLoa
 const { data: websiteVersionBeingEditedPlugins, isLoading: websiteVersionBeingEditedPluginsLoading, isFetching: websiteVersionBeingEditedPluginsFetching, isError: websiteVersionBeingEditedPluginsIsError, error: websiteVersionBeingEditedPluginsError, isSuccess: websiteVersionBeingEditedPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, websiteVersionBeingEditedIndex) 
 
 const staticFrontendInstalledPlugin = computed(() => {
-  if(websiteVersionBeingEditedPluginsLoaded.value) {
-    return websiteVersionBeingEditedPlugins.value.find(plugin => plugin.infos.name == 'staticFrontend')
+  if(websiteVersionBeingEditedPluginsLoaded.value == false) {
+    return null
   }
-  return null
+
+  return websiteVersionBeingEditedPlugins.value.find(plugin => plugin.infos.name == 'staticFrontend')
+})
+
+const ocWebAdminInstalledPlugin = computed(() => {
+  if(websiteVersionBeingEditedPluginsLoaded.value == false) {
+    return null
+  }
+
+  return websiteVersionBeingEditedPlugins.value.find(plugin => plugin.infos.name == 'ocWebAdmin')
+})
+
+// Get the list of admin panels of the plugins
+const pluginPrimaryAdminPanels = computed(() => {
+  if(websiteVersionBeingEditedPluginsLoaded.value == false) {
+    return []
+  }
+
+  // Fetch all the panels (1+ per plugin)
+  return websiteVersionBeingEditedPlugins.value.flatMap(plugin => plugin.infos.adminPanels.map((panel, panelIndex) => {
+    // Keep a link to the plugin
+    return {
+      panel: panel,
+      plugin: plugin,
+      tabKey: 'plugin-' + plugin.plugin + '-' + panelIndex
+    }
+  }))
+    // Only the primary panels
+    .filter(panel => panel.panel.panelType == 0 /* Primary */)
+    // Either the panel is a module for ocWebAdmin, or it's not a module (will be iframed)
+    .filter(panel => panel.panel.moduleForGlobalAdminPanel == null || panel.panel.moduleForGlobalAdminPanel == ocWebAdminInstalledPlugin.value.plugin)
 })
 
 // When the plugins are loaded, now set the default tab
@@ -159,11 +190,38 @@ const showConfigPanel = ref(false)
     </div>
 
     <div class="tabs">
-      <a v-if="websiteVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'pages'" :class="{tabPages: true, active: activeTab == 'pages'}">Pages</a>
-      <a v-if="websiteVersionBeingEditedPluginsLoaded == false || staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
+      <a v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" @click="activeTab = panel.tabKey" :class="{tabPages: true, active: activeTab == panel.tabKey}">{{ panel.panel.title }}</a>
+
+      <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'pages'" :class="{tabPages: true, active: activeTab == 'pages'}">Pages</a>
+      
       <a @click="activeTab = 'preview'; previewTabRef.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
+
+      <span class="separator" style="margin: auto"></span>
+
+      <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
+    </div>
+
+    <div v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" class="tab">
+      <!-- Plugin mode -->
+      <RemoteAsyncComponent
+        v-if="activeTab == panel.tabKey && panel.panel.moduleForGlobalAdminPanel" 
+        :url="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
+        :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+        :websiteVersionIndex="websiteVersionBeingEditedIndex"
+        :contractAddress 
+        :chainId 
+        :websiteClient="websiteClient"
+        :pluginInfos="panel.plugin"
+        />
+
+      <!-- Iframe mode -->
+      <iframe
+        v-else-if="activeTab == panel.tabKey"
+        :src="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
+        style="width: 100%; height: 400px; border: none;"
+        ></iframe>
     </div>
     
     <PagesTab
@@ -243,9 +301,6 @@ const showConfigPanel = ref(false)
 
 }
 
-.tabPlugins {
-  margin-left: auto;
-}
 
 
 .header {

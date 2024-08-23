@@ -11,12 +11,12 @@ document.querySelector('#app').innerHTML = `
     </div>
 
     <div class="card">
-      Your website is a smart contract. You can administer it by going to your <a href="#" id="admin-page-link">admin page</a>.
+      Your website is a smart contract. You can administer it by going to your <a href="#" id="admin-page-link">admin section</a>.
     </div>
 
 
     <div class="text-muted text-90">
-      This is the default page served by the Welcome Homepage plugin.
+      This is the default page served by the Welcome Homepage plugin. You can remove it by using the admin section.
     </div>
   </div>
 `
