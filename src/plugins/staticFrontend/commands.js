@@ -123,7 +123,7 @@ async function upload(staticFrontendPluginClient, websiteVersionIndex, staticFro
   if(args.exclude.length > 0) {
     filePaths = filePaths.filter(filePath => {
       return !args.exclude.some(pattern => {
-        return new RegExp("^" + pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + "$").test(path.basename(filePath.source))
+        return new RegExp("^" + pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + "$").test(filePath.source)
       })
     })
   }

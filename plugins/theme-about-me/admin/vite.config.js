@@ -9,7 +9,7 @@ export default defineConfig({
       entry: './src/components/HelloWorld.vue',
       name: 'HelloWorld',
       formats: ['umd'],
-      fileName: (format) => `my-component.${format}.js`,
+      fileName: (format) => `admin.${format}.js`,
     },
     rollupOptions: {
       external: ['vue', '@tanstack/vue-query', '@wagmi/vue'],
