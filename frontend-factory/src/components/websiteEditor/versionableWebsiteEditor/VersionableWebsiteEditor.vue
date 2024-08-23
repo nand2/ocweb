@@ -100,6 +100,7 @@ const pluginPrimaryAdminPanels = computed(() => {
     // Keep a link to the plugin
     return {
       panel: panel,
+      panelIndex: panelIndex,
       plugin: plugin,
       tabKey: 'plugin-' + plugin.plugin + '-' + panelIndex
     }
@@ -207,7 +208,11 @@ const showConfigPanel = ref(false)
       <!-- Plugin mode -->
       <RemoteAsyncComponent
         v-if="activeTab == panel.tabKey && panel.panel.moduleForGlobalAdminPanel" 
-        :url="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
+        
+        :umdModuleUrl="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
+        :moduleName="panel.plugin.infos.name + 'Admin' + panel.panelIndex"
+        :cssUrl="(panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url).replace('.umd.js', '.css')"
+
         :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
         :websiteVersionIndex="websiteVersionBeingEditedIndex"
         :contractAddress 

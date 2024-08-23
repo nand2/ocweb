@@ -7,9 +7,17 @@ import RemoteAsyncComponentError from './RemoteAsyncComponentError.vue';
 
 const attrs = useAttrs();
 const props = defineProps({
-  url: {
+  umdModuleUrl: {
     type: String,
     required: true,
+  },
+  moduleName: {
+    type: String,
+    required: true,
+  },
+  cssUrl: {
+    type: String,
+    required: false,
   },
 });
 
@@ -28,12 +36,31 @@ onMounted(() => {
     loader: () => {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = props.url;
+        script.src = props.umdModuleUrl;
         script.onload = () => {
-          resolve(globalThis.HelloWorld);
+          // Check if CSS URL is provided
+          if (props.cssUrl) {
+            // Load the CSS
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = props.cssUrl;
+            link.onload = () => {
+              resolve(globalThis[props.moduleName]);
+            };
+            link.onerror = (error) => {
+              // If CSS fails to load: We resolve the component, but log an error
+              const message = 'Failed to load the CSS located at ' + props.cssUrl;
+              console.error(message);
+              resolve(globalThis[props.moduleName]);
+            };
+            document.head.appendChild(link); // Append CSS to head
+          } else {
+            // If no CSS URL, resolve component immediately
+            resolve(globalThis[props.moduleName]);
+          }
         };
         script.onerror = (error) => {
-          const message = 'Failed to load the component located at ' + props.url;
+          const message = 'Failed to load the component located at ' + props.umdModuleUrl;
           reject(message);
         };
         document.body.appendChild(script);
