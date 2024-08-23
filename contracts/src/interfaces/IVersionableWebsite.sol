@@ -78,7 +78,7 @@ interface IVersionableWebsitePlugin is IERC165 {
 
         // If the panel is a module, this is the address of the admin panel plugin
         // for which this plugin is a module
-        address moduleForGlobalAdminPanel;
+        IVersionableWebsitePlugin moduleForGlobalAdminPanel;
 
         // The type of the panel
         // This is mostly an hint on how to embed the panel
