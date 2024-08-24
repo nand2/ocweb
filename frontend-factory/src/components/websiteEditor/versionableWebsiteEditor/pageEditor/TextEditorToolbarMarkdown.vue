@@ -2,7 +2,7 @@
 import { ref, defineProps, defineEmits, computed } from 'vue';
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
-import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../utils/pluginStaticFrontendQueries.js';
+import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../../../src/plugins/staticFrontend/pluginStaticFrontendQueries.js';
 import Modal from '../../../utils/Modal.vue';
 import FilesUploadOperation from '../staticFrontendPluginEditor/FilesUploadOperation.vue';
 import TypeBoldIcon from '../../../../icons/TypeBoldIcon.vue';

@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 import TextEditor from './TextEditor.vue';
 
-import { useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from '../../../../utils/pluginStaticFrontendQueries';
+import { useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from '../../../../../../src/plugins/staticFrontend/pluginStaticFrontendQueries';
 
 const emit = defineEmits(['editCancelled', 'pageSaved'])
 
@@ -154,7 +154,7 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
 
     // Refresh the content of the file, if it was editing an existing file
     if(props.fileInfos) {
-      await invalidateStaticFrontendFileContentQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex, props.fileInfos)
+      await invalidateStaticFrontendFileContentQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex, props.fileInfos.filePath)
     }
 
     // Emit the event when all transactions are done

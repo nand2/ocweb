@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 import { computed, shallowRef } from 'vue'
 
-import { StaticFrontendPluginClient } from '../../../src/plugins/staticFrontend/client.js';
+import { StaticFrontendPluginClient } from './client.js';
 
 
 function useStaticFrontendPluginClient(websiteContractAddress, pluginAddress) {
@@ -69,8 +69,8 @@ function useStaticFrontendFileContent(websiteContractAddress, chainId, pluginAdd
   })
 }
 
-function invalidateStaticFrontendFileContentQuery(queryClient, websiteContractAddress, chainId, websiteVersionIndex, fileInfos) {
-  return queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginFileContent', websiteContractAddress, chainId, websiteVersionIndex, fileInfos.filePath] })
+function invalidateStaticFrontendFileContentQuery(queryClient, websiteContractAddress, chainId, websiteVersionIndex, filePath) {
+  return queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginFileContent', websiteContractAddress, chainId, websiteVersionIndex, filePath] })
 }
 
 

@@ -5,7 +5,7 @@ import { useConnectorClient } from '@wagmi/vue'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useIsLocked } from '../../../../utils/queries.js';
-import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../utils/pluginStaticFrontendQueries.js';
+import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../../../src/plugins/staticFrontend/pluginStaticFrontendQueries.js';
 
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
 import PageEditor from './PageEditor.vue';
