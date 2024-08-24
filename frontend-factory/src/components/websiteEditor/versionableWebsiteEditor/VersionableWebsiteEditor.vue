@@ -227,8 +227,9 @@ const showConfigPanel = ref(false)
         :websiteVersionIndex="websiteVersionBeingEditedIndex"
         :contractAddress 
         :chainId 
-        :websiteClient="websiteClient"
-        :pluginInfos="panel.plugin"
+        :websiteClient
+        :plugins="websiteVersionBeingEditedPlugins"
+        :plugin="panel.plugin"
         />
 
       <!-- Iframe mode -->
