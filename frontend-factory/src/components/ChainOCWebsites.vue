@@ -3,7 +3,7 @@ import { computed, defineProps } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
 import { useAccount } from '@wagmi/vue';
 
-import { useContractAddresses } from '../utils/queries.js';
+import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import OCWebsite from '../components/OCWebsite.vue';
 
 

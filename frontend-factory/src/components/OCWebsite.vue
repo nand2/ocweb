@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
 import { useQuery } from '@tanstack/vue-query'
 
-import { useContractAddresses } from '../utils/queries.js';
+import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import OCWebsiteEditor from './websiteEditor/OCWebsiteEditor.vue';
 import XCircleIcon from '../icons/XCircleIcon.vue';
 import CopyIcon from '../icons/CopyIcon.vue';

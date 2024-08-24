@@ -3,7 +3,7 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
-import { useLiveWebsiteVersion, invalidateWebsiteVersionQuery, invalidateWebsiteVersionsQuery,useIsLocked } from '../../../utils/queries';
+import { useLiveWebsiteVersion, invalidateWebsiteVersionQuery, invalidateWebsiteVersionsQuery,useIsLocked } from '../../../../../src/tanstack-vue';
 import EyeIcon from '../../../icons/EyeIcon.vue';
 import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
 import CopyIcon from '../../../icons/CopyIcon.vue';

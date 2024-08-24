@@ -3,7 +3,7 @@ import { ref, shallowRef, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 
 import WebsiteVersionListLine from './WebsiteVersionListLine.vue';
-import { useWebsiteVersions } from '../../../../utils/queries.js';
+import { useWebsiteVersions } from '../../../../../../src/tanstack-vue.js';
 
 const props = defineProps({
   contractAddress: {

@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 import TextEditor from './TextEditor.vue';
 
-import { useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from '../../../../../../src/plugins/staticFrontend/pluginStaticFrontendQueries';
+import { useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from '../../../../../../src/plugins/staticFrontend/tanstack-vue';
 
 const emit = defineEmits(['editCancelled', 'pageSaved'])
 

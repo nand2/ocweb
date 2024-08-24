@@ -10,7 +10,7 @@ import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
 import WebsiteVersionEditor from './staticFrontendPluginEditor/StaticFrontendEditor.vue';
 import WebsiteVersionsConfigEditor from './websiteVersionsEditor/WebsiteVersionsConfigEditor.vue';
-import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../utils/queries.js';
+import { useVersionableWebsiteClient, useLiveWebsiteVersion, useWebsiteVersions, useWebsiteVersionPlugins } from '../../../../../src/tanstack-vue.js';
 import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
 import PagesTab from './PagesTab.vue';

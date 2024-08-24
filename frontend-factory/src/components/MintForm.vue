@@ -4,7 +4,7 @@ import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionRece
 import { useQueryClient } from '@tanstack/vue-query'
 
 import { abi as factoryABI } from '../../../src/abi/factoryABI.js';
-import { useContractAddresses } from '../utils/queries.js';
+import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import { useSupportedChains } from '../utils/ethereum.js';
 
 defineProps({

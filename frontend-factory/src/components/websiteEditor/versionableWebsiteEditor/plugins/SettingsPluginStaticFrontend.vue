@@ -3,8 +3,8 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
-import { useContractAddresses, invalidateWebsiteVersionQuery, useIsLocked } from '../../../../utils/queries.js';
-import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendStorageBackends, invalidateStaticFrontendQuery } from '../../../../../../src/plugins/staticFrontend/pluginStaticFrontendQueries.js';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useIsLocked } from '../../../../../../src/tanstack-vue.js';
+import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendStorageBackends, invalidateStaticFrontendQuery } from '../../../../../../src/plugins/staticFrontend/tanstack-vue.js';
 import { InjectedVariablesPluginClient } from '../../../../../../src/plugins/injectedVariables/client.js';
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
 import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';

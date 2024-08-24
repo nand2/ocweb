@@ -9,7 +9,7 @@ import WebsiteVersionList from './WebsiteVersionList.vue';
 import LockFillIcon from '../../../../icons/LockFillIcon.vue';
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
-import { useContractAddresses, invalidateWebsiteVersionsQuery, useWebsiteVersions, useIsLocked, invalidateIsLockedQuery } from '../../../../utils/queries.js';
+import { useContractAddresses, invalidateWebsiteVersionsQuery, useWebsiteVersions, useIsLocked, invalidateIsLockedQuery } from '../../../../../../src/tanstack-vue.js';
 import { abi as factoryABI } from '../../../../../../src/abi/factoryABI.js';
 
 const props = defineProps({

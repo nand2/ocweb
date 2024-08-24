@@ -1,6 +1,6 @@
 <script setup>
 import { useAccount } from '@wagmi/vue';
-import { useEmbeddorContractAddress } from '../utils/queries';
+import { useEmbeddorContractAddress } from '../../../src/tanstack-vue';
 import OCWebsite from '../components/OCWebsite.vue';
 import OCWebsiteEditor from '../components/websiteEditor/OCWebsiteEditor.vue';
 

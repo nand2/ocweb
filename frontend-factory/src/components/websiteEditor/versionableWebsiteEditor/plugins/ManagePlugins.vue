@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount, useConnectorClient } from '@wagmi/vue'
 import { getContract, publicActions } from 'viem'
 
-import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../../utils/queries.js';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, invalidateWebsiteVersionPluginsQuery, useSupportedPluginInterfaces, useIsLocked } from '../../../../../../src/tanstack-vue.js';
 import SettingsProxiedWebsites from './SettingsPluginProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsPluginInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';

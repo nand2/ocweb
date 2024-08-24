@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useChains } from '@wagmi/vue';
 import { computed } from 'vue'
-import { useContractAddresses } from './queries'
+import { useContractAddresses } from '../../../src/tanstack-vue'
 
 /*
  * Return the intersection of the chains configured on the wagmi library, and the chains

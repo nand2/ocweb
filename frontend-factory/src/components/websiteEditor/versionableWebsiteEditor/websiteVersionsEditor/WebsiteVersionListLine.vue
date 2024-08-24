@@ -12,7 +12,7 @@ import BoxArrowUpRightIcon from '../../../../icons/BoxArrowUpRightIcon.vue';
 import EyeIcon from '../../../../icons/EyeIcon.vue';
 import EyeSlashIcon from '../../../../icons/EyeSlashIcon.vue';
 
-import { useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, invalidateWebsiteVersionsQuery, invalidateWebsiteVersionQuery, useIsLocked } from '../../../../utils/queries.js';
+import { useLiveWebsiteVersion, invalidateLiveWebsiteVersionQuery, invalidateWebsiteVersionsQuery, invalidateWebsiteVersionQuery, useIsLocked } from '../../../../../../src/tanstack-vue.js';
 
 const props = defineProps({
   websiteVersion: {
