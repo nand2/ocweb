@@ -15,6 +15,7 @@ import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
 import PagesTab from './PagesTab.vue';
 import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
+import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -203,6 +204,15 @@ const showConfigPanel = ref(false)
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
+
+    <AdminPanel
+      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && websiteVersionBeingEditedPluginsLoaded"
+      :websiteVersion="websiteVersionBeingEdited"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
+      :contractAddress 
+      :chainId 
+      :websiteClient
+      :plugins="websiteVersionBeingEditedPlugins" />
 
     <div v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" class="tab">
       <!-- Plugin mode -->

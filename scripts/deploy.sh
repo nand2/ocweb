@@ -173,7 +173,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   # Upload the welcome frontend
   PRIVATE_KEY=$PRIVKEY \
   WEB3_ADDRESS=web3://$OCWEBSITEFACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
-  node . --rpc $RPC_URL --skip-tx-validation upload frontend-factory/dist/* / --exclude 'variables.json'
+  node . --rpc $RPC_URL --skip-tx-validation upload frontend-factory/dist/* / --exclude 'frontend-factory/dist/variables.json'
 fi
 
 
@@ -191,6 +191,6 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-welcome" ]; then
   # Upload the welcome frontend
   PRIVATE_KEY=$PRIVKEY \
   WEB3_ADDRESS=web3://$WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS:${CHAIN_ID} \
-  node . --rpc $RPC_URL --skip-tx-validation upload frontend-welcome/dist/* / --exclude 'variables.json'
+  node . --rpc $RPC_URL --skip-tx-validation upload frontend-welcome/dist/* / --exclude 'frontend-welcome/dist/variables.json'
 fi
 

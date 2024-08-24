@@ -149,7 +149,7 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     // Mark the transaction as successful
     addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'success'}
 
-    // Refresh the static website
+    // Refresh the static frontend
     await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
 
     // Refresh the content of the file, if it was editing an existing file

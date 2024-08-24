@@ -70,7 +70,7 @@ const { isPending: renameIsPending, isError: renameIsError, error: renameError, 
     return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    // Refresh the static website
+    // Refresh the static frontend
     return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
   }
 })
@@ -108,7 +108,7 @@ const { isPending: deleteIsPending, isError: deleteIsError, error: deleteError, 
     return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
   },
   onSuccess: async (data, variables, context) => {
-    // Refresh the static website
+    // Refresh the static frontend
     return await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
   }
 })
