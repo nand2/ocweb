@@ -54,7 +54,7 @@ const decodeFileContentAsText = (fileContent) => {
 }
 
 const name = ref(props.fileInfos ? props.fileInfos.filePath.split('/').pop().slice(0, -3) : '')
-const text = ref(decodeFileContentAsText(fileContent.value))
+const text = ref(fileContentLoaded.value ? decodeFileContentAsText(fileContent.value) : "")
 // When the file content is fetched, set the text
 watch(fileContent, (newValue) => {
   text.value = decodeFileContentAsText(newValue)

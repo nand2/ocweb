@@ -56,7 +56,7 @@ function useStaticFrontendFileContent(websiteContractAddress, chainId, pluginAdd
   const { switchChainAsync } = useSwitchChain()
 
   return useQuery({
-    queryKey: ['StaticFrontendPluginFileContent', websiteContractAddress, chainId, websiteVersionIndex, fileInfos.value?.filePath],
+    queryKey: ['StaticFrontendPluginFileContent', websiteContractAddress, chainId, websiteVersionIndex, computed(() => fileInfos.value?.filePath)],
     queryFn: async () => {
       // Switch chain if necessary
       await switchChainAsync({ chainId: chainId })
@@ -65,7 +65,7 @@ function useStaticFrontendFileContent(websiteContractAddress, chainId, pluginAdd
       return result;
     },
     staleTime: 3600 * 1000,
-    enabled: computed(() => pluginClientLoaded.value != null  && fileInfos.value != null),
+    enabled: computed(() => pluginClientLoaded.value && fileInfos.value != null),
   })
 }
 
