@@ -3,6 +3,7 @@ import { defineAsyncComponent, shallowRef, ref, onMounted, useAttrs } from 'vue'
 import * as Vue from 'vue';
 import * as TanstackVueQuery from '@tanstack/vue-query';
 import * as WagmiVue from '@wagmi/vue';
+import * as Viem from 'viem'
 import RemoteAsyncComponentError from './RemoteAsyncComponentError.vue';
 
 const attrs = useAttrs();
@@ -28,6 +29,7 @@ console.log(attrs);
 globalThis.Vue = Vue;
 globalThis.TanstackVueQuery = TanstackVueQuery;
 globalThis.WagmiVue = WagmiVue;
+globalThis.Viem = Viem;
 
 const asyncComponent = shallowRef(null);
 
