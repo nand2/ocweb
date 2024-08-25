@@ -223,3 +223,28 @@ button.sm {
   color: var(--color-text-danger);
   text-decoration: underline;
 }
+
+
+.table-header {
+  display: grid;
+  padding: 0.5rem 0.75rem;
+  font-weight: bold;
+  border-bottom: 1px solid var(--color-divider-secondary);
+  background-color: var(--color-root-bg);
+  font-size: 0.9em;
+  gap: 1rem;
+}
+
+.table-header > div {
+  word-break: break-all;
+}
+
+.table-row {
+  display: grid;
+  padding: 0.5rem 0.75rem;
+  gap: 1rem;
+}
+
+.table-row > div {
+  word-break: break-all;
+}

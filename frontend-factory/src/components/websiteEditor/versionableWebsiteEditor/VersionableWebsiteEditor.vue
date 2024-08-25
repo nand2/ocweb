@@ -212,7 +212,8 @@ const showConfigPanel = ref(false)
       :contractAddress 
       :chainId 
       :websiteClient
-      :plugins="websiteVersionBeingEditedPlugins" />
+      :pluginsInfos="websiteVersionBeingEditedPlugins"
+      :pluginInfos="websiteVersionBeingEditedPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" />
 
     <div v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" class="tab">
       <!-- Plugin mode -->
@@ -228,8 +229,8 @@ const showConfigPanel = ref(false)
         :contractAddress 
         :chainId 
         :websiteClient
-        :plugins="websiteVersionBeingEditedPlugins"
-        :plugin="panel.plugin"
+        :pluginsInfos="websiteVersionBeingEditedPlugins"
+        :pluginInfos="panel.plugin"
         />
 
       <!-- Iframe mode -->

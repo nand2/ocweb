@@ -188,12 +188,9 @@ const rootFolderChildren = computed(() => {
 }
 
 .table-header {
-  display: grid;
   grid-template-columns: 5fr 2fr 1.5fr 1fr 1fr;
   padding: 0.5em 0em;
-  font-weight: bold;
-  border-bottom: 1px solid var(--color-divider-secondary);
-  background-color: var(--color-root-bg)
+  gap: 0rem;
 }
 
 @media (max-width: 700px) {
@@ -210,7 +207,6 @@ const rootFolderChildren = computed(() => {
 
 .table-header > div {
   padding: 0em 1em;
-  word-break: break-all;
 }
 
 .no-files {

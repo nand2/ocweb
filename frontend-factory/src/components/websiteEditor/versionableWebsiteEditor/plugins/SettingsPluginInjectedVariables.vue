@@ -225,7 +225,8 @@ const removeItem = async (key) => {
   padding: 0.5em;
   font-weight: bold;
   border-bottom: 1px solid var(--color-divider-secondary);
-  background-color: var(--color-root-bg)
+  background-color: var(--color-root-bg);
+  font-size: 0.9em;
 }
 
 .table-header > div {
