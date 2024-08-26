@@ -10,11 +10,9 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
   echo "Invalid target chain: $TARGET_CHAIN"
   exit 1
 fi
-# Section: Can be "all", "contracts", "frontend-factory", "frontend-website". Default to "all"
-# Will not work for local chain, as SSTORE2 frontends is used on local chain
+# Section. Default to "all"
 SECTION=${2:-all}
-# Check that section is in allowed values
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "frontend-welcome" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "frontend-welcome" ] && [ "$SECTION" != "plugin-theme-about-me" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -31,8 +29,8 @@ function cleanup {
 trap cleanup EXIT
 
 # Go to the root folder
-cd $(dirname $(readlink -f $0))
-cd ..
+ROOT_FOLDER=$(cd $(dirname $(readlink -f $0)); cd ..; pwd)
+cd $ROOT_FOLDER
 
 # Load .env file
 # PRIVATE_KEY must be defined
@@ -194,3 +192,50 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-welcome" ]; then
   node . --rpc $RPC_URL --skip-tx-validation upload frontend-welcome/dist/* / --exclude 'frontend-welcome/dist/variables.json'
 fi
 
+# Section plugin-theme-about-me: Setup the ThemeAboutMePlugin
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
+
+  # Checking if the plugin is present in an adjacent folder
+  # Compute the plugin root folder
+  EXPECTED_PLUGIN_LOCATION=$ROOT_FOLDER/../ocweb-theme-about-me
+  echo "Checking the plugin-theme-about-me folder at $EXPECTED_PLUGIN_LOCATION ..."
+  if [ ! -d "$EXPECTED_PLUGIN_LOCATION" ]; then
+    echo "The plugin-theme-about-me folder is missing"
+    exit 1
+  fi
+  PLUGIN_ROOT=$(cd $EXPECTED_PLUGIN_LOCATION && pwd)
+  echo "Plugin root folder: $PLUGIN_ROOT"
+
+  # Fetch the address of the OCWebsiteFactory
+  OCWEBSITEFACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebsiteFactory: $OCWEBSITEFACTORY_ADDRESS"
+
+  # Fetch the address of the static frontend plugin
+  STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin" and .transactionType == "CREATE")][0].contractAddress')
+  echo "StaticFrontendPlugin: $STATIC_FRONTEND_PLUGIN_ADDRESS"
+
+  # Fetch the address of the OCWebAdminPlugin
+  OCWEB_ADMIN_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebAdminPlugin" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebAdminPlugin: $OCWEB_ADMIN_PLUGIN_ADDRESS"
+
+  # Deploying the plugin
+  cd $PLUGIN_ROOT
+  echo "Deploying the plugin..."
+  exec 5>&1
+  OUTPUT="$(
+    PRIVATE_KEY=$PRIVKEY \
+    RPC_URL=$RPC_URL \
+    CHAIN_ID=$CHAIN_ID \
+    OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITEFACTORY_ADDRESS \
+    STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
+    OCWEB_ADMIN_PLUGIN_ADDRESS=$OCWEB_ADMIN_PLUGIN_ADDRESS \
+    ./scripts/deploy.sh | tee >(cat - >&5))"
+  
+  # Extract the address of the deployed plugin
+  PLUGIN_THEME_ABOUT_ME_ADDRESS=$(echo "$OUTPUT" | grep -oP 'Deployed to: \K0x\w+')
+  echo "Plugin Theme About Me address: $PLUGIN_THEME_ABOUT_ME_ADDRESS"
+
+  # Add the plugin to the OCWebsiteFactory library
+  echo "Adding the plugin to the OCWebsiteFactory library..."
+  cast send $OCWEBSITEFACTORY_ADDRESS "addWebsitePlugin(address,bool)()" $PLUGIN_THEME_ABOUT_ME_ADDRESS false  --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
+fi
