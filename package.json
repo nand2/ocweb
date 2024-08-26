@@ -1,12 +1,17 @@
 {
   "name": "ocweb",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "type": "module",
   "description": "Interacts with OCWebsites from web3://ocweb.eth",
   "main": "src/cli.js",
   "files": [
     "src"
   ],
+  "scripts": {
+    "dev-factory": "vite frontend-factory",
+    "build-factory": "vite build frontend-factory",
+    "preview-factory": "vite preview frontend-factory"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nand2/ocweb.git"
@@ -20,14 +25,25 @@
   "bin": {
     "ocweb": "./src/cli.js"
   },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vite": "^5.3.1",
+    "vite-plugin-singlefile": "^2.0.2"
+  },
   "dependencies": {
+    "@codemirror/lang-markdown": "^6.2.5",
+    "@codemirror/theme-one-dark": "^6.1.2",
     "@tanstack/vue-query": "^5.45.0",
-    "@wagmi/vue": "^0.0.39",
+    "@wagmi/vue": "^0.0.20",
+    "@zoltu/ethereum-abi-encoder": "^5.0.4",
     "chalk": "^5.3.0",
+    "codemirror": "^6.0.1",
+    "markdown-it": "^14.1.0",
     "mime": "^4.0.3",
     "ttf2woff2": "^5.0.0",
-    "viem": "^2.20.0",
-    "vue": "^3.4.38",
+    "viem": "^2.16.0",
+    "vue": "^3.4.21",
+    "vue-router": "^4.4.3",
     "yargs": "^17.7.2"
   }
 }
