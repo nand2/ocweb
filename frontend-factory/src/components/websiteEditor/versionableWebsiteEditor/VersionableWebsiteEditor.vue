@@ -205,7 +205,7 @@ const showConfigPanel = ref(false)
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>
 
-    <!-- <AdminPanel
+    <AdminPanel
       v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && websiteVersionBeingEditedPluginsLoaded"
       :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
@@ -213,7 +213,7 @@ const showConfigPanel = ref(false)
       :chainId 
       :websiteClient
       :pluginsInfos="websiteVersionBeingEditedPlugins"
-      :pluginInfos="websiteVersionBeingEditedPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" /> -->
+      :pluginInfos="websiteVersionBeingEditedPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" />
 
     <div v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" class="tab">
       <!-- Plugin mode -->

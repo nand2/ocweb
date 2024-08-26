@@ -88,6 +88,10 @@ input:not([type="file"]):focus-visible, textarea:focus-visible, select:focus-vis
   outline: 1px solid var(--color-input-focus-outline);
 }
 
+input:disabled {
+  opacity: 0.7;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
