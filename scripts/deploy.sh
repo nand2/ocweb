@@ -162,7 +162,9 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
 
   # Build factory
   echo "Building factory frontend..."
-  npm run build-factory
+  cd $ROOT_FOLDER/frontend-factory
+  npm run build
+  cd $ROOT_FOLDER
 
   # Fetch the address of the OCWebsiteFactoryFrontend
   OCWEBSITEFACTORY_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .function == "setWebsite(address)")][0].arguments[0]')

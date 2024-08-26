@@ -1,0 +1,28 @@
+{
+  "name": "ocweb",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Frontend factory",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "author": "nand2",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vite": "^5.3.1"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.2.5",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@tanstack/vue-query": "^5.45.0",
+    "@wagmi/vue": "^0.0.20",
+    "codemirror": "^6.0.1",
+    "markdown-it": "^14.1.0",
+    "viem": "^2.16.0",
+    "vue": "^3.4.21",
+    "vue-router": "^4.4.3"
+  }
+}
