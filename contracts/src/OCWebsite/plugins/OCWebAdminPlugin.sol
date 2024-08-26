@@ -33,7 +33,7 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
                 title: "Admin interface",
                 subTitle: "Served at the /admin/ path",
                 author: "nand",
-                homepage: "",
+                homepage: "web3://ocweb.eth/",
                 dependencies: dependencies,
                 adminPanels: new AdminPanel[](0)
             });

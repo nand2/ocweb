@@ -39,7 +39,6 @@ import { LibStrings } from "../src/library/LibStrings.sol";
 import { InjectedVariablesPlugin } from "../src/OCWebsite/plugins/InjectedVariablesPlugin.sol";
 import { ProxiedWebsitesPlugin } from "../src/OCWebsite/plugins/ProxiedWebsitesPlugin.sol";
 import { StaticFrontendPlugin } from "../src/OCWebsite/plugins/StaticFrontendPlugin.sol";
-import { WelcomeHomepagePlugin } from "../src/OCWebsite/plugins/WelcomeHomepagePlugin.sol";
 import { IVersionableWebsite } from "../src/interfaces/IVersionableWebsite.sol";
 import { OCWebAdminPlugin } from "../src/OCWebsite/plugins/OCWebAdminPlugin.sol";
 
@@ -165,13 +164,6 @@ contract OCWebsiteFactoryScript is Script {
                 // Add the admin plugin to the factory frontend
                 IVersionableWebsite.WebsiteVersion memory websiteVersion = factoryFrontend.getWebsiteVersion(0);
                 factoryFrontend.addPlugin(0, adminPlugin, websiteVersion.pluginNodes.length);
-            }
-            
-            // Add the welcome page plugin
-            {
-                OCWebsite welcomeFrontend = factory.mintWebsite("welcome");
-                WelcomeHomepagePlugin welcomeHomepagePlugin = new WelcomeHomepagePlugin(welcomeFrontend, injectedVariablesPlugin);
-                factory.addWebsitePlugin(welcomeHomepagePlugin, true);
             }
 
 

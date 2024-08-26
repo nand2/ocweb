@@ -12,7 +12,7 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
 fi
 # Section. Default to "all"
 SECTION=${2:-all}
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "frontend-welcome" ] && [ "$SECTION" != "plugin-theme-about-me" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -168,29 +168,12 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   OCWEBSITEFACTORY_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .function == "setWebsite(address)")][0].arguments[0]')
   echo "Uploading frontend to OCWebsiteFactoryFrontend ($OCWEBSITEFACTORY_FRONTEND_ADDRESS) ..."
 
-  # Upload the welcome frontend
+  # Upload the factory frontend
   PRIVATE_KEY=$PRIVKEY \
   WEB3_ADDRESS=web3://$OCWEBSITEFACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
   node . --rpc $RPC_URL --skip-tx-validation upload frontend-factory/dist/* / --exclude 'frontend-factory/dist/variables.json'
 fi
 
-
-# Section frontend-welcome: Upload the welcome frontend
-if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-welcome" ]; then
-
-  # Build welcome
-  echo "Building welcome frontend..."
-  npm run build-welcome
-
-  # Fetch the address of the WelcomeHomepagePlugin frontend
-  WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "WelcomeHomepagePlugin" and .transactionType == "CREATE")][0].arguments[0]')
-  echo "Uploading frontend to WelcomeHomepagePlugin frontend ($WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS) ..."
-
-  # Upload the welcome frontend
-  PRIVATE_KEY=$PRIVKEY \
-  WEB3_ADDRESS=web3://$WELCOMEHOMEPAGEPLUGIN_FRONTEND_ADDRESS:${CHAIN_ID} \
-  node . --rpc $RPC_URL --skip-tx-validation upload frontend-welcome/dist/* / --exclude 'frontend-welcome/dist/variables.json'
-fi
 
 # Section plugin-theme-about-me: Setup the ThemeAboutMePlugin
 if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
@@ -235,7 +218,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
   PLUGIN_THEME_ABOUT_ME_ADDRESS=$(echo "$OUTPUT" | grep -oP 'Deployed to: \K0x\w+')
   echo "Plugin Theme About Me address: $PLUGIN_THEME_ABOUT_ME_ADDRESS"
 
-  # Add the plugin to the OCWebsiteFactory library
+  # Add the plugin to the OCWebsiteFactory library, and as a default plugin
   echo "Adding the plugin to the OCWebsiteFactory library..."
-  cast send $OCWEBSITEFACTORY_ADDRESS "addWebsitePlugin(address,bool)()" $PLUGIN_THEME_ABOUT_ME_ADDRESS false  --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
+  cast send $OCWEBSITEFACTORY_ADDRESS "addWebsitePlugin(address,bool)()" $PLUGIN_THEME_ABOUT_ME_ADDRESS true --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
 fi
