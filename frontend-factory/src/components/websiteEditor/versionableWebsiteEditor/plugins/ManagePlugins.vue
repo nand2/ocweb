@@ -91,13 +91,13 @@ const availablePluginsNotInstalled = computed(() => {
 })
 
 // Get a plugin name from an address: Lookup in the available plugins, then in the installed plugins
-const getPluginNameFromAddress = (pluginAddress) => {
+const getPluginInfosFromAddress = (pluginAddress) => {
   if(websiteVersionPluginsLoaded.value == false || availablePluginsLoaded.value == false) {
     return '';
   }
 
   const plugin = websiteVersionPlugins.value.find(p => p.plugin === pluginAddress) || availablePlugins.value.find(p => p.plugin === pluginAddress)
-  return plugin?.infos?.title || pluginAddress;
+  return plugin?.infos;
 }
 
 // Has a plugin installed dependents?
@@ -258,7 +258,9 @@ const reorderItem = async () => {
                   <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
                     None
                   </span>
-                  <span v-for="dep in pluginInfos.infos.dependencies"> {{ getPluginNameFromAddress(dep) }} </span>
+                  <span v-for="(dep, depIndex) in pluginInfos.infos.dependencies">
+                    {{ getPluginInfosFromAddress(dep) ? getPluginInfosFromAddress(dep).title + ' ' + getPluginInfosFromAddress(dep).version : dep }}<span v-if="depIndex < pluginInfos.infos.dependencies.length - 1">, </span>
+                  </span>
               </div>
               <div class="plugin-description-others">
                 Address: <small>{{ pluginInfos.plugin }}</small>
@@ -385,7 +387,9 @@ const reorderItem = async () => {
                   <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
                     None
                   </span>
-                  <span v-for="dep in pluginInfos.infos.dependencies"> {{ getPluginNameFromAddress(dep) }} </span>
+                  <span v-for="(dep, depIndex) in pluginInfos.infos.dependencies">
+                    {{ getPluginInfosFromAddress(dep) ? getPluginInfosFromAddress(dep).title + ' ' + getPluginInfosFromAddress(dep).version : dep }}<span v-if="depIndex < pluginInfos.infos.dependencies.length - 1">, </span>
+                  </span>
               </div>
               <div class="plugin-description-others">
                 Address: <small>{{ pluginInfos.plugin }}</small>
