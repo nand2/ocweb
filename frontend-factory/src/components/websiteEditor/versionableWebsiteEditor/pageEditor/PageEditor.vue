@@ -48,7 +48,7 @@ const props = defineProps({
 const queryClient = useQueryClient()
 
 // Fetch the file content
-const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, props.pluginInfos.plugin, props.websiteVersionIndex, computed(() => props.fileInfos))
+const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, props.pluginInfos.plugin, computed(() => props.websiteVersionIndex), computed(() => props.fileInfos))
 const decodeFileContentAsText = (fileContent) => {
   return fileContent ? new TextDecoder().decode(fileContent) : '';
 }
