@@ -148,7 +148,7 @@ const { isPending: toggleIsViewableIsPending, isError: toggleIsViewableIsError, 
   }
 })
 const toggleIsViewable = async () => {
-  if(props.websiteVersion.isViewable == false && confirm("You are about to make publicly accessible a non-live version, via a separate web3:// address. It can be useful to preview a change, or to make an historical version accessible. Continue?") == false) {
+  if(props.websiteVersion.isViewable == false && confirm("You are about to make publicly accessible a non-live version, via a separate web3:// address. It can be useful to preview a change, or to make an historical version accessible.\n\nPlease note: don't store private data, even in a non viewable version: All data in a blockchain can be read one way or another.\n\n Continue?") == false) {
     return
   }
 

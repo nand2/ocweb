@@ -20,6 +20,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  websiteVersion: {
+    type: Object,
+    required: true
+  },
   websiteVersionIndex: {
     type: Number,
     required: true,
@@ -201,6 +205,7 @@ const executePreparedAddFilesTransactions = async () => {
           :contractAddress
           :chainId
           :pluginInfos
+          :websiteVersion
           :websiteVersionIndex
           :staticFrontendPluginClient />
       </div>

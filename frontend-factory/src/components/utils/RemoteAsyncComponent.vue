@@ -22,8 +22,6 @@ const props = defineProps({
   },
 });
 
-console.log(attrs);
-
 // We need to give the component access to some libs
 // For UMD packaging, we need to do this:
 globalThis.Vue = Vue;

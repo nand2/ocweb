@@ -30,6 +30,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  websiteVersion: {
+    type: Object,
+    required: true
+  },
   websiteVersionIndex: {
     type: Number,
     required: true,

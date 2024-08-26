@@ -11,7 +11,7 @@ import FolderChildren from './FolderChildren.vue';
 
 const props = defineProps({
   websiteVersion: {
-    type: [Object, null],
+    type: Object,
     required: true
   },
   websiteVersionIndex: {
@@ -174,6 +174,7 @@ const rootFolderChildren = computed(() => {
         :locked="isLockedLoaded && isLocked || websiteVersion.locked"
         :contractAddress 
         :chainId 
+        :websiteVersion
         :websiteVersionIndex 
         :staticFrontendPluginClient
         :globalEmptyFolders />

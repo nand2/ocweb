@@ -34,6 +34,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  websiteVersion: {
+    type: Object,
+    required: true
+  },
   websiteVersionIndex: {
     type: Number,
     required: true,
@@ -93,6 +97,7 @@ const addNewFolder = async () => {
           :locked
           :contractAddress
           :chainId
+          :websiteVersion
           :websiteVersionIndex
           :staticFrontendPluginClient
           :globalEmptyFolders
@@ -103,6 +108,7 @@ const addNewFolder = async () => {
           :locked
           :contractAddress
           :chainId
+          :websiteVersion
           :websiteVersionIndex
           :staticFrontendPluginClient
           :folderParentChildren="folderChildren"
@@ -116,6 +122,7 @@ const addNewFolder = async () => {
         :uploadFolder="folderParents.map(parent => parent + '/').join('')" 
         :contractAddress
         :chainId
+        :websiteVersion
         :websiteVersionIndex
         :staticFrontendPluginClient />
 

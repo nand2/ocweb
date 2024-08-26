@@ -10,7 +10,7 @@ import SendIcon from '../../../../icons/SendIcon.vue';
 import CheckLgIcon from '../../../../icons/ChecLgkIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
 import XCircleIcon from '../../../../icons/XCircleIcon.vue';
-import { invalidateWebsiteVersionQuery } from '../../../../../../src/tanstack-vue.js';
+import { invalidateWebsiteVersionQuery, useLiveWebsiteVersion } from '../../../../../../src/tanstack-vue.js';
 
 const props = defineProps({
   uploadFolder: {
@@ -28,6 +28,10 @@ const props = defineProps({
   chainId: {
     type: Number,
     required: true,
+  },
+  websiteVersion: {
+    type: Object,
+    required: true
   },
   websiteVersionIndex: {
     type: Number,
@@ -49,6 +53,10 @@ const emit = defineEmits([
   'formReinitialized'])
 
 const queryClient = useQueryClient()
+
+// Fetch the live website infos
+const { data: liveWebsiteVersionData, isLoading: liveWebsiteVersionLoading, isFetching: liveWebsiteVersionFetching, isError: liveWebsiteVersionIsError, error: liveWebsiteVersionError, isSuccess: liveWebsiteVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
+
 
 
 //
@@ -284,6 +292,11 @@ const clearAddFilesForm = () => {
               <code>{{ file.filePath }}</code>
             </div>
           </div>
+        </div>
+
+        <div class="text-warning text-90" style="display:flex; gap:1em; padding: 0.5em 0; border-top: 1px solid #555;" v-if="websiteVersionIndex != liveWebsiteVersionData.websiteVersionIndex && websiteVersion.isViewable == false">
+          <ExclamationTriangleIcon /> 
+          Don't store private data, even in a non-viewable version: All data in a blockchain can be read one way or another.
         </div>
 
         <button type="button" v-if="addFileTransactionResults.length == 0 || addFileTransactionResults.length > 0 && addFilesIsPending" @click="executePreparedAddFilesTransactions" style="width: 100%" :disabled=" filesAdditionTransactions.length == 0 || addFilesIsPending">Upload files</button>

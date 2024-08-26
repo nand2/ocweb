@@ -28,6 +28,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  websiteVersion: {
+    type: Object,
+    required: true
+  },
   websiteVersionIndex: {
     type: Number,
     required: true,
@@ -143,6 +147,7 @@ const fullscreen = ref(false)
             :contractAddress
             :chainId
             :pluginInfos
+            :websiteVersion
             :websiteVersionIndex
             :staticFrontendPluginClient
             @enter-fullscreen="setFullscreen(true)"

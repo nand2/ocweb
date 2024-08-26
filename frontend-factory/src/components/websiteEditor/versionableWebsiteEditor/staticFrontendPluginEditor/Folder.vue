@@ -26,6 +26,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  websiteVersion: {
+    type: Object,
+    required: true
+  },
   websiteVersionIndex: {
     type: Number,
     required: true,
@@ -62,6 +66,7 @@ const paddingLeftForCSS = computed(() => {
       :locked
       :contractAddress
       :chainId
+      :websiteVersion
       :websiteVersionIndex
       :staticFrontendPluginClient
       :globalEmptyFolders

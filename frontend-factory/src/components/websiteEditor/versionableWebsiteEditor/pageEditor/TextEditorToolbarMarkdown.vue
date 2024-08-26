@@ -35,6 +35,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  websiteVersion: {
+    type: Object,
+    required: true
+  },
   websiteVersionIndex: {
     type: Number,
     required: true,
@@ -426,6 +430,7 @@ const toggleFullscreen = () => {
             :contentTypeAccept="'image/*'"
             :contractAddress
             :chainId
+            :websiteVersion
             :websiteVersionIndex
             :staticFrontendPluginClient
             @transaction-list-computed="imageModalProcessComputedTransactionList"

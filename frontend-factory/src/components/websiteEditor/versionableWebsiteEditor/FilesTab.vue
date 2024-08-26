@@ -6,7 +6,7 @@ import StaticFrontendEditor from './staticFrontendPluginEditor/StaticFrontendEdi
 
 const props = defineProps({
   websiteVersion: {
-    type: [Object, null],
+    type: Object,
     required: true
   },
   websiteVersionIndex: {

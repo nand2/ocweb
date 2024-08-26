@@ -7,6 +7,7 @@ import { useLiveWebsiteVersion, invalidateWebsiteVersionQuery, invalidateWebsite
 import EyeIcon from '../../../icons/EyeIcon.vue';
 import BoxArrowUpRightIcon from '../../../icons/BoxArrowUpRightIcon.vue';
 import CopyIcon from '../../../icons/CopyIcon.vue';
+import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue';
 
 const props = defineProps({
   websiteVersion: {
@@ -135,11 +136,14 @@ defineExpose({
           Version not viewable
         </div>
         <div v-if="isLockedLoaded && isLocked == false">
-          <div class="text-90">
+          <div class="text-90" style="margin-bottom: 0.5em">
             You need to make this version publicly viewable in order to preview it.
           </div>
-          <div class="text-90">
+          <div class="text-90" style="margin-bottom: 0.5em">
             It will have its own separate web3:// URL, and you can disable it later anytime (unless you activate the global lock).
+          </div>
+          <div class="text-90 text-warning">
+            <ExclamationTriangleIcon /> Don't store private data, even in a non-viewable version: All data in a blockchain can be read one way or another.
           </div>
           <div style="margin-top: 1em;">
             <button @click="setIsViewable" :disabled="setIsViewableIsPending">

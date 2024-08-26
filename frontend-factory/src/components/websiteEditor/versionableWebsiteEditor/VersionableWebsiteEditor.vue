@@ -242,8 +242,8 @@ const showConfigPanel = ref(false)
     </div>
     
     <PagesTab
-      v-if="staticFrontendInstalledPlugin"
-      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded"
+      :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
@@ -251,8 +251,8 @@ const showConfigPanel = ref(false)
       :pluginInfos="staticFrontendInstalledPlugin"
       class="tab" v-show="activeTab == 'pages'" />
     <FilesTab 
-      v-if="staticFrontendInstalledPlugin"
-      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded"
+      :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
