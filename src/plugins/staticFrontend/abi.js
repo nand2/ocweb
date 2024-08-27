@@ -103,6 +103,30 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "contract IStorageBackend",
+        name: "",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    name: "contentKeysRefCounters",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "contract IVersionableWebsite",
         name: "website",
         type: "address"
@@ -121,6 +145,47 @@ export const abi = [
     name: "copyFrontendSettings",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IVersionableWebsite",
+        name: "website",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "websiteVersionIndex",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256[]",
+        name: "contentKeys",
+        type: "uint256[]"
+      }
+    ],
+    name: "filesSizeAndUploadSizes",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "size",
+            type: "uint256"
+          },
+          {
+            internalType: "uint256",
+            name: "uploadedSize",
+            type: "uint256"
+          }
+        ],
+        internalType: "struct IStorageBackend.Sizes[]",
+        name: "",
+        type: "tuple[]"
+      }
+    ],
+    stateMutability: "view",
     type: "function"
   },
   {
@@ -251,6 +316,38 @@ export const abi = [
             internalType: "string",
             name: "homepage",
             type: "string"
+          },
+          {
+            internalType: "contract IVersionableWebsitePlugin[]",
+            name: "dependencies",
+            type: "address[]"
+          },
+          {
+            components: [
+              {
+                internalType: "string",
+                name: "title",
+                type: "string"
+              },
+              {
+                internalType: "string",
+                name: "url",
+                type: "string"
+              },
+              {
+                internalType: "contract IVersionableWebsitePlugin",
+                name: "moduleForGlobalAdminPanel",
+                type: "address"
+              },
+              {
+                internalType: "enum IVersionableWebsitePlugin.AdminPanelType",
+                name: "panelType",
+                type: "uint8"
+              }
+            ],
+            internalType: "struct IVersionableWebsitePlugin.AdminPanel[]",
+            name: "adminPanels",
+            type: "tuple[]"
           }
         ],
         internalType: "struct IVersionableWebsitePlugin.Infos",
@@ -309,75 +406,7 @@ export const abi = [
         type: "tuple[]"
       }
     ],
-    name: "processWeb3RequestAfterStaticContent",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "statusCode",
-        type: "uint256"
-      },
-      {
-        internalType: "string",
-        name: "body",
-        type: "string"
-      },
-      {
-        components: [
-          {
-            internalType: "string",
-            name: "key",
-            type: "string"
-          },
-          {
-            internalType: "string",
-            name: "value",
-            type: "string"
-          }
-        ],
-        internalType: "struct KeyValue[]",
-        name: "headers",
-        type: "tuple[]"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IVersionableWebsite",
-        name: "website",
-        type: "address"
-      },
-      {
-        internalType: "uint256",
-        name: "websiteVersionIndex",
-        type: "uint256"
-      },
-      {
-        internalType: "string[]",
-        name: "resource",
-        type: "string[]"
-      },
-      {
-        components: [
-          {
-            internalType: "string",
-            name: "key",
-            type: "string"
-          },
-          {
-            internalType: "string",
-            name: "value",
-            type: "string"
-          }
-        ],
-        internalType: "struct KeyValue[]",
-        name: "params",
-        type: "tuple[]"
-      }
-    ],
-    name: "processWeb3RequestBeforeStaticContent",
+    name: "processWeb3Request",
     outputs: [
       {
         internalType: "uint256",

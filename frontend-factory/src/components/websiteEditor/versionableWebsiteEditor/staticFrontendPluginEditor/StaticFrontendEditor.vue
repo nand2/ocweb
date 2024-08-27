@@ -59,7 +59,7 @@ const { data: frontendFilesSizes, isLoading: frontendFilesSizesLoading, isError:
   queryKey: ['StaticFrontendPluginStaticFrontendFileSizes', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
   queryFn: async () => {
 
-    return await staticFrontendPluginClient.value.getStaticFrontendFilesSizesFromStorageBackend(staticFrontend.value)
+    return await staticFrontendPluginClient.value.getStaticFrontendFilesSizesFromStorageBackend(props.websiteVersionIndex, staticFrontend.value)
   },
   staleTime: 3600 * 1000,
   enabled: computed(() => props.websiteVersion != null && staticFrontendPluginClient.value != null && staticFrontendLoaded.value == true && staticFrontendFetching.value == false),

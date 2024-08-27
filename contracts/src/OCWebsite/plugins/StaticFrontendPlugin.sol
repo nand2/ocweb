@@ -112,7 +112,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
                     }
                 }
 
-                (bytes memory data, uint nextChunkId) = storageBackend.read(address(this), frontend.files[i].contentKey, chunkIndex);
+                (bytes memory data, uint nextChunkId) = storageBackend.read(frontend.files[i].contentKey, chunkIndex);
                 body = string(data);
                 statusCode = 200;
 
@@ -325,8 +325,23 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         (bool fileFound, uint fileIndex) = _findFileIndexByName(frontend, filePath);
         require(fileFound, "File not found");
 
-        (data, nextChunkId) = frontend.storageBackend.read(address(this), frontend.files[fileIndex].contentKey, chunkId);
+        (data, nextChunkId) = frontend.storageBackend.read(frontend.files[fileIndex].contentKey, chunkId);
     }
+
+    /**
+     * Fetch the size and uploaded size of files in a website version
+     * @param websiteVersionIndex The website version
+     * @param contentKeys The content keys of the files
+     * @return sizes The sizes of the files
+     */
+    function filesSizeAndUploadSizes(IVersionableWebsite website, uint256 websiteVersionIndex, uint[] memory contentKeys) public view returns (IStorageBackend.Sizes[] memory) {
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+
+        StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
+
+        return frontend.storageBackend.sizeAndUploadSizes(contentKeys);
+    }
+
 
     /**
      * Rename a file in a website version

@@ -194,12 +194,12 @@ contract StorageBackendEthStorage is ERC165, IStorageBackend {
         return file.size;
     }
 
-    function sizeAndUploadSizes(address owner, uint[] memory indexes) public view returns (Sizes[] memory) {
+    function sizeAndUploadSizes(uint[] memory indexes) public view returns (Sizes[] memory) {
         Sizes[] memory results = new Sizes[](indexes.length);
         for(uint i = 0; i < indexes.length; i++) {
-            require(indexes[i] < files[owner].length, "File not found");
-            results[i].size = files[owner][indexes[i]].size;
-            results[i].uploadedSize = _uploadedSize(owner, indexes[i]);
+            require(indexes[i] < files[msg.sender].length, "File not found");
+            results[i].size = files[msg.sender][indexes[i]].size;
+            results[i].uploadedSize = _uploadedSize(msg.sender, indexes[i]);
         }
         return results;
     }
@@ -226,9 +226,9 @@ contract StorageBackendEthStorage is ERC165, IStorageBackend {
      * @return result The data read.
      * @return nextChunkId The index of the next chunk to read from. 0 if the file is fully read.
      */
-    function read(address owner, uint index, uint startingChunkId) external view returns (bytes memory result, uint nextChunkId) {
-        require(index < files[owner].length, "File not found");
-        File memory file = files[owner][index];
+    function read(uint index, uint startingChunkId) external view returns (bytes memory result, uint nextChunkId) {
+        require(index < files[msg.sender].length, "File not found");
+        File memory file = files[msg.sender][index];
         require(file.deleted == false, "File is deleted");
         require(startingChunkId < file.chunkIds.length, "Chunk not found");
 

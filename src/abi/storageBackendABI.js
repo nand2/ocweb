@@ -135,11 +135,6 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "owner",
-        type: "address"
-      },
-      {
         internalType: "uint256",
         name: "index",
         type: "uint256"
@@ -181,11 +176,6 @@ export const abi = [
   },
   {
     inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address"
-      },
       {
         internalType: "uint256[]",
         name: "indexes",

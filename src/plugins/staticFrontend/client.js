@@ -26,7 +26,7 @@ class StaticFrontendPluginClient {
     return await this.#viemWebsiteContract.read.getStaticFrontend([this.#websiteContractAddress, websiteVersionIndex])
   }
 
-  async getStaticFrontendFilesSizesFromStorageBackend(staticFrontend) {
+  async getStaticFrontendFilesSizesFromStorageBackend(websiteVersionIndex, staticFrontend) {
     // If the static frontend was not even initialized, return an empty array
     if(staticFrontend.storageBackend == "0x0000000000000000000000000000000000000000") {
       return []
@@ -43,15 +43,15 @@ class StaticFrontendPluginClient {
     })
     const contentKeys = fileInfos.map(fileInfo => fileInfo.contentKey)
 
-    // Get the storage backend
-    const storageBackendContract = getContract({
-      address: staticFrontend.storageBackend,
-      abi: storageBackendABI,
-      client: this.#viemClient,
-    })
+    // // Get the storage backend
+    // const storageBackendContract = getContract({
+    //   address: staticFrontend.storageBackend,
+    //   abi: storageBackendABI,
+    //   client: this.#viemClient,
+    // })
 
     // Get the sizes
-    const sizeAndUploadedSizes = await storageBackendContract.read.sizeAndUploadSizes([this.#pluginContractAddress, contentKeys])
+    const sizeAndUploadedSizes = await this.#viemWebsiteContract.read.filesSizeAndUploadSizes([this.#websiteContractAddress, websiteVersionIndex, contentKeys])
 
     // Fill all this metadata into the fileInfos
     for (let i = 0; i < fileInfos.length; i++) {
@@ -107,15 +107,15 @@ class StaticFrontendPluginClient {
     return await this.#viemWebsiteContract.read.getStorageBackends([])
   }
 
-  async prepareSetStorageBackendTransaction(version, storageBackend) {
+  async prepareSetStorageBackendTransaction(websiteVersionIndex, storageBackend) {
     return {
       functionName: 'setStorageBackend',
-      args: [this.#websiteContractAddress, version, storageBackend],
+      args: [this.#websiteContractAddress, websiteVersionIndex, storageBackend],
     }
   }
 
   /**
-   * Prepare the addition of several files to a frontend version
+   * Prepare the addition of several files to a frontend websiteVersionIndex
    * fileInfos: An array of objects with the following properties:
    * - filePath: The path of the file, without leading /. E.g. "index.html", "assets/logo.png"
    * - size: The size of the file
@@ -128,9 +128,9 @@ class StaticFrontendPluginClient {
    *            the transactions before executing them
    *          - One array of fileInfos that were skipped because they were already uploaded
    */
-  async prepareAddFilesTransactions(version, fileInfos) {
-    // Fetch the staticFrontend for this version
-    const staticFrontend = await this.getStaticFrontend(version)
+  async prepareAddFilesTransactions(websiteVersionIndex, fileInfos) {
+    // Fetch the staticFrontend for this websiteVersionIndex
+    const staticFrontend = await this.getStaticFrontend(websiteVersionIndex)
 
     // If there is a storage backend set, get the storage backend name
     let storageBackendName;
@@ -182,7 +182,7 @@ class StaticFrontendPluginClient {
     // Filter out the files that are already uploaded, and identical
     // If already uploaded, but not identical, flag them as such
     // For existing files collision check optimization : Fetch all the sizes of files
-    const fileInfosWithSize = await this.getStaticFrontendFilesSizesFromStorageBackend(staticFrontend);
+    const fileInfosWithSize = await this.getStaticFrontendFilesSizesFromStorageBackend(websiteVersionIndex, staticFrontend);
     // Do the filtering
     let compressedFilesInfosToUpload = [];
     let skippedCompressedFilesInfos = [];
@@ -200,7 +200,7 @@ class StaticFrontendPluginClient {
       }
 
       // Fetching remote file content
-      const remoteFileData = await this.readFileFully(version, compressedFileInfo, false);
+      const remoteFileData = await this.readFileFully(websiteVersionIndex, compressedFileInfo, false);
       // If the file data is not identical, it's a different file: we need to upload it
       let isIdentical = true;
       if (remoteFileData.length !== compressedFileInfo.data.length) {
@@ -252,7 +252,7 @@ class StaticFrontendPluginClient {
         if (initialChunkSize == 0) {
           transactions.push({
             functionName: 'addFiles',
-            args: [this.#websiteContractAddress, version, currentFileUploadInfos],
+            args: [this.#websiteContractAddress, websiteVersionIndex, currentFileUploadInfos],
             metadata: { files: currentFileUploadInfosMetadata },
           })
           currentFileUploadInfos = []
@@ -296,7 +296,7 @@ class StaticFrontendPluginClient {
             if(chunkSizes.length > 1) {
               transactions.push({
                 functionName: 'addFiles',
-                args: [this.#websiteContractAddress, version, currentFileUploadInfos],
+                args: [this.#websiteContractAddress, websiteVersionIndex, currentFileUploadInfos],
                 metadata: { files: currentFileUploadInfosMetadata },
               })
               currentFileUploadInfos = []
@@ -306,7 +306,7 @@ class StaticFrontendPluginClient {
           else {
             transactions.push({
               functionName: 'appendToFile',
-              args: [this.#websiteContractAddress, version, fileInfo.filePath, toHex(chunk)],
+              args: [this.#websiteContractAddress, websiteVersionIndex, fileInfo.filePath, toHex(chunk)],
               metadata: {
                 sizeSent: chunkSize,
                 chunkId,
@@ -325,7 +325,7 @@ class StaticFrontendPluginClient {
     if (currentFileUploadInfos.length > 0) {
       transactions.push({
         functionName: 'addFiles',
-        args: [this.#websiteContractAddress, version, currentFileUploadInfos],
+        args: [this.#websiteContractAddress, websiteVersionIndex, currentFileUploadInfos],
         metadata: { files: currentFileUploadInfosMetadata },
       })
     }

@@ -26,7 +26,7 @@ interface IStorageBackend is IERC165 {
         // If uploadedSize < size, the file is not complete
         uint256 uploadedSize;
     }
-    function sizeAndUploadSizes(address owner, uint[] memory indexes) external view returns (Sizes[] memory);
+    function sizeAndUploadSizes(uint[] memory indexes) external view returns (Sizes[] memory);
 
     // Some storage backends (e.g. EthStorage) require a different chain ID to read the data
     // than to store the data. This function returns the chain ID to use to read the data
@@ -34,5 +34,5 @@ interface IStorageBackend is IERC165 {
     // Read the file contents, starting from a chunk ID
     // It will try to read as much as possible in a single call, and may return 
     // a nextChunkId if the data is too large to fit in a single call
-    function read(address owner, uint index, uint startingChunkId) external view returns (bytes memory result, uint nextChunkId);
+    function read(uint index, uint startingChunkId) external view returns (bytes memory result, uint nextChunkId);
 }
