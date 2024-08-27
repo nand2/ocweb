@@ -330,6 +330,11 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
      */
     function readFile(IVersionableWebsite website, uint256 websiteVersionIndex, string memory filePath, uint256 chunkId) public view returns (bytes memory data, uint256 nextChunkId) {
         require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+
+        // If the frontend is not the live version, and is not viewable, throw an error
+        uint256 liveWebsiteVersionIndex = website.liveWebsiteVersionIndex();
+        require(websiteVersionIndex == liveWebsiteVersionIndex || websiteVersion.isViewable, "Website version is not viewable");
 
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
         

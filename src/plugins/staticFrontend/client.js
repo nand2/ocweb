@@ -1,5 +1,6 @@
 import { getContract, toHex, walletActions, publicActions, fromHex } from 'viem'
 
+import { abi as versionableWebsiteABI } from '../../abi/versionableStaticWebsiteABI.js'
 import { abi as staticFrontendPluginABI } from './abi.js'
 import { abi as storageBackendABI } from '../../abi/storageBackendABI.js'
 
@@ -7,15 +8,22 @@ import { abi as storageBackendABI } from '../../abi/storageBackendABI.js'
 class StaticFrontendPluginClient {
   #viemClient = null
   #websiteContractAddress = null
-  #pluginContractAddress = null
   #viemWebsiteContract = null
+  #pluginContractAddress = null
+  #viemPluginContract = null
 
   constructor(viemClient, websiteContractAddress, pluginContractAddress) {
     this.#viemClient = viemClient.extend(publicActions).extend(walletActions)
-    this.#websiteContractAddress = websiteContractAddress
-    this.#pluginContractAddress = pluginContractAddress
 
+    this.#websiteContractAddress = websiteContractAddress
     this.#viemWebsiteContract = getContract({
+      address: this.#websiteContractAddress,
+      abi: versionableWebsiteABI,
+      client: this.#viemClient,
+    })
+
+    this.#pluginContractAddress = pluginContractAddress
+    this.#viemPluginContract = getContract({
       address: this.#pluginContractAddress,
       abi: staticFrontendPluginABI,
       client: this.#viemClient,
@@ -23,7 +31,7 @@ class StaticFrontendPluginClient {
   }
 
   async getStaticFrontend(websiteVersionIndex) {
-    return await this.#viemWebsiteContract.read.getStaticFrontend([this.#websiteContractAddress, websiteVersionIndex])
+    return await this.#viemPluginContract.read.getStaticFrontend([this.#websiteContractAddress, websiteVersionIndex])
   }
 
   async getStaticFrontendFilesSizesFromStorageBackend(websiteVersionIndex, staticFrontend) {
@@ -51,7 +59,7 @@ class StaticFrontendPluginClient {
     // })
 
     // Get the sizes
-    const sizeAndUploadedSizes = await this.#viemWebsiteContract.read.filesSizeAndUploadSizes([this.#websiteContractAddress, websiteVersionIndex, contentKeys])
+    const sizeAndUploadedSizes = await this.#viemPluginContract.read.filesSizeAndUploadSizes([this.#websiteContractAddress, websiteVersionIndex, contentKeys])
 
     // Fill all this metadata into the fileInfos
     for (let i = 0; i < fileInfos.length; i++) {
@@ -95,7 +103,7 @@ class StaticFrontendPluginClient {
   // Read a file. Return the data and the next chunk id, if any (0 if no more chunks)
   // (So multiple calls can be needed to read a file)
   async readFile(websiteVersionIndex, filePath, chunkId)  {
-    const result = await this.#viemWebsiteContract.read.readFile([this.#websiteContractAddress, websiteVersionIndex, filePath, chunkId])
+    const result = await this.#viemPluginContract.read.readFile([this.#websiteContractAddress, websiteVersionIndex, filePath, chunkId])
 
     return {
       data: fromHex(result[0], 'bytes'),
@@ -104,7 +112,7 @@ class StaticFrontendPluginClient {
   }
 
   async getStorageBackends() {
-    return await this.#viemWebsiteContract.read.getStorageBackends([])
+    return await this.#viemPluginContract.read.getStorageBackends([])
   }
 
   async prepareSetStorageBackendTransaction(websiteVersionIndex, storageBackend) {
@@ -129,6 +137,11 @@ class StaticFrontendPluginClient {
    *          - One array of fileInfos that were skipped because they were already uploaded
    */
   async prepareAddFilesTransactions(websiteVersionIndex, fileInfos) {
+    // Get the website version
+    const websiteVersion = await this.#viemWebsiteContract.read.getWebsiteVersion([websiteVersionIndex])
+    // Get the live website version
+    const liveWebsiteVersionIndex = await this.#viemWebsiteContract.read.liveWebsiteVersionIndex()
+
     // Fetch the staticFrontend for this websiteVersionIndex
     const staticFrontend = await this.getStaticFrontend(websiteVersionIndex)
 
@@ -181,47 +194,54 @@ class StaticFrontendPluginClient {
 
     // Filter out the files that are already uploaded, and identical
     // If already uploaded, but not identical, flag them as such
-    // For existing files collision check optimization : Fetch all the sizes of files
-    const fileInfosWithSize = await this.getStaticFrontendFilesSizesFromStorageBackend(websiteVersionIndex, staticFrontend);
-    // Do the filtering
     let compressedFilesInfosToUpload = [];
     let skippedCompressedFilesInfos = [];
-    for(const compressedFileInfo of compressedFilesInfos) {
-      // Find the file in the existing files
-      const existingFileInfo = fileInfosWithSize.find(fileInfo => fileInfo.filePath == compressedFileInfo.filePath);
-      // Add a flag indicating if the file is already present
-      compressedFileInfo.alreadyExists = (existingFileInfo != undefined);
-      
-      // File not present in remote frontend, or file present in remote frontend, 
-      // but different size: we need to upload it
-      if(compressedFileInfo.alreadyExists == false || existingFileInfo.size != compressedFileInfo.size) {
-        compressedFilesInfosToUpload.push(compressedFileInfo);
-        continue;
-      }
+    // If the website version is not viewable, we cannot download the files to check, so process all
+    if(liveWebsiteVersionIndex != websiteVersionIndex && websiteVersion.isViewable == false) {
+      compressedFilesInfosToUpload = compressedFilesInfos;
+    }
+    // If the website version is viewable or live, we can download the files to check
+    else {
+      // For existing files collision check optimization : Fetch all the sizes of files
+      const fileInfosWithSize = await this.getStaticFrontendFilesSizesFromStorageBackend(websiteVersionIndex, staticFrontend);
+      // Do the filtering
+      for(const compressedFileInfo of compressedFilesInfos) {
+        // Find the file in the existing files
+        const existingFileInfo = fileInfosWithSize.find(fileInfo => fileInfo.filePath == compressedFileInfo.filePath);
+        // Add a flag indicating if the file is already present
+        compressedFileInfo.alreadyExists = (existingFileInfo != undefined);
+        
+        // File not present in remote frontend, or file present in remote frontend, 
+        // but different size: we need to upload it
+        if(compressedFileInfo.alreadyExists == false || existingFileInfo.size != compressedFileInfo.size) {
+          compressedFilesInfosToUpload.push(compressedFileInfo);
+          continue;
+        }
 
-      // Fetching remote file content
-      const remoteFileData = await this.readFileFully(websiteVersionIndex, compressedFileInfo, false);
-      // If the file data is not identical, it's a different file: we need to upload it
-      let isIdentical = true;
-      if (remoteFileData.length !== compressedFileInfo.data.length) {
-        // Theorically we should not enter here, but just in case
-        isIdentical = false;
-      } else {
-        for (let i = 0; i < remoteFileData.length; i++) {
-          if (remoteFileData[i] !== compressedFileInfo.data[i]) {
-            isIdentical = false;
-            break;
+        // Fetching remote file content
+        const remoteFileData = await this.readFileFully(websiteVersionIndex, compressedFileInfo, false);
+        // If the file data is not identical, it's a different file: we need to upload it
+        let isIdentical = true;
+        if (remoteFileData.length !== compressedFileInfo.data.length) {
+          // Theorically we should not enter here, but just in case
+          isIdentical = false;
+        } else {
+          for (let i = 0; i < remoteFileData.length; i++) {
+            if (remoteFileData[i] !== compressedFileInfo.data[i]) {
+              isIdentical = false;
+              break;
+            }
           }
         }
-      }
-      
-      if (!isIdentical) {
-        compressedFilesInfosToUpload.push(compressedFileInfo);
-        continue;
-      }
+        
+        if (!isIdentical) {
+          compressedFilesInfosToUpload.push(compressedFileInfo);
+          continue;
+        }
 
-      // Otherwise : we add it to the list of skipped files
-      skippedCompressedFilesInfos.push(compressedFileInfo);
+        // Otherwise : we add it to the list of skipped files
+        skippedCompressedFilesInfos.push(compressedFileInfo);
+      }
     }
 
     // Prepare the batch of transactions 

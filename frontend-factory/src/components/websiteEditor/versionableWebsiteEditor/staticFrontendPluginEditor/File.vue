@@ -7,7 +7,7 @@ import PencilSquareIcon from '../../../../icons/PencilSquareIcon.vue';
 import TrashIcon from '../../../../icons/TrashIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
 import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
-import { invalidateWebsiteVersionQuery } from '../../../../../../src/tanstack-vue.js';
+import { useLiveWebsiteVersion } from '../../../../../../src/tanstack-vue.js';
 import { useStaticFrontendFileContent } from '../../../../../../src/plugins/staticFrontend/tanstack-vue.js';
 import Modal from '../../../utils/Modal.vue';
 
@@ -60,6 +60,14 @@ const paddingLeftForCSS = computed(() => {
   return `${1 + props.folderParents.length * 1.5}em`;
 })
 
+// Fetch the live website infos
+const { data: liveWebsiteVersionData, isLoading: liveWebsiteVersionLoading, isFetching: liveWebsiteVersionFetching, isError: liveWebsiteVersionIsError, error: liveWebsiteVersionError, isSuccess: liveWebsiteVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
+
+// Can the file be downloaded?
+const fileCanBeDownloaded = computed(() => {
+  return liveWebsiteVersionLoaded.value && (liveWebsiteVersionData.value.websiteVersionIndex === props.websiteVersionIndex || props.websiteVersion.isViewable)
+})
+
 // Trigger the modal to show the file content
 const fileContentRequested = ref(false)
 const fileContentModalShown = ref(false)
@@ -69,7 +77,7 @@ const showFileContent = () => {
 }
 
 // Fetch the config file content, when requested
-const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, props.pluginInfos.plugin, computed(() => props.websiteVersionIndex), computed(() => props.file), fileContentRequested)
+const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, props.pluginInfos.plugin, computed(() => props.websiteVersionIndex), computed(() => props.file), computed(() => fileContentRequested.value && fileCanBeDownloaded.value))
 
 // Make a dataurl from the file content
 const fileContentAsDataUrl = computed(() => {
@@ -240,16 +248,26 @@ const deleteFile = async () => {
       v-model:show="fileContentModalShown"
       title="File preview" >
 
-      <div v-if="fileContentLoading">
-        Loading...
+      <div v-if="fileCanBeDownloaded == false">
+        <div style="margin-bottom: 0.5em;">
+          The website version is not publicly accessible, so the file cannot be downloaded.
+        </div>
+        <div>
+          You can make it accessible in the website versions settings.
+        </div>
       </div>
-      <div v-else-if="fileContentIsError">
-        Error loading the file content: {{ fileContentError.shortMessage || fileContentError.message }}
-      </div>
-      <div v-else-if="fileContentLoaded" class="preview-iframe-container">
-        <iframe
-          class="preview-iframe"
-          :src="fileContentAsDataUrl" />
+      <div v-else>
+        <div v-if="fileContentLoading">
+          Loading...
+        </div>
+        <div v-else-if="fileContentIsError" class="text-danger">
+          Error loading the file content: {{ fileContentError.shortMessage || fileContentError.message }}
+        </div>
+        <div v-else-if="fileContentLoaded" class="preview-iframe-container">
+          <iframe
+            class="preview-iframe"
+            :src="fileContentAsDataUrl" />
+        </div>
       </div>
     </Modal>
   </div>
