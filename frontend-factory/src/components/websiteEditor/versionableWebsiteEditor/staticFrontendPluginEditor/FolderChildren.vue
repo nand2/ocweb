@@ -42,6 +42,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  pluginInfos: {
+    type: Object,
+    required: true,
+  },
   staticFrontendPluginClient: {
     type: Object,
     required: true,
@@ -99,6 +103,7 @@ const addNewFolder = async () => {
           :chainId
           :websiteVersion
           :websiteVersionIndex
+          :pluginInfos
           :staticFrontendPluginClient
           :globalEmptyFolders
           v-if="child.type == 'folder'" />
@@ -110,6 +115,7 @@ const addNewFolder = async () => {
           :chainId
           :websiteVersion
           :websiteVersionIndex
+          :pluginInfos
           :staticFrontendPluginClient
           :folderParentChildren="folderChildren"
           v-else-if="child.type == 'file'" />

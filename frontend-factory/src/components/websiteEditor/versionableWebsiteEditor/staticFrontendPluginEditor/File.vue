@@ -8,6 +8,8 @@ import TrashIcon from '../../../../icons/TrashIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
 import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
 import { invalidateWebsiteVersionQuery } from '../../../../../../src/tanstack-vue.js';
+import { useStaticFrontendFileContent } from '../../../../../../src/plugins/staticFrontend/tanstack-vue.js';
+import Modal from '../../../utils/Modal.vue';
 
 const props = defineProps({
   file: {
@@ -38,6 +40,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  pluginInfos: {
+    type: Object,
+    required: true,
+  },
   staticFrontendPluginClient: {
     type: Object,
     required: true,
@@ -50,14 +56,37 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 
-
-const fileUrl = computed(() => {
-  return `web3://${props.contractAddress}${props.chainId > 1 ? ":" + props.chainId : ""}/${props.file.filePath}`;
-})
-
 const paddingLeftForCSS = computed(() => {
   return `${1 + props.folderParents.length * 1.5}em`;
 })
+
+// Trigger the modal to show the file content
+const fileContentRequested = ref(false)
+const fileContentModalShown = ref(false)
+const showFileContent = () => {
+  fileContentRequested.value = true
+  fileContentModalShown.value = true
+}
+
+// Fetch the config file content, when requested
+const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, props.pluginInfos.plugin, computed(() => props.websiteVersionIndex), computed(() => props.file), fileContentRequested)
+
+// Make a dataurl from the file content
+const fileContentAsDataUrl = computed(() => {
+  if(fileContentLoaded.value == false) {
+    return ''
+  }
+
+  // Content type: For HTML, show as text
+  let contentType = props.file.contentType
+  if(contentType === 'text/html') {
+    contentType = 'text/plain';
+  }
+
+  const base64Data = btoa(Array.from(fileContent.value, byte => String.fromCharCode(byte)).join(''))
+  return `data:${contentType};base64,${base64Data}`
+})
+
 
 
 // Rename file
@@ -133,7 +162,7 @@ const deleteFile = async () => {
           <input v-model="newFileName" type="text" />
           <button @click="renameFile()" :disabled="renameIsPending" class="sm">Rename</button>
         </span>
-        <a v-else :href="fileUrl" class="white" target="_blank">
+        <a v-else @click.prevent.stop="showFileContent()" class="white" target="_blank">
           <span>
             <PencilSquareIcon v-if="renameIsPending == true" class="anim-pulse" />
             <TrashIcon v-else-if="deleteIsPending == true" class="anim-pulse" />
@@ -206,6 +235,23 @@ const deleteFile = async () => {
         Error deleting the file: {{ deleteError.shortMessage || deleteError.message }} <a @click.stop.prevent="deleteReset()">Hide</a>
       </span>
     </div>
+
+    <Modal 
+      v-model:show="fileContentModalShown"
+      title="File preview" >
+
+      <div v-if="fileContentLoading">
+        Loading...
+      </div>
+      <div v-else-if="fileContentIsError">
+        Error loading the file content: {{ fileContentError.shortMessage || fileContentError.message }}
+      </div>
+      <div v-else-if="fileContentLoaded" class="preview-iframe-container">
+        <iframe
+          class="preview-iframe"
+          :src="fileContentAsDataUrl" />
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -275,5 +321,17 @@ const deleteFile = async () => {
 
 .mutation-error span {
   font-size: 0.8em;
+}
+
+.preview-iframe-container {
+  height: 70vh; 
+  width: 80vw;
+  background-color: #ccc;
+}
+
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0px solid var(--color-divider);
 }
 </style>

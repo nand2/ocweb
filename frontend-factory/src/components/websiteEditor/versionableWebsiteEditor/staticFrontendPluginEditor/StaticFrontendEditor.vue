@@ -176,6 +176,7 @@ const rootFolderChildren = computed(() => {
         :chainId 
         :websiteVersion
         :websiteVersionIndex 
+        :pluginInfos
         :staticFrontendPluginClient
         :globalEmptyFolders />
 

@@ -52,7 +52,8 @@ function invalidateStaticFrontendQuery(queryClient, websiteContractAddress, chai
 
 // fileInfos is reactive
 // websiteVersionIndex is reactive
-function useStaticFrontendFileContent(websiteContractAddress, chainId, pluginAddress, websiteVersionIndex, fileInfos) {
+// Optional: condition (reactive)
+function useStaticFrontendFileContent(websiteContractAddress, chainId, pluginAddress, websiteVersionIndex, fileInfos, condition) {
   const { data: pluginClient, isSuccess: pluginClientLoaded} = useStaticFrontendPluginClient(websiteContractAddress, pluginAddress)
   const { switchChainAsync } = useSwitchChain()
 
@@ -66,7 +67,7 @@ function useStaticFrontendFileContent(websiteContractAddress, chainId, pluginAdd
       return result;
     },
     staleTime: 3600 * 1000,
-    enabled: computed(() => pluginClientLoaded.value && fileInfos.value != null),
+    enabled: computed(() => pluginClientLoaded.value && fileInfos.value != null && (condition ? condition.value : true)),
   })
 }
 
