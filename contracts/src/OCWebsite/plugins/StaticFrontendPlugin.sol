@@ -59,6 +59,17 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
     )
         external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+
+        // If the frontend is not the live version, and is not viewable, return a 404
+        uint256 liveWebsiteVersionIndex = website.liveWebsiteVersionIndex();
+        if(websiteVersionIndex != liveWebsiteVersionIndex && websiteVersion.isViewable == false) {
+            statusCode = 404;
+            return (statusCode, body, headers);
+        }
+
+
         StaticFrontend storage frontend = websiteVersionStaticFrontends[website][websiteVersionIndex];
 
         // Compute the filePaths of the requested resource. 2 paths:
