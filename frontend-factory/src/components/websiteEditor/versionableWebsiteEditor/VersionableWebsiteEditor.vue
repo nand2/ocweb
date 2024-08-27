@@ -218,13 +218,13 @@ const showConfigPanel = ref(false)
     <div v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" class="tab">
       <!-- Plugin mode -->
       <RemoteAsyncComponent
-        v-if="activeTab == panel.tabKey && panel.panel.moduleForGlobalAdminPanel" 
+        v-if="activeTab == panel.tabKey && panel.panel.moduleForGlobalAdminPanel && websiteVersionBeingEditedLoaded" 
         
         :umdModuleUrl="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
         :moduleName="panel.plugin.infos.name + 'Admin' + panel.panelIndex"
         :cssUrl="(panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url).replace('.umd.js', '.css')"
 
-        :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+        :websiteVersion="websiteVersionBeingEdited"
         :websiteVersionIndex="websiteVersionBeingEditedIndex"
         :contractAddress 
         :chainId 
