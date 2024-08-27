@@ -198,7 +198,7 @@ const showConfigPanel = ref(false)
       
       <a @click="activeTab = 'preview'; previewTabRef.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
 
-      <span class="separator" style="margin: auto"></span>
+      <span class="separator"></span>
 
       <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
@@ -295,12 +295,22 @@ const showConfigPanel = ref(false)
 
 .tabs {
   display: flex;
-  gap: 1em;
+  column-gap: 1em;
+  flex-wrap: wrap;
   padding-left: 1em;
   padding-right: 1em;
   background-color: var(--color-light-bg);
   justify-content: space-between;
   border-bottom: 1px solid var(--color-divider);
+}
+
+.tabs .separator {
+  flex: 1;
+}
+@media (max-width: 700px) {
+  .tabs .separator {
+    display: none;
+  }
 }
 
 .tabs a {
