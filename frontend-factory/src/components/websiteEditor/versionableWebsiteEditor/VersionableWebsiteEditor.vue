@@ -31,9 +31,6 @@ const props = defineProps({
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
 
-// Tabs handling. Default value will be set once the plugin list was loaded
-const activeTab = ref('');
-
 // Reference to the preview tab
 const previewTabRef = ref(null)
 
@@ -112,18 +109,42 @@ const pluginPrimaryAdminPanels = computed(() => {
     .filter(panel => panel.panel.moduleForGlobalAdminPanel == null || panel.panel.moduleForGlobalAdminPanel == ocWebAdminInstalledPlugin.value.plugin)
 })
 
-// When the plugins are loaded, now set the default tab
+// The initial tab to display
+const initialTab = computed(() => {
+  if(websiteVersionBeingEditedPluginsLoaded.value == false) {
+    return ''
+  }
+
+  // If there are plugin primary admin panels, then the default tab is the first one
+  if(pluginPrimaryAdminPanels.value.length > 0) {
+    return pluginPrimaryAdminPanels.value[0].tabKey
+  }
+  // Othewise, if the static frontend is installed, then the default tab is pages
+  else if(staticFrontendInstalledPlugin.value) {
+    return 'pages'
+  }
+  // Othewise, the default tab is preview
+  else {
+    return 'preview'
+  }
+})
+
+// Tabs handling. Default value will be set once the plugin list was loaded
+const activeTab = ref(initialTab.value);
 watch(websiteVersionBeingEditedPluginsLoaded, () => {
   if(activeTab.value != '') {
     return;
   }
+  activeTab.value = initialTab.value
+})
 
-  if(staticFrontendInstalledPlugin.value) {
-    activeTab.value = 'files'
+// The list of loaded tabs (to avoid loading them all at once)
+const loadedTabs = ref([])
+watch(activeTab, (newValue) => {
+  if(loadedTabs.value.includes(newValue)) {
+    return;
   }
-  else {
-    activeTab.value = 'preview'
-  }
+  loadedTabs.value.push(newValue)
 })
 
 // Get the list website versions : Only when the user display the form to select a version
@@ -196,7 +217,7 @@ const showConfigPanel = ref(false)
 
       <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'pages'" :class="{tabPages: true, active: activeTab == 'pages'}">Pages</a>
       
-      <a @click="activeTab = 'preview'; previewTabRef.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
+      <a @click="activeTab = 'preview'; previewTabRef?.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
 
       <span class="separator"></span>
 
@@ -242,7 +263,7 @@ const showConfigPanel = ref(false)
     </div>
     
     <PagesTab
-      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded && websiteClientLoaded"
+      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && staticFrontendInstalledPlugin && loadedTabs.includes('pages')"
       :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
@@ -251,7 +272,7 @@ const showConfigPanel = ref(false)
       :pluginInfos="staticFrontendInstalledPlugin"
       class="tab" v-show="activeTab == 'pages'" />
     <FilesTab 
-      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded && websiteClientLoaded"
+      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && staticFrontendInstalledPlugin && loadedTabs.includes('files')"
       :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
@@ -260,22 +281,24 @@ const showConfigPanel = ref(false)
       :pluginInfos="staticFrontendInstalledPlugin"
       class="tab" v-show="activeTab == 'files'" />
     <PreviewTab 
+      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && loadedTabs.includes('preview')"
       ref="previewTabRef"
-      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'preview'" />
     <SettingsTab 
-      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && loadedTabs.includes('settings')"
+      :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'settings'" />
     <PluginsTab
-      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded"
+      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && loadedTabs.includes('plugins')"
       :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 

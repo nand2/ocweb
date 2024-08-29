@@ -21,7 +21,7 @@ const props = defineProps({
     required: true,
   },
   websiteVersion: {
-    type: [Object, null],
+    type: Object,
     required: true
   },
   websiteVersionIndex: {
@@ -29,7 +29,7 @@ const props = defineProps({
     required: true,
   },
   websiteClient: {
-    type: [Object, null],
+    type: Object,
     required: true,
   },
 })
@@ -106,7 +106,7 @@ const pluginHardcodedSettings = computed(() => {
     <div v-else-if="websiteVersionPluginsLoaded" class="settings">
 
       <!-- <AdminSettingsPanel
-      v-if="websiteVersion && websiteClient && websiteVersionPluginsLoaded"
+      v-if="websiteVersionPluginsLoaded"
       :contractAddress 
       :chainId 
       :websiteVersion

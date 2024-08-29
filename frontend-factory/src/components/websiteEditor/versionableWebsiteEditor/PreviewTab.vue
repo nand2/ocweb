@@ -11,7 +11,7 @@ import ExclamationTriangleIcon from '../../../icons/ExclamationTriangleIcon.vue'
 
 const props = defineProps({
   websiteVersion: {
-    type: [Object, null],
+    type: Object,
     required: true
   },
   websiteVersionIndex: {
@@ -27,7 +27,7 @@ const props = defineProps({
     required: true,
   },
   websiteClient: {
-    type: [Object, null],
+    type: Object,
     required: true,
   },
 })

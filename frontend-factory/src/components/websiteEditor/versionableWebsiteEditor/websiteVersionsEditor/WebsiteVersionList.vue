@@ -15,7 +15,7 @@ const props = defineProps({
     required: true,
   },
   websiteClient: {
-    type: [Object, null],
+    type: Object,
     required: true,
   },
 })
