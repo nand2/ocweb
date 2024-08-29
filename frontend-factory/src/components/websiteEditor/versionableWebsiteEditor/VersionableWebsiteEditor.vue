@@ -90,7 +90,7 @@ const ocWebAdminInstalledPlugin = computed(() => {
   return websiteVersionBeingEditedPlugins.value.find(plugin => plugin.infos.name == 'ocWebAdmin')
 })
 
-// Get the list of admin panels of the plugins
+// Get the list of primary admin panels of the plugins
 const pluginPrimaryAdminPanels = computed(() => {
   if(websiteVersionBeingEditedPluginsLoaded.value == false) {
     return []
@@ -207,10 +207,10 @@ const showConfigPanel = ref(false)
 
     <!-- <AdminPanel
       v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded && websiteVersionBeingEditedPluginsLoaded"
-      :websiteVersion="websiteVersionBeingEdited"
-      :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 
+      :websiteVersion="websiteVersionBeingEdited"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :websiteClient
       :pluginsInfos="websiteVersionBeingEditedPlugins"
       :pluginInfos="websiteVersionBeingEditedPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" /> -->
@@ -218,16 +218,16 @@ const showConfigPanel = ref(false)
     <div v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" class="tab">
       <!-- Plugin mode -->
       <RemoteAsyncComponent
-        v-if="activeTab == panel.tabKey && panel.panel.moduleForGlobalAdminPanel && websiteVersionBeingEditedLoaded" 
+        v-if="activeTab == panel.tabKey && websiteVersionBeingEditedLoaded && panel.panel.moduleForGlobalAdminPanel" 
         
         :umdModuleUrl="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
-        :moduleName="panel.plugin.infos.name + 'Admin' + panel.panelIndex"
+        :moduleName="panel.plugin.infos.name + 'AdminPanels.Panel' + panel.panelIndex"
         :cssUrl="(panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url).replace('.umd.js', '.css')"
 
-        :websiteVersion="websiteVersionBeingEdited"
-        :websiteVersionIndex="websiteVersionBeingEditedIndex"
         :contractAddress 
         :chainId 
+        :websiteVersion="websiteVersionBeingEdited"
+        :websiteVersionIndex="websiteVersionBeingEditedIndex"
         :websiteClient
         :pluginsInfos="websiteVersionBeingEditedPlugins"
         :pluginInfos="panel.plugin"
@@ -235,14 +235,14 @@ const showConfigPanel = ref(false)
 
       <!-- Iframe mode -->
       <iframe
-        v-else-if="activeTab == panel.tabKey"
+        v-else-if="activeTab == panel.tabKey && websiteVersionBeingEditedLoaded"
         :src="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
         style="width: 100%; height: 400px; border: none;"
         ></iframe>
     </div>
     
     <PagesTab
-      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded"
+      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded && websiteClientLoaded"
       :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
@@ -251,7 +251,7 @@ const showConfigPanel = ref(false)
       :pluginInfos="staticFrontendInstalledPlugin"
       class="tab" v-show="activeTab == 'pages'" />
     <FilesTab 
-      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded"
+      v-if="staticFrontendInstalledPlugin && websiteVersionBeingEditedLoaded && websiteClientLoaded"
       :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
@@ -275,7 +275,8 @@ const showConfigPanel = ref(false)
       :websiteClient="websiteClient"
       class="tab" v-show="activeTab == 'settings'" />
     <PluginsTab
-      :websiteVersion="websiteVersionBeingEditedLoaded ? websiteVersionBeingEdited : null"
+      v-if="websiteVersionBeingEditedLoaded && websiteClientLoaded"
+      :websiteVersion="websiteVersionBeingEdited"
       :websiteVersionIndex="websiteVersionBeingEditedIndex"
       :contractAddress 
       :chainId 

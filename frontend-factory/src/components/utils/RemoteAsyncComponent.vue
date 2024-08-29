@@ -31,6 +31,12 @@ globalThis.Viem = Viem;
 
 const asyncComponent = shallowRef(null);
 
+// Helper function to resolve a path in an object, e.g. resolvePath(window, "a.b.c") will
+// return window.a.b.c
+function resolvePath(obj, path) {
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
 onMounted(() => {
   asyncComponent.value = defineAsyncComponent({
     loader: () => {
@@ -45,18 +51,18 @@ onMounted(() => {
             link.rel = 'stylesheet';
             link.href = props.cssUrl;
             link.onload = () => {
-              resolve(globalThis[props.moduleName]);
+              resolve(resolvePath(globalThis, props.moduleName));
             };
             link.onerror = (error) => {
               // If CSS fails to load: We resolve the component, but log an error
               const message = 'Failed to load the CSS located at ' + props.cssUrl;
               console.error(message);
-              resolve(globalThis[props.moduleName]);
+              resolve(resolvePath(globalThis, props.moduleName));
             };
             document.head.appendChild(link); // Append CSS to head
           } else {
             // If no CSS URL, resolve component immediately
-            resolve(globalThis[props.moduleName]);
+            resolve(resolvePath(globalThis, props.moduleName));
           }
         };
         script.onerror = (error) => {

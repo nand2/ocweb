@@ -102,6 +102,6 @@ const openHomepageWithArgs = () => {
 .title {
   font-size: 1.1em;
   font-weight: bold;
-  margin-bottom: 1em;
+  margin-bottom: 0.75em;
 }
 </style>
