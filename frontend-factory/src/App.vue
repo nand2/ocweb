@@ -16,6 +16,11 @@ const isViewedAsWebsiteAdmin = computed(() => {
   }
   return matchResult.groups.path && matchResult.groups.path.startsWith('/admin');
 })
+
+// Override the window.title if it is viewed as a website admin
+if(isViewedAsWebsiteAdmin.value) {
+  document.title = "OCWebsite Admin"
+}
 </script>
 
 
@@ -23,16 +28,18 @@ const isViewedAsWebsiteAdmin = computed(() => {
   <div class="app">
     <div v-if="isViewedAsWebsiteAdmin == false" class="sidebar">
       
-      <div class="brand">
-        <img src="/logo.svg" class="logo" alt="Vue logo" />
-        <span class="logo-text">
-          OCWeb.eth
-        </span>
-      </div>
+      <RouterLink to="/">
+        <div class="brand">
+          <img src="/logo.svg" class="logo" alt="Vue logo" />
+          <span class="logo-text">
+            OCWeb.eth
+          </span>
+        </div>
+      </RouterLink>
 
       <div class="menu">
-        <RouterLink to="/"><span class="menu-icon"><LayourTextWindowReverseIcon /></span><span class="menu-text">My OCWebsites</span></RouterLink>
         <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span><span class="menu-text">Mint an OCWebsite</span></RouterLink>
+        <RouterLink to="/my-ocwebsites"><span class="menu-icon"><LayourTextWindowReverseIcon /></span><span class="menu-text">My OCWebsites</span></RouterLink>
       </div>
 
     </div>
@@ -87,6 +94,7 @@ const isViewedAsWebsiteAdmin = computed(() => {
   font-weight: bold;
   gap: 0.5em;
   padding: 0em 0.5em;
+  color: var(--color-text);
 }
 
 .logo {

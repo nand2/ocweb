@@ -195,7 +195,7 @@ const resetMintForm = () => {
             Access the admin panel either by :
             <ul>
               <li>Using the <a :href="newOCWebsiteWeb3Address + '/admin/'" target="_blank">/admin/</a> page of your website</li>
-              <li>Or going to the <RouterLink to="/">My OCWebsites</RouterLink> section of this website</li>
+              <li>Or going to the <RouterLink to="/my-ocwebsites">My OCWebsites</RouterLink> section of this website</li>
             </ul>
           </div>
         </div>

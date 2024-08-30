@@ -12,7 +12,7 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
 fi
 # Section. Default to "all"
 SECTION=${2:-all}
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -190,8 +190,8 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
   echo "Plugin root folder: $PLUGIN_ROOT"
 
   # Fetch the address of the OCWebsiteFactory
-  OCWEBSITEFACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .transactionType == "CREATE")][0].contractAddress')
-  echo "OCWebsiteFactory: $OCWEBSITEFACTORY_ADDRESS"
+  OCWEBSITE_FACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebsiteFactory: $OCWEBSITE_FACTORY_ADDRESS"
 
   # Fetch the address of the static frontend plugin
   STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin" and .transactionType == "CREATE")][0].contractAddress')
@@ -209,7 +209,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
     PRIVATE_KEY=$PRIVKEY \
     RPC_URL=$RPC_URL \
     CHAIN_ID=$CHAIN_ID \
-    OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITEFACTORY_ADDRESS \
+    OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITE_FACTORY_ADDRESS \
     STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
     OCWEB_ADMIN_PLUGIN_ADDRESS=$OCWEB_ADMIN_PLUGIN_ADDRESS \
     ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY \
@@ -221,5 +221,32 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
 
   # Add the plugin to the OCWebsiteFactory library, and as a default plugin
   echo "Adding the plugin to the OCWebsiteFactory library..."
-  cast send $OCWEBSITEFACTORY_ADDRESS "addWebsitePlugin(address,bool)()" $PLUGIN_THEME_ABOUT_ME_ADDRESS true --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
+  cast send $OCWEBSITE_FACTORY_ADDRESS "addWebsitePlugin(address,bool)()" $PLUGIN_THEME_ABOUT_ME_ADDRESS true --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
+fi
+
+# Make a example OCWebsite, and add it as a variable to the factory
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
+  cd $ROOT_FOLDER
+
+  # Fetch the address of the OCWebsiteFactory
+  OCWEBSITE_FACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebsiteFactory: $OCWEBSITE_FACTORY_ADDRESS"
+
+  exec 5>&1
+  OUTPUT="$(PRIVATE_KEY=$PRIVKEY \
+    node . --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID example4 | tee >(cat - >&5))"
+
+  # Get the address of the OCWebsite
+  OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
+
+  # Fetch the address of the injectedVariables plugin
+  INJECTED_VARIABLES_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "InjectedVariablesPlugin" and .transactionType == "CREATE")][0].contractAddress')
+
+  # Fetch the address of the OCWebsiteFactoryFrontend
+  OCWEBSITE_FACTORY_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebsiteFactory" and .function == "setWebsite(address)")][0].arguments[0]')
+  echo "OCWebsiteFactoryFrontend: $OCWEBSITE_FACTORY_FRONTEND_ADDRESS"
+
+  # Add the OCWebsite address as a variable to the factory
+  echo "Adding the example OCWebsite to the factory as a variable..."
+  cast send $INJECTED_VARIABLES_PLUGIN_ADDRESS "addVariable(address,uint,string,string)" $OCWEBSITE_FACTORY_FRONTEND_ADDRESS 0 ocwebsite-example "${OCWEBSITE_ADDRESS}:${CHAIN_ID}" --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
 fi

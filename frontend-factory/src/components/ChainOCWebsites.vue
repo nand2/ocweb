@@ -46,7 +46,7 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
     </div>
 
     <div v-else-if="ocWebsites.length == 0" class="not-owing-ocwebsites-message">
-      You don't have any OCWebsite yet. <RouterLink to="/mint">Mint one</RouterLink>!
+      You don't have any OCWebsites yet. <RouterLink to="/mint">Mint one</RouterLink>!
     </div>
 
     <div v-else class="oc-websites">
