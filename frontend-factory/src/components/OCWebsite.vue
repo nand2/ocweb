@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/vue-query'
 
 import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import OCWebsiteEditor from './websiteEditor/OCWebsiteEditor.vue';
+import WalletConnectModal from './utils/WalletConnectModal.vue';
 import XCircleIcon from '../icons/XCircleIcon.vue';
 import CopyIcon from '../icons/CopyIcon.vue';
 import BoxArrowUpRightIcon from '../icons/BoxArrowUpRightIcon.vue';
@@ -88,10 +89,25 @@ function copyWeb3AddressToClipboard() {
 const urlWithSlash = computed(() => {
   return `web3://${props.contractAddress}${props.chainId > 1 ? ':' + props.chainId : ''}/`
 })
+
+const showWalletConnectModal = ref(false)
+
+const onClick = () => {
+  if(isOpened.value) {
+    return;
+  }
+
+  // Not connected? Show the wallet connect modal
+  if (isConnected.value == false) {
+    showWalletConnectModal.value = true
+  } else {
+    isOpened.value = true
+  }
+}
 </script>
 
 <template>
-  <div :class="{ocwebsite: true, isOpened: isOpened}" @click="isOpened == false ? isOpened = true : null">
+  <div :class="{ocwebsite: true, isOpened: isOpened}" @click="onClick">
     <div class="header">
       <a @click.stop.prevent="copyWeb3AddressToClipboard()" :class="{'web3-address': true, copied: showCopiedIndicator}">
         web3://{{ contractAddress }}:{{ chainId }} 
@@ -114,6 +130,7 @@ const urlWithSlash = computed(() => {
 
     </div>
   </div>
+  <WalletConnectModal v-model:show="showWalletConnectModal" @connected="isOpened = true" />
 </template>
 
 

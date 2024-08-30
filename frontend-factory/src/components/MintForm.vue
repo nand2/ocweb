@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { abi as factoryABI } from '../../../src/abi/factoryABI.js';
 import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import { useSupportedChains } from '../utils/ethereum.js';
+import WalletConnectButton from './utils/WalletConnectButton.vue';
 
 defineProps({
   msg: String,
@@ -35,6 +36,8 @@ const subdomainError = computed(() => {
   }
   return null
 })
+
+const ensDomain = ref("")
 
 async function mint() {
   await switchChainAsync({ chainId: mintChainId.value })
@@ -92,6 +95,7 @@ const newOCWebsiteWeb3Address = computed(() => {
 
 const resetMintForm = () => {
   subdomain.value = ""
+  ensDomain.value = ""
   reset()
 }
 </script>
@@ -102,16 +106,8 @@ const resetMintForm = () => {
     <div class="mint-area" v-if="isConfirmed == false">
       <h1>Mint your OCWebsite</h1>
 
-      <div>
-        An OCWebsite is a website served by a blockchain, thanks to the <a href="web3://web3url.eth/">web3:// protocol</a>.
-        <br />
-        Once minted, you will be able to access an admin interface to upload files, add/remove plugins, ...
-      </div>
-
       <div v-if="isConnected == false" style="margin: 2em;">
-        <button disabled="disabled">
-          Connect your wallet first
-        </button>
+        <WalletConnectButton />
       </div>
       <div class="form" v-else>
         <div class="form-field">
@@ -148,10 +144,27 @@ const resetMintForm = () => {
 
         <div class="form-field">
           <label>
+            Your ENS domain
+            <small>
+              (Optional)
+            </small>
+          </label>
+          <div>
+            <div class="subdomain-field">
+              <input type="text" v-model="ensDomain" placeholder="" :disabled="isPending || isConfirming" maxlength="14" />
+              <div class="suffix">
+                .eth
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>
             Price
           </label>
           <div>
-            0 ETH + gas fees
+            Free + gas fees
           </div>
         </div>
 
@@ -162,7 +175,7 @@ const resetMintForm = () => {
           </button>
         </div>
 
-        <div v-if="isConfirming">
+        <div v-if="isConfirming" class="waiting-for-confirmation">
           Waiting for confirmation...
         </div>
         
@@ -181,6 +194,7 @@ const resetMintForm = () => {
       <div style="margin-bottom: 2em">
         <a class="website-address" target="_blank" :href="newOCWebsiteWeb3Address + '/'">{{ newOCWebsiteWeb3Address }}</a>
       </div>
+
       <div class="website-infos">
         <div>
           <img :src="newOCWebsiteTokenSVGUrl" />
@@ -194,10 +208,19 @@ const resetMintForm = () => {
           <div>
             Access the admin panel either by :
             <ul>
-              <li>Using the <a :href="newOCWebsiteWeb3Address + '/admin/'" target="_blank">/admin/</a> page of your website</li>
+              <li>Using the <a :href="newOCWebsiteWeb3Address + '/admin'" target="_blank">/admin</a> page of your website</li>
               <li>Or going to the <RouterLink to="/my-ocwebsites">My OCWebsites</RouterLink> section of this website</li>
             </ul>
           </div>
+        </div>
+      </div>
+
+      <div v-if="ensDomain" style="max-width: 800px; margin: 2em auto 0em auto;">
+        <div class="website-address" style="font-size: 1.3em; margin-bottom: 1em; padding: 0.4em 0.8em;">
+          web3://{{ ensDomain.endsWith('.eth') ? ensDomain : ensDomain + '.eth' }}
+        </div>
+        <div>
+          To use your own ENS domain name, follow the instructions in the Settings tab of <a :href="newOCWebsiteWeb3Address + '/admin'" target="_blank">your admin panel</a>
         </div>
       </div>
 
@@ -228,7 +251,7 @@ const resetMintForm = () => {
   gap: 1em;
   justify-content: center;
   border: 1px solid var(--color-divider);
-  padding: 1em 2em;
+  padding: 2em 2em;
   border-radius: 0.5em;
 }
 
@@ -248,6 +271,13 @@ const resetMintForm = () => {
   flex: 0 0 25%;
   text-align: right;
   font-weight: bold;
+  line-height: 1.2em;
+}
+
+.form-field label small {
+  font-weight: normal;
+  font-size: 0.8em;
+  color: var(--color-text-muted);
 }
 
 .chain-selector {
@@ -284,8 +314,20 @@ const resetMintForm = () => {
   font-size: 1.2em;
 }
 
-.transaction-confirmed {
-
+.waiting-for-confirmation {
+  font-size: 1.2em;
+  animation: loading 1.5s infinite;
+}
+@keyframes loading {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 
 .website-address {

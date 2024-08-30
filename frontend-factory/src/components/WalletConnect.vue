@@ -7,6 +7,8 @@ const { isConnected, address, connector, chainId } = useAccount();
 const { disconnect } = useDisconnect();
 const { data: balance, isSuccess: balanceFetchIsSuccess } = useBalance({ address: address, unit: 'ether' });
 
+import WalletConnectButton from './utils/WalletConnectButton.vue';
+
 // Balance with the last 4 digits
 function formattedBalance() {
   return balanceFetchIsSuccess.value ? `${Number(balance.value.value / (BigInt(10) ** BigInt(balance.value.decimals - 5))) / 100000 } ${balance.value.symbol}` : '';
@@ -16,15 +18,8 @@ function formattedBalance() {
 
 <template>
   <div class="wallet-connect">
-    <div v-if="isConnected == false" class="connect-buttons">
-      <button
-        v-for="connector in connectors"
-        @click="connect({ connector, chainId })"
-      >
-        Connect with {{ connector.name }}
-      </button>
-    </div>
-    <div v-else class="connected-dashboard">
+    <WalletConnectButton />
+    <div v-if="isConnected" class="connected-dashboard">
       <div class="address">
         {{ address.slice(0, 6) }}...{{ address.slice(-4) }}
         @ 
@@ -42,11 +37,6 @@ function formattedBalance() {
 <style scoped>
   .wallet-connect {
     font-size: 1em;
-  }
-
-  .connect-buttons {
-    display: flex;
-    gap: 1em;
   }
 
   .connected-dashboard {
