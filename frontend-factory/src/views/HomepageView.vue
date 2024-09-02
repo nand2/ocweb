@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 
 import { useInjectedVariables, useContractAddresses } from '../../../src/tanstack-vue.js';
 import OCWebsite from '../components/OCWebsite.vue';
+import Faq from '../components/utils/Faq.vue';
 
 const { isConnected, address } = useAccount();
 const { isSuccess: injectedVariablesLoaded, data: injectedVariables } = useInjectedVariables()
@@ -28,9 +29,32 @@ const exampleOCWebsiteInfos = computed(() => {
   }
 })
 
-const goToMintPage = () => {
-  
-}
+const faqEntries = [
+  {
+    question: 'Is <code>web3://</code> a standard?',
+    answer: '<p>The <code>web3://</code> protocol is made of several <a href="https://github.com/ethereum/ERCs" target="_blank">Ethereum ERCs</a>, whose aim is to standardize and provide high-quality documentation for the Ethereum application layer.</p><p>The base ERC for <code>web3://</code> is <a href="https://eips.ethereum.org/EIPS/eip-4804" target="_blank">ERC-4804</a> (final). You can find all the others <code>web3://</code> ERCs at <a href="https://docs.web3url.io/web3-url-structure/base#standards" target="_blank">this documentation page</a>.</p>',
+  },
+  {
+    question: 'How does a <code>web3://</code> website work?',
+    answer: 'A <code>web3://</code> website is a smart contract which implements some specific methods to reply to browser requests.',
+  },
+  {
+    question: 'I am currently accessing this website via a normal <code>https://</code> URL. How come?',
+    answer: 'A HTTPS gateway server has been developed to allow users to easily access <code>web3://</code> websites with a normal browser. You can download a native <code>web3://</code> client, see the <a href="https://docs.web3url.io/" target="_blank">web3:// protocol documentation</a>.',
+  },
+  {
+    question: 'What chains are supported by the <code>web3://</code> protocol?',
+    answer: 'The <code>web3://</code> protocol works on all EVM-compatible chains.',
+  },
+  {
+    question: 'Where can I learn more about the web3:// protocol?',
+    answer: 'You can go to the <a href="web3://web3url.eth" target="_blank"><code>web3://</code> protocol homepage</a> and to the <a href="https://docs.web3url.io/" target="_blank"><code>web3://</code> documentation</a>.',
+  },
+  {
+    question: "What is the difference between the <code>web3://</code> protocol and OCWebsites?",
+    answer: 'The <code>web3://</code> protocol is a standard for accessing websites built on the blockchain, OCWebsites are <code>web3://</code> websites prepackaged with a plugin system and an admin interface. Think <code>https://</code> vs. WordPress.',
+  }
+]
 </script>
 
 <template>
@@ -92,6 +116,10 @@ const goToMintPage = () => {
 
     <div class="mint-yours">
       <button @click="router.push({ path: '/mint' })" class="lg">Mint your own OCWebsite</button>
+    </div>
+
+    <div class="faq">
+      <Faq :entries="faqEntries" />
     </div>
   </div>
 </template>
@@ -156,5 +184,10 @@ code {
 .mint-yours {
   text-align: center;
   font-size: 1.2em;
+  margin-bottom: 2em;
+}
+
+.faq {
+  margin-bottom: 5em;
 }
 </style>
