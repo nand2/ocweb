@@ -13,7 +13,7 @@ const props = defineProps({
     required: true,
   },
   tokenId: {
-    type: Array,
+    type: Number,
     required: true,
   },
   title: {

@@ -117,7 +117,7 @@ const resetMintForm = () => {
           <div>
             <select v-model="mintChainId" class="chain-selector" :disabled="isPending || isConfirming">
               <option :value="null" disabled>- select a blockchain -</option>
-              <option v-for="chain in supportedChains" :value="chain.id">{{ chain.name }}</option>
+              <option v-for="chain in supportedChains" :value="chain.id">{{ chain.name + (chain.testnet ? ' (testnet)' : '') }}</option>
             </select>
           </div>
         </div>
