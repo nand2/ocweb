@@ -5,6 +5,7 @@ import MintWebsiteView from '../views/MintOCWebsiteView.vue'
 import PageNotFoundView from '../views/PageNotFoundView.vue'
 import FeaturedOCWebsitesView from '../views/FeaturedOCWebsitesView.vue'
 import SuspensedFeaturedOCWebsitesView from '../views/SuspensedFeaturedOCWebsitesView.vue'
+import BrowseOCWebsitesView from '../views/BrowseOCWebsitesView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -25,9 +26,14 @@ const router = createRouter({
       component: MyWebsitesView
     },
     {
-      path: '/featured-ocwebsites',
-      name: 'featured-ocwebsites',
+      path: '/featured',
+      name: 'featured',
       component: SuspensedFeaturedOCWebsitesView
+    },
+    {
+      path: '/browse',
+      name: 'browse',
+      component: BrowseOCWebsitesView
     },
     {
       path: '/:pathMatch(.*)*',

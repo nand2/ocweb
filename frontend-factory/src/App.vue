@@ -5,6 +5,7 @@ import WebsiteAdminView from './views/WebsiteAdminView.vue'
 import LayourTextWindowReverseIcon from './icons/LayoutTextWindowReverseIcon.vue'
 import MagicIcon from './icons/MagicIcon.vue';
 import StarIcon from './icons/StarIcon.vue';
+import TableIcon from './icons/TableIcon.vue';
 import RemoteAsyncComponent from './components/utils/RemoteAsyncComponent.vue';
 
 const isViewedAsWebsiteAdmin = computed(() => {
@@ -39,9 +40,10 @@ if(isViewedAsWebsiteAdmin.value) {
       </RouterLink>
 
       <div class="menu">
-        <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span><span class="menu-text">Mint an OCWebsite</span></RouterLink>
+        <RouterLink to="/mint"><span class="menu-icon"><MagicIcon /></span><span class="menu-text">Mint</span></RouterLink>
         <RouterLink to="/my-ocwebsites"><span class="menu-icon"><LayourTextWindowReverseIcon /></span><span class="menu-text">My OCWebsites</span></RouterLink>
-        <RouterLink to="/featured-ocwebsites"><span class="menu-icon"><StarIcon /></span><span class="menu-text">Featured OCWebsites</span></RouterLink>
+        <RouterLink to="/featured"><span class="menu-icon"><StarIcon /></span><span class="menu-text">Featured</span></RouterLink>
+        <RouterLink to="/browse"><span class="menu-icon"><TableIcon /></span><span class="menu-text">Browse</span></RouterLink>
       </div>
 
     </div>

@@ -65,4 +65,11 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
   flex-wrap: wrap;
   gap: 2em;
 }
+
+@media (max-width: 700px) {
+  .oc-websites {
+    justify-content: center;
+  }
+}
+
 </style>
