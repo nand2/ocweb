@@ -1,12 +1,30 @@
 <script setup>
 import { useAccount } from '@wagmi/vue';
+import { computed } from 'vue';
 
 import { useSupportedChains } from '../utils/ethereum.js';
-import ChainOCWebsites from '../components/ChainOCWebsites.vue';
+import ChainOCWebsites from '../components/ChainMyOCWebsites.vue';
 
 
 const { isConnected } = useAccount();
 const { isSuccess: supportedChainsLoaded, data: supportedChains } = useSupportedChains()
+
+// Order the supported chains: Put the testnets last
+const orderedSupportedChains = computed(() => {
+  if(supportedChainsLoaded.value == false) {
+    return []
+  }
+
+  return [...supportedChains.value].sort((a, b) => {
+    if(a.testnet && !b.testnet) {
+      return 1
+    } else if(!a.testnet && b.testnet) {
+      return -1
+    } else {
+      return 0
+    }
+  })
+})
 </script>
 
 
@@ -26,7 +44,7 @@ const { isSuccess: supportedChainsLoaded, data: supportedChains } = useSupported
         My OCWebsites
       </h2>
 
-      <div v-for="chain in supportedChains" :key="chain.id" class="chain-oc-websites">
+      <div v-for="chain in orderedSupportedChains" :key="chain.id" class="chain-oc-websites">
         <h3>
           {{ chain.name }} <span v-if="chain.testnet">(testnet)</span>
         </h3>

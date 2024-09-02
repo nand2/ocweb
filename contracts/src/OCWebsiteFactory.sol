@@ -308,6 +308,27 @@ contract OCWebsiteFactory is ERC721Enumerable {
         return tokens;
     }
 
+    function detailedTokens(uint[] memory tokenIds) public view returns (DetailedToken[] memory tokens) {
+        tokens = new DetailedToken[](tokenIds.length);
+        for(uint i = 0; i < tokenIds.length; i++) {
+            uint tokenId = tokenIds[i];
+            tokens[i] = DetailedToken({
+                tokenId: tokenId,
+                contractAddress: address(websites[tokenId]),
+                subdomain: websiteToSubdomain[websites[tokenId]]
+            });
+        }
+
+        return tokens;
+    }
+
+    function detailedToken(uint tokenId) public view returns (DetailedToken memory token) {
+        return DetailedToken({
+            tokenId: tokenId,
+            contractAddress: address(websites[tokenId]),
+            subdomain: websiteToSubdomain[websites[tokenId]]
+        });
+    }
 
     //
     // Admin

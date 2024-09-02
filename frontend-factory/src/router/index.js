@@ -1,8 +1,9 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import OCWebView from '../views/OCWebView.vue'
-import MyWebsitesView from '../views/MyWebsitesView.vue'
-import MintWebsiteView from '../views/MintWebsiteView.vue'
+import OCWebView from '../views/HomepageView.vue'
+import MyWebsitesView from '../views/MyOCWebsitesView.vue'
+import MintWebsiteView from '../views/MintOCWebsiteView.vue'
 import PageNotFoundView from '../views/PageNotFoundView.vue'
+import FeaturedOCWebsitesView from '../views/FeaturedOCWebsitesView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -21,6 +22,11 @@ const router = createRouter({
       path: '/my-ocwebsites',
       name: 'my-ocwebsites',
       component: MyWebsitesView
+    },
+    {
+      path: '/featured-ocwebsites',
+      name: 'featured-ocwebsites',
+      component: FeaturedOCWebsitesView
     },
     {
       path: '/:pathMatch(.*)*',

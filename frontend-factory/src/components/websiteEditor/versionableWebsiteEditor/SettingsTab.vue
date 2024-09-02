@@ -91,6 +91,22 @@ const pluginHardcodedSettings = computed(() => {
   return plugins
 })
 
+// A list of chain short names (unfortunately not packaged with Viem)
+// Infos from https://chainid.network/chains.json
+const chainShortNames = {
+  1: 'eth',
+  11155111: 'sep',
+  17000: 'holesky',
+  10: 'oeth',
+  11155420: 'opsep',
+  42161: 'arb1',
+  42170: 'arb-nova',
+  421614: 'arb-sep',
+  8543: 'base',
+  85432: 'basesep',
+  31337: 'hardhat'
+}
+
 </script>
 
 <template>
@@ -160,6 +176,47 @@ const pluginHardcodedSettings = computed(() => {
           :pluginInfos="pluginInfos" />
       </div>
 
+      <div class="settings-item ens-settings" v-if="chainShortNames[chainId]">
+        <div class="title">
+          ENS domain name
+          <small class="text-muted" style="font-weight: normal; font-size:0.7em;">
+            Steps to configure your own domain
+          </small>
+        </div>
+        
+        <div class="text-90" style="margin-bottom: 0.7em">
+          To access this website with <code style="font-weight: bold;">web3://my-domain.eth</code>, edit <code style="font-weight: bold;">my-domain.eth</code> in the official ENS app, and add the following Text Record:
+        </div>
+
+        <div class="table-header">
+          <div>
+            Text Record Name
+          </div>
+          <div>
+            Text Record Value
+          </div>
+          <div>
+
+          </div>
+        </div>
+
+        <div class="table-row">
+          <div>
+            <code>
+              contentcontract
+            </code>
+          </div>
+          <div>
+            <code>
+              {{ chainShortNames[chainId] }}:{{ contractAddress }}
+            </code>
+          </div>
+          <div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </div>
 </template>
@@ -185,22 +242,9 @@ const pluginHardcodedSettings = computed(() => {
 }
 
 
-.operations {
-  display: flex;
-  gap: 1em;
-  margin-top: 1em;
-  align-items: flex-start;
-}
-@media (max-width: 700px) {
-  .operations {
-    flex-direction: column;
-  }
-}
 
-.no-entries {
-  padding: 1.5em;
-  text-align: center;
-  color: var(--color-text-muted);
+.ens-settings .table-header,
+.ens-settings .table-row {
+  grid-template-columns: 1fr 3fr;
 }
-
 </style>

@@ -51,7 +51,7 @@ const goToMintPage = () => {
           OCWebsites
         </h2>
         <div>
-          OCWebsites are <code>web3://</code> websites prepackaged with plugins (themes, features, ...) and an admin interface. They are NFTs in your wallet.
+          OCWebsites are <code>web3://</code> websites prepackaged with a plugin system (themes, features, ...) and an admin interface. They appear as NFTs in your wallet.
         </div>
       </div>
     </div>
