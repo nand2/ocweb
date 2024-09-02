@@ -62,7 +62,11 @@ const goToMintPage = () => {
       </h2>
       <div class="preview-ocwebsites">
         <div v-if="exampleOCWebsiteInfos">
-          <h4>Newly minted OCWebsite</h4>
+          <h4>
+            <a :href="'web3://' + exampleOCWebsiteInfos.address + (exampleOCWebsiteInfos.chainId > 1 ? ':' + exampleOCWebsiteInfos.chainId : '')" class="white" target="_blank">
+              Newly minted OCWebsite
+            </a>
+          </h4>
           <OCWebsite
             :contractAddress="exampleOCWebsiteInfos.address" 
             :chainId="exampleOCWebsiteInfos.chainId"
@@ -71,7 +75,11 @@ const goToMintPage = () => {
             :showLinkAndCloseIcons="true" />
         </div>
         <div v-if="contractAddressesLoaded">
-          <h4>OCWeb.eth itself</h4>
+          <h4>
+            <a :href="'web3://' + contractAddresses.self.address + (contractAddresses.self.chainId > 1 ? ':' + contractAddresses.self.chainId : '')" class="white" target="_blank">
+              OCWeb.eth itself
+            </a>
+          </h4>
           <OCWebsite
             :contractAddress="contractAddresses.self.address" 
             :chainId="contractAddresses.self.chainId"

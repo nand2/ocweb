@@ -16,6 +16,9 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  title: {
+    type: String
+  },
 })
 
 const { address, isConnected } = useAccount();
@@ -50,6 +53,12 @@ const { data: detailedToken, isSuccess: detailedTokenLoaded } = useQuery({
     </div>
 
     <div v-else>
+      <h4 v-if="title">
+        <a :href="'web3://' + detailedToken.contractAddress + (chain.id > 1 ? ':' + chain.id : '')" class="white" target="_blank">
+          {{ title }}
+        </a>
+      </h4>
+
       <OCWebsite
         :contractAddress="detailedToken.contractAddress" 
         :chainId="factoryChainId"
@@ -59,4 +68,9 @@ const { data: detailedToken, isSuccess: detailedTokenLoaded } = useQuery({
 </template>
 
 <style scoped>
+h4 {
+  margin-top: 0em;
+  margin-bottom: 0.5em;
+  text-align: center;
+}
 </style>
