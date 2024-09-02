@@ -2,6 +2,7 @@
 import { useAccount } from '@wagmi/vue';
 import { computed } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
+const { parse: parseYaml } = await import('yaml')
 
 import { useSupportedChains } from '../utils/ethereum.js';
 import { useInjectedVariables } from '../../../src/tanstack-vue.js';
@@ -16,11 +17,11 @@ const { isSuccess: supportedChainsLoaded, data: supportedChains } = useSupported
 const { isSuccess: featuredOCWebsitesLoaded, data: featuredOCWebsites } = useQuery({
   queryKey: ['featuredOCWebsites'],
   queryFn: async () => {
-    const response = await fetch('./config/featured.json')
+    const response = await fetch('./config/featured.yml')
     if (!response.ok) {
       throw new Error('Network response was not ok')
     }
-    const decodedResponse = await response.json()
+    const decodedResponse = parseYaml(await response.text())
     return decodedResponse
   },
   staleTime: 24 * 3600 * 1000,
