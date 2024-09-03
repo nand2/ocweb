@@ -14,23 +14,28 @@ const { connectors, connect } = useConnect({
     },
   },
 });
+
+// If there is only the injected connector, keep it, otherwise remove it
+const filteredConnectors = computed(() => {
+  return connectors.length > 1 ? connectors.filter((connector) => connector.name !== 'Injected') : connectors;
+});
 </script>
 
 <template>
   
   <button
-    v-if="isConnected == false && connectors.length == 1"
-    @click="connect({ connector: connectors[0], chainId })"
+    v-if="isConnected == false && filteredConnectors.length == 1"
+    @click="connect({ connector: filteredConnectors[0], chainId })"
   >
-    <span v-if="connectors[0].type == 'injected'">
+    <span v-if="filteredConnectors[0].name == 'Injected'">
       Connect
     </span>
     <span v-else>
-      Connect with {{ connectors[0].name }}
+      Connect with {{ filteredConnectors[0].name }}
     </span>
   </button>
   <button
-    v-else-if="isConnected == false && connectors.length > 1"
+    v-else-if="isConnected == false && filteredConnectors.length > 1"
     @click="showModal = true"
   >
     Connect

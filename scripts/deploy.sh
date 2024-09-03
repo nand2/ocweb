@@ -234,7 +234,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
 
   exec 5>&1
   OUTPUT="$(PRIVATE_KEY=$PRIVKEY \
-    node . --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID example4 | tee >(cat - >&5))"
+    node . --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID example | tee >(cat - >&5))"
 
   # Get the address of the OCWebsite
   OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')

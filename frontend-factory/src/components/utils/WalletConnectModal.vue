@@ -22,7 +22,7 @@ const { connectors, connect } = useConnect({
 
 // If there is only the injected connector, keep it, otherwise remove it
 const filteredConnectors = computed(() => {
-  return connectors.length > 1 ? connectors.filter((connector) => connector.type !== 'injected') : connectors;
+  return connectors.length > 1 ? connectors.filter((connector) => connector.name !== 'Injected') : connectors;
 });
 </script>
 
