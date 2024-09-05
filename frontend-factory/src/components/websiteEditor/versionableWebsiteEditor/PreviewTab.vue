@@ -228,7 +228,7 @@ defineExpose({
 .preview {
   display: block;
   width: calc(100% - 4px);
-  height: 400px;
+  height: 440px;
   border: 2px solid #ccc;
   background-color: white;
 }

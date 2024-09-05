@@ -3,13 +3,14 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
-import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, useLiveWebsiteVersion } from '../../../../../src/tanstack-vue';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, useLiveWebsiteVersion, useWebsiteVersions } from '../../../../../src/tanstack-vue';
 import SettingsPlugin from './plugins/SettingsPlugin.vue';
 import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
 import AddressSettings from './settings/AddressSettings.vue';
 import DeveloperModeSettings from './settings/DeveloperModeSettings.vue';
 import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
 import { store } from '../../../utils/store';
+import WebsiteVersionsSettings from './settings/WebsiteVersionsSettings.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -36,6 +37,9 @@ const props = defineProps({
 
 const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
+
+// Fetch the list of websites versions
+const { data: websiteVersionsData, isLoading: websiteVersionsLoading, isFetching: websiteVersionsFetching, isError: websiteVersionsIsError, error: websiteVersionsError, isSuccess: websiteVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
 
 // Fetch the live website infos
 const { data: liveWebsiteVersionData, isLoading: liveWebsiteVersionLoading, isFetching: liveWebsiteVersionFetching, isError: liveWebsiteVersionIsError, error: liveWebsiteVersionError, isSuccess: liveWebsiteVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
@@ -136,6 +140,16 @@ const pluginHardcodedSettings = computed(() => {
 
       <div class="settings-item">
         <DeveloperModeSettings
+          :contractAddress
+          :chainId
+          :websiteVersion
+          :websiteVersionIndex
+          :websiteClient
+          />
+      </div>
+
+      <div class="settings-item" v-if="websiteVersionsLoaded && websiteVersionsData.totalCount == 1">
+        <WebsiteVersionsSettings
           :contractAddress
           :chainId
           :websiteVersion

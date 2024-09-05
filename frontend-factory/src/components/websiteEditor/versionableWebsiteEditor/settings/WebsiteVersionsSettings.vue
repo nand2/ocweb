@@ -27,16 +27,16 @@ const props = defineProps({
   },
 })
 
-const developerMode = ref(store.devMode)
-watch(developerMode, (value) => {
-  store.setDevMode(value)
+const showWebsiteVersionsSection = ref(store.showWebsiteVersionsSection)
+watch(showWebsiteVersionsSection, (value) => {
+  store.setShowWebsiteVersionsSection(value)
 })
 
 </script>
 
 <template>
   <div class="title">
-    Developer mode
+    Website versioning
     <!-- <small class="text-muted" style="font-weight: normal; font-size:0.7em;">
       Ways to access your website
     </small> -->
@@ -44,14 +44,14 @@ watch(developerMode, (value) => {
 
   <div class="switch-container">
     <label class="switch">
-      <input type="checkbox" v-model="developerMode" />
+      <input type="checkbox" v-model="showWebsiteVersionsSection" />
       <span class="slider round"></span>
     </label>
-    <span class="switch-label">{{ developerMode ? 'On' : 'Off' }}</span>
+    <span class="switch-label">{{ showWebsiteVersionsSection ? 'On' : 'Off' }}</span>
   </div>
 
   <div class="text-90" style="margin-top: 0.75em;">
-    Developer mode will show more technical configuration options and details.
+    Allows you to create and manage different versions of your website.
   </div>
   
 

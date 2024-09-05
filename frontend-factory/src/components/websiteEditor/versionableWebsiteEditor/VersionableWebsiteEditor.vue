@@ -148,16 +148,16 @@ watch(activeTab, (newValue) => {
   loadedTabs.value.push(newValue)
 })
 
-// Get the list website versions : Only when the user display the form to select a version
+// Get the list website versions
 const showEditedWebsiteVersionSelector = ref(false)
-const { data: websiteVersionsData, isLoading: websiteVersionsLoading, isFetching: websiteVersionsFetching, isError: websiteVersionsIsError, error: websiteVersionsError, isSuccess: websiteVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId, showEditedWebsiteVersionSelector)
+const { data: websiteVersionsData, isLoading: websiteVersionsLoading, isFetching: websiteVersionsFetching, isError: websiteVersionsIsError, error: websiteVersionsError, isSuccess: websiteVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId/**, showEditedWebsiteVersionSelector */)
 
 const showConfigPanel = ref(false)
 </script>
 
 <template>
   <div class="versionable-static-website-editor">
-    <div class="header">
+    <div class="header" v-if="websiteVersionsLoaded && websiteVersionsData.totalCount > 1 || store.showWebsiteVersionsSection">
       <div class="header-inner">
         <span v-if="websiteVersionBeingEditedLoading">
           Loading version...
