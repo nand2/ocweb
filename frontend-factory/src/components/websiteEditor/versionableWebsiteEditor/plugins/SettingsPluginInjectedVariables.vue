@@ -118,6 +118,9 @@ const removeItem = async (key) => {
 
 <template>
   <div>
+    <div class="text-90" style="margin-bottom: 0.75em;">
+      These variables are exposed in the <code>/variables.json</code> path.
+    </div>
     
     <div class="table-header">
       <div>

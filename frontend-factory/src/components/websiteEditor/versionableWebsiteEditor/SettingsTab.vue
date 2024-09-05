@@ -68,7 +68,7 @@ const pluginSecondaryAdminPanels = computed(() => {
     }
   }))
     // Only the secondary panels
-    .filter(panel => panel.panel.panelType == 1 /* Primary */)
+    .filter(panel => panel.panel.panelType == 1 /* Secondary */)
     // Either the panel is a module for ocWebAdmin, or it's not a module (will be iframed)
     .filter(panel => panel.panel.moduleForGlobalAdminPanel == null || panel.panel.moduleForGlobalAdminPanel == ocWebAdminInstalledPlugin.value.plugin)
 })
@@ -154,7 +154,7 @@ const pluginHardcodedSettings = computed(() => {
           />
       </div>
 
-      <div v-for="panel in pluginSecondaryAdminPanels" class="settings-item">
+      <!-- <div v-for="panel in pluginSecondaryAdminPanels" class="settings-item">
         <div class="title">
           {{ panel.plugin.infos.title }}
           <small v-if="panel.plugin.infos.subTitle" class="text-muted" style="font-weight: normal; font-size:0.7em;">
@@ -162,7 +162,6 @@ const pluginHardcodedSettings = computed(() => {
           </small>
         </div>
 
-         <!-- Plugin mode -->
         <RemoteAsyncComponent
           v-if="panel.panel.moduleForGlobalAdminPanel" 
           
@@ -179,17 +178,16 @@ const pluginHardcodedSettings = computed(() => {
           :pluginInfos="panel.plugin"
           />
 
-        <!-- Iframe mode -->
         <iframe
           v-else
           :src="panel.panel.url.startsWith('web3://') ? panel.panel.url : 'web3://' + props.contractAddress + ':' + props.chainId + panel.panel.url"
           style="width: 100%; height: 400px; border: none;"
           ></iframe>
-      </div>
+      </div> -->
 
       <!-- Hardcoded settings UI for plugin (to be splitted later?) -->
 
-      <div v-for="pluginInfos in pluginHardcodedSettings" class="settings-item">
+      <!-- <div v-for="pluginInfos in pluginHardcodedSettings" class="settings-item">
         <SettingsPlugin
           :websiteVersion
           :websiteVersionIndex
@@ -197,7 +195,7 @@ const pluginHardcodedSettings = computed(() => {
           :chainId
           :websiteClient 
           :pluginInfos="pluginInfos" />
-      </div>
+      </div> -->
 
 
 

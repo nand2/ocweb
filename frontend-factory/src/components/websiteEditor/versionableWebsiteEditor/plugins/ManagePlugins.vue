@@ -93,6 +93,10 @@ const availablePluginsNotInstalled = computed(() => {
 })
 
 
+// Is a config panel of a plugin being shown?
+const pluginIsShowingConfigPanel = ref(null)
+
+
 
 // Add item
 const showAdditionForm = ref(false)
@@ -197,7 +201,7 @@ const reorderItem = async () => {
           No plugins installed
         </div>
         <div v-else-if="websiteVersionPluginsLoaded" class="plugins-info">
-          <div v-for="pluginInfos in websiteVersionPlugins" :key="pluginInfos.plugin" class="plugin-info">
+          <div v-for="pluginInfos in websiteVersionPlugins" :key="pluginInfos.plugin" v-show="pluginIsShowingConfigPanel == null || pluginInfos.plugin == pluginIsShowingConfigPanel.plugin" class="plugin-info">
               <ManagePluginItem
                 v-if="websiteVersionPluginsLoaded && availablePluginsLoaded"
                 :websiteVersion
@@ -208,11 +212,14 @@ const reorderItem = async () => {
                 :pluginInfos="pluginInfos"
                 :isInstalled="true"
                 :websiteVersionPlugins
-                :availablePlugins />
+                :availablePlugins
+                @config-panel-shown="pluginIsShowingConfigPanel = pluginInfos"
+                @config-panel-hidden="pluginIsShowingConfigPanel = null"
+                :hideConfigureButton="pluginIsShowingConfigPanel != null && pluginInfos.plugin != pluginIsShowingConfigPanel.plugin" />
           </div>
         </div>
 
-        <div class="operations" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false">
+        <div class="operations" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && pluginIsShowingConfigPanel == null">
           <div class="op-reorder">
 
             <div class="button-area" @click="showReorderForm = !showReorderForm">
@@ -281,7 +288,7 @@ const reorderItem = async () => {
         </div>
 
       </div>
-      <div class="plugins-list">
+      <div class="plugins-list" v-show="pluginIsShowingConfigPanel == null">
         <div class="title2">
           Available plugins
         </div>
@@ -356,10 +363,7 @@ const reorderItem = async () => {
 }
 
 .plugin-info {
-  font-size: 0.9em;
   padding: 0.75em 1em;
-  display: flex;
-  align-items: center;
 }
 
 .plugin-info + .plugin-info {

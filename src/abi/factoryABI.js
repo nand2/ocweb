@@ -473,6 +473,33 @@ export const abi = [
                 internalType: "IVersionableWebsitePlugin[]",
                 name: "dependencies",
                 type: "address[]"
+              },
+              {
+                components: [
+                  {
+                    internalType: "string",
+                    name: "title",
+                    type: "string"
+                  },
+                  {
+                    internalType: "string",
+                    name: "url",
+                    type: "string"
+                  },
+                  {
+                    internalType: "contract IVersionableWebsitePlugin",
+                    name: "moduleForGlobalAdminPanel",
+                    type: "address"
+                  },
+                  {
+                    internalType: "enum IVersionableWebsitePlugin.AdminPanelType",
+                    name: "panelType",
+                    type: "uint8"
+                  }
+                ],
+                internalType: "struct IVersionableWebsitePlugin.AdminPanel[]",
+                name: "adminPanels",
+                type: "tuple[]"
               }
             ],
             internalType: "struct IVersionableWebsitePlugin.Infos",
