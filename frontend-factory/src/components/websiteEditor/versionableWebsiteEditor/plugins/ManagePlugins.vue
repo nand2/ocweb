@@ -15,6 +15,7 @@ import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.v
 import { abi as factoryABI } from '../../../../../../src/abi/factoryABI.js';
 import ChevronDownIcon from '../../../../icons/ChevronDownIcon.vue';
 import ChevronUpIcon from '../../../../icons/ChevronUpIcon.vue';
+import ManagePluginItem from './ManagePluginItem.vue';
 
 const props = defineProps({
   websiteVersion: {
@@ -91,24 +92,6 @@ const availablePluginsNotInstalled = computed(() => {
   return result;
 })
 
-// Get a plugin name from an address: Lookup in the available plugins, then in the installed plugins
-const getPluginInfosFromAddress = (pluginAddress) => {
-  if(websiteVersionPluginsLoaded.value == false || availablePluginsLoaded.value == false) {
-    return '';
-  }
-
-  const plugin = websiteVersionPlugins.value.find(p => p.plugin === pluginAddress) || availablePlugins.value.find(p => p.plugin === pluginAddress)
-  return plugin?.infos;
-}
-
-// Has a plugin installed dependents?
-const pluginHasInstalledDependents = (pluginAddress) => {
-  if(websiteVersionPluginsLoaded.value == false) {
-    return false;
-  }
-
-  return websiteVersionPlugins.value.find(p => p.infos.dependencies.includes(pluginAddress)) != null
-}
 
 
 // Add item
@@ -133,25 +116,6 @@ const { isPending: additionIsPending, isError: additionIsError, error: additionE
 })
 const additionItem = async (pluginAddress) => {
   additionMutate(pluginAddress)
-}
-
-// Remove item
-const { isPending: removeIsPending, isError: removeIsError, error: removeError, isSuccess: removeIsSuccess, mutate: removeMutate, reset: removeReset, variables: removeVariables } = useMutation({
-  mutationFn: async (pluginAddress) => {
-
-    // Prepare the transaction
-    const transaction = await props.websiteClient.prepareRemovePluginTransaction(props.websiteVersionIndex, pluginAddress);
-
-    const hash = await props.websiteClient.executeTransaction(transaction);
-
-    return await props.websiteClient.waitForTransactionReceipt(hash);
-  },
-  onSuccess: async (data, variables, context) => {
-    return await invalidateWebsiteVersionPluginsQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex);
-  }
-})
-const removeItem = async (pluginAddress) => {
-  removeMutate(pluginAddress)
 }
 
 // Reorder item
@@ -234,46 +198,17 @@ const reorderItem = async () => {
         </div>
         <div v-else-if="websiteVersionPluginsLoaded" class="plugins-info">
           <div v-for="pluginInfos in websiteVersionPlugins" :key="pluginInfos.plugin" class="plugin-info">
-            
-            <div class="plugin-description">
-              <div class="plugin-description-title">
-                {{ pluginInfos.infos.title }} <small>{{ pluginInfos.infos.version }}</small>
-              </div>
-              <div class="plugin-description-others">
-                {{ pluginInfos.infos.subTitle }}
-              </div>
-              <div class="plugin-description-others">
-                Author: {{ pluginInfos.infos.author }}
-                <span v-if="pluginInfos.infos.homepage">
-                  • <a v-if="pluginInfos.infos.homepage" :href="pluginInfos.infos.homepage" target="_blank">
-                    Homepage
-                  </a>
-                </span>
-              </div>
-              <div class="plugin-description-others">
-                Dependencies: 
-                  <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
-                    None
-                  </span>
-                  <span v-for="(dep, depIndex) in pluginInfos.infos.dependencies">
-                    {{ getPluginInfosFromAddress(dep) ? getPluginInfosFromAddress(dep).title + ' ' + getPluginInfosFromAddress(dep).version : dep }}<span v-if="depIndex < pluginInfos.infos.dependencies.length - 1">, </span>
-                  </span>
-              </div>
-              <div class="plugin-description-others" v-if="store.devMode">
-                Address: <small>{{ pluginInfos.plugin }}</small>
-              </div>
-              <div v-if="removeIsError && removeVariables == pluginInfos.plugin" class="mutation-error">
-                Error removing the plugin: {{ removeError.shortMessage || removeError.message }} <a @click.stop.prevent="removeReset()">Hide</a>
-              </div>
-            </div>
-
-            <div class="plugin-operations">
-              <a @click.stop.prevent="removeItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && pluginHasInstalledDependents(pluginInfos.plugin) == false && removeIsPending == false">
-                <TrashIcon />
-              </a>
-              <TrashIcon class="anim-pulse" v-if="removeIsPending && removeVariables == pluginInfos.plugin" />
-            </div>
-
+              <ManagePluginItem
+                v-if="websiteVersionPluginsLoaded && availablePluginsLoaded"
+                :websiteVersion
+                :websiteVersionIndex
+                :contractAddress
+                :chainId
+                :websiteClient
+                :pluginInfos="pluginInfos"
+                :isInstalled="true"
+                :websiteVersionPlugins
+                :availablePlugins />
           </div>
         </div>
 
@@ -360,44 +295,17 @@ const reorderItem = async () => {
         <div v-else-if="availablePluginsNotInstalled.length > 0" class="plugins-info">
           <div v-for="pluginInfos in availablePluginsNotInstalled" :key="pluginInfos.plugin" class="plugin-info">
             
-            <div class="plugin-description">
-              <div class="plugin-description-title">
-                {{ pluginInfos.infos.title }} <small>{{ pluginInfos.infos.version }}</small>
-              </div>
-              <div class="plugin-description-others">
-                {{ pluginInfos.infos.subTitle }}
-              </div>
-              <div class="plugin-description-others">
-                Author: {{ pluginInfos.infos.author }}
-                <span v-if="pluginInfos.infos.homepage">
-                  • <a v-if="pluginInfos.infos.homepage" :href="pluginInfos.infos.homepage" target="_blank">
-                    Homepage
-                  </a>
-                </span>
-              </div>
-              <div class="plugin-description-others">
-                Dependencies: 
-                  <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
-                    None
-                  </span>
-                  <span v-for="(dep, depIndex) in pluginInfos.infos.dependencies">
-                    {{ getPluginInfosFromAddress(dep) ? getPluginInfosFromAddress(dep).title + ' ' + getPluginInfosFromAddress(dep).version : dep }}<span v-if="depIndex < pluginInfos.infos.dependencies.length - 1">, </span>
-                  </span>
-              </div>
-              <div class="plugin-description-others" v-if="store.devMode">
-                Address: <small>{{ pluginInfos.plugin }}</small>
-              </div>
-              <div v-if="additionIsError && additionVariables == pluginInfos.plugin" class="mutation-error">
-                Error adding the plugin: {{ additionError.shortMessage || additionError.message }} <a @click.stop.prevent="additionReset()">Hide</a>
-              </div>
-            </div>
-
-            <div class="plugin-operations">
-              <a @click.stop.prevent="additionItem(pluginInfos.plugin)" class="white" v-if="isLockedLoaded && isLocked == false && websiteVersion != null && websiteVersion.locked == false && additionIsPending == false">
-                <PlusLgIcon />
-              </a>
-              <PlusLgIcon class="anim-pulse" v-if="additionIsPending && additionVariables == pluginInfos.plugin" />
-            </div>
+            <ManagePluginItem
+              v-if="websiteVersionPluginsLoaded && availablePluginsLoaded"
+              :websiteVersion
+              :websiteVersionIndex
+              :contractAddress
+              :chainId
+              :websiteClient
+              :pluginInfos="pluginInfos"
+              :isInstalled="false"
+              :websiteVersionPlugins
+              :availablePlugins />
 
           </div>
         </div>
@@ -456,24 +364,6 @@ const reorderItem = async () => {
 
 .plugin-info + .plugin-info {
   border-top: 1px solid var(--color-divider-secondary);
-}
-
-.plugin-description {
-  flex: 1;
-}
-
-.plugin-description-title {
-  font-weight: bold;
-}
-
-.plugin-description-others {
-  font-size: 0.9em; 
-  color: #ccc;
-  word-break: break-all;
-}
-
-.plugin-operations {
-  flex: 0 0 min-content;
 }
 
 .mutation-error {
