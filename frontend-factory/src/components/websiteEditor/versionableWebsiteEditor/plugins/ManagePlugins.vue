@@ -8,6 +8,7 @@ import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionP
 import SettingsProxiedWebsites from './SettingsPluginProxiedWebsites.vue';
 import SettingsInjectedVariables from './SettingsPluginInjectedVariables.vue';
 import SettingsPlugin from './SettingsPlugin.vue';
+import { store } from '../../../../utils/store';
 import TrashIcon from '../../../../icons/TrashIcon.vue';
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
@@ -243,17 +244,13 @@ const reorderItem = async () => {
               </div>
               <div class="plugin-description-others">
                 Author: {{ pluginInfos.infos.author }}
-              </div>
-              <div class="plugin-description-others">
-                Homepage: 
-                  <a v-if="pluginInfos.infos.homepage" :href="pluginInfos.infos.homepage" target="_blank">
-                    {{ pluginInfos.infos.homepage }}
+                <span v-if="pluginInfos.infos.homepage">
+                  • <a v-if="pluginInfos.infos.homepage" :href="pluginInfos.infos.homepage" target="_blank">
+                    Homepage
                   </a>
-                  <span v-else class="text-muted">
-                    Not provided
-                  </span>
+                </span>
               </div>
-              <div class="plugin-description-others">
+              <div class="plugin-description-others" v-if="store.devMode">
                 Dependencies: 
                   <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
                     None
@@ -262,7 +259,7 @@ const reorderItem = async () => {
                     {{ getPluginInfosFromAddress(dep) ? getPluginInfosFromAddress(dep).title + ' ' + getPluginInfosFromAddress(dep).version : dep }}<span v-if="depIndex < pluginInfos.infos.dependencies.length - 1">, </span>
                   </span>
               </div>
-              <div class="plugin-description-others">
+              <div class="plugin-description-others" v-if="store.devMode">
                 Address: <small>{{ pluginInfos.plugin }}</small>
               </div>
               <div v-if="removeIsError && removeVariables == pluginInfos.plugin" class="mutation-error">
@@ -372,17 +369,13 @@ const reorderItem = async () => {
               </div>
               <div class="plugin-description-others">
                 Author: {{ pluginInfos.infos.author }}
-              </div>
-              <div class="plugin-description-others">
-                Homepage: 
-                  <a v-if="pluginInfos.infos.homepage" :href="pluginInfos.infos.homepage" target="_blank">
-                    {{ pluginInfos.infos.homepage }}
+                <span v-if="pluginInfos.infos.homepage">
+                  • <a v-if="pluginInfos.infos.homepage" :href="pluginInfos.infos.homepage" target="_blank">
+                    Homepage
                   </a>
-                  <span v-else class="text-muted">
-                    Not provided
-                  </span>
+                </span>
               </div>
-              <div class="plugin-description-others">
+              <div class="plugin-description-others" v-if="store.devMode">
                 Dependencies: 
                   <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
                     None
@@ -391,7 +384,7 @@ const reorderItem = async () => {
                     {{ getPluginInfosFromAddress(dep) ? getPluginInfosFromAddress(dep).title + ' ' + getPluginInfosFromAddress(dep).version : dep }}<span v-if="depIndex < pluginInfos.infos.dependencies.length - 1">, </span>
                   </span>
               </div>
-              <div class="plugin-description-others">
+              <div class="plugin-description-others" v-if="store.devMode">
                 Address: <small>{{ pluginInfos.plugin }}</small>
               </div>
               <div v-if="additionIsError && additionVariables == pluginInfos.plugin" class="mutation-error">

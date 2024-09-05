@@ -138,7 +138,7 @@ const fileInfosBeingEdited = computed(() => {
         </div>
 
         <div class="operations">
-          <div class="op-upload">
+          <div class="op-add-new-page" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
             <div class="button-area">
               <span class="button-text" @click="showPageEditor = true; filePathBeingEdited = null">
                 <PlusLgIcon /> Add new page

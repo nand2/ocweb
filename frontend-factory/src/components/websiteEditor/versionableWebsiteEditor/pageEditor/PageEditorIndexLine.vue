@@ -37,7 +37,7 @@ const props = defineProps({
   },
 })
 
-defineEmits(['pageEditRequested'])
+const emit = defineEmits(['pageEditRequested'])
 
 const queryClient = useQueryClient()
 
@@ -48,6 +48,13 @@ const fileName = computed(() => {
 const fileDirectory = computed(() => {
   return "/" + props.file.filePath.split('/').slice(0, -1).join('/')
 })
+
+
+const requestFileEdit = () => {
+  if(props.locked == false) {
+    emit('pageEditRequested')
+  }
+}
 
 
 // Delete file
@@ -76,7 +83,7 @@ const deleteFile = async () => {
   <div>
     <div :class="{file: true, 'delete-pending': deleteIsPending}">
       <div class="filename">
-        <a @click.stop.prevent="$emit('pageEditRequested')" class="white">
+        <a @click.stop.prevent="requestFileEdit()" class="white">
           <span>
             <TrashIcon v-if="deleteIsPending == true" class="anim-pulse" />
             <FileEarmarkIcon v-else />
