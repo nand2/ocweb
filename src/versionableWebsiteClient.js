@@ -77,14 +77,14 @@ class VersionableWebsiteClient {
 
   async prepareEnableViewerForWebsiteVersionTransaction(frontendIndex, enable) {
     return {
-      functionName: 'enableViewerForFrontendVersion',
+      functionName: 'enableViewerForWebsiteVersion',
       args: [frontendIndex, enable],
     }
   }
 
-  async prepareRenameFrontendVersionTransaction(frontendIndex, newDescription) {
+  async prepareRenameWebsiteVersionTransaction(frontendIndex, newDescription) {
     return {
-      functionName: 'renameFrontendVersion',
+      functionName: 'renameWebsiteVersion',
       args: [frontendIndex, newDescription],
     }
   }

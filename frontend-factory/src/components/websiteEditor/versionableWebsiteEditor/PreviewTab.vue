@@ -137,10 +137,10 @@ defineExpose({
         </div>
         <div v-if="isLockedLoaded && isLocked == false">
           <div class="text-90" style="margin-bottom: 0.5em">
-            You need to make this version publicly viewable in order to preview it.
+            You need to make this version publicly viewable in order to view it.
           </div>
           <div class="text-90" style="margin-bottom: 0.5em">
-            It will have its own separate web3:// URL, and you can disable it later anytime (unless you activate the global lock).
+            It will have its own separate <code>web3://</code> URL, and you can disable it later anytime (unless you activate the global lock).
           </div>
           <div class="text-90 text-warning">
             <ExclamationTriangleIcon /> Don't store private data, even in a non-viewable version: All data in a blockchain can be read one way or another.

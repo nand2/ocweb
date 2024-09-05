@@ -363,7 +363,7 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
      * @param websiteVersionIndex The index of the frontend version
      * @param enable Enable or disable the viewer
      */
-    function enableViewerForFrontendVersion(uint256 websiteVersionIndex, bool enable) public onlyOwner {
+    function enableViewerForWebsiteVersion(uint256 websiteVersionIndex, bool enable) public onlyOwner {
         // Ensure that the global lock is not active
         require(lockedAt == 0, "Frontend library is locked");
 

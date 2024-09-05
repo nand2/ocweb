@@ -86,7 +86,7 @@ export const abi = [
         type: "bool"
       }
     ],
-    name: "enableViewerForFrontendVersion",
+    name: "enableViewerForWebsiteVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

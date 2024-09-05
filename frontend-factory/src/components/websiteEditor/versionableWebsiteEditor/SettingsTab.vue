@@ -35,14 +35,10 @@ const props = defineProps({
   },
 })
 
-const { switchChainAsync } = useSwitchChain()
 const queryClient = useQueryClient()
 
 // Fetch the list of websites versions
 const { data: websiteVersionsData, isLoading: websiteVersionsLoading, isFetching: websiteVersionsFetching, isError: websiteVersionsIsError, error: websiteVersionsError, isSuccess: websiteVersionsLoaded } = useWebsiteVersions(queryClient, props.contractAddress, props.chainId)
-
-// Fetch the live website infos
-const { data: liveWebsiteVersionData, isLoading: liveWebsiteVersionLoading, isFetching: liveWebsiteVersionFetching, isError: liveWebsiteVersionIsError, error: liveWebsiteVersionError, isSuccess: liveWebsiteVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
 
 // Get the website plugins
 const { data: websiteVersionPlugins, isLoading: websiteVersionPluginsLoading, isFetching: websiteVersionPluginsFetching, isError: websiteVersionPluginsIsError, error: websiteVersionPluginsError, isSuccess: websiteVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)) 
@@ -148,7 +144,7 @@ const pluginHardcodedSettings = computed(() => {
           />
       </div>
 
-      <div class="settings-item" v-if="liveWebsiteVersionLoaded && liveWebsiteVersionData.websiteVersionIndex == websiteVersionIndex">
+      <div class="settings-item">
         <AddressSettings
           :contractAddress
           :chainId
