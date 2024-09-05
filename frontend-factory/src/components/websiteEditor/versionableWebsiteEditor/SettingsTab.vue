@@ -128,8 +128,8 @@ const pluginHardcodedSettings = computed(() => {
       :pluginsInfos="websiteVersionPlugins"
       :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" />  -->
 
-      <div class="settings-item" v-if="liveWebsiteVersionLoaded && liveWebsiteVersionData.websiteVersionIndex == websiteVersionIndex">
-        <AddressSettings
+      <div class="settings-item" v-if="websiteVersionsLoaded && websiteVersionsData.totalCount == 1">
+        <WebsiteVersionsSettings
           :contractAddress
           :chainId
           :websiteVersion
@@ -148,8 +148,8 @@ const pluginHardcodedSettings = computed(() => {
           />
       </div>
 
-      <div class="settings-item" v-if="websiteVersionsLoaded && websiteVersionsData.totalCount == 1">
-        <WebsiteVersionsSettings
+      <div class="settings-item" v-if="liveWebsiteVersionLoaded && liveWebsiteVersionData.websiteVersionIndex == websiteVersionIndex">
+        <AddressSettings
           :contractAddress
           :chainId
           :websiteVersion
