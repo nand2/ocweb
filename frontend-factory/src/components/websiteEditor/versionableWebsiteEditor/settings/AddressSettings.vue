@@ -109,9 +109,6 @@ const setIsViewable = async () => {
         <div>
           Text Record Value
         </div>
-        <div>
-
-        </div>
       </div>
 
       <div class="table-row">

@@ -250,7 +250,7 @@ const reorderItem = async () => {
                   </a>
                 </span>
               </div>
-              <div class="plugin-description-others" v-if="store.devMode">
+              <div class="plugin-description-others">
                 Dependencies: 
                   <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
                     None
@@ -375,7 +375,7 @@ const reorderItem = async () => {
                   </a>
                 </span>
               </div>
-              <div class="plugin-description-others" v-if="store.devMode">
+              <div class="plugin-description-others">
                 Dependencies: 
                   <span v-if="pluginInfos.infos.dependencies.length == 0" class="text-muted">
                     None
