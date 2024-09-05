@@ -306,12 +306,12 @@ const reorderItem = async () => {
                   <span :style="{'font-weight': reorderedPluginNewPosition == pluginIndex ? 'bold' : 'normal'}">
                     {{ pluginInfos.infos.title }}
                   </span>
+
+                  <button v-if="reorderedPluginIndex >= 0 && reorderedPluginNewPosition == pluginIndex" @click="reorderItem()" :disabled="reorderIsPending">
+                    Reorder the plugin
+                  </button>
                 </div>
               </div>
-              
-              <button v-if="reorderedPluginIndex >= 0" @click="reorderItem()" :disabled="reorderIsPending">
-                Reorder the <strong>{{ websiteVersionPlugins[reorderedPluginIndex].infos.title }}</strong> plugin
-              </button>
 
               <div v-if="reorderIsError" class="text-danger text-90">
                 Error reordering plugin: {{ reorderError.shortMessage || reorderError.message }}

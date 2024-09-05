@@ -3,13 +3,13 @@ import { ref, computed, defineProps } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
-import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins } from '../../../../../src/tanstack-vue';
-import SettingsProxiedWebsites from './plugins/SettingsPluginProxiedWebsites.vue';
-import SettingsInjectedVariables from './plugins/SettingsPluginInjectedVariables.vue';
+import { useContractAddresses, invalidateWebsiteVersionQuery, useWebsiteVersionPlugins, useLiveWebsiteVersion } from '../../../../../src/tanstack-vue';
 import SettingsPlugin from './plugins/SettingsPlugin.vue';
-import SettingsManagePlugins from './plugins/ManagePlugins.vue';
 import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
-import AdminSettingsPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminSettingsPanel.vue';
+import AddressSettings from './settings/AddressSettings.vue';
+import DeveloperModeSettings from './settings/DeveloperModeSettings.vue';
+import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
+import { store } from '../../../utils/store';
 
 const props = defineProps({
   contractAddress: {
@@ -35,6 +35,10 @@ const props = defineProps({
 })
 
 const { switchChainAsync } = useSwitchChain()
+const queryClient = useQueryClient()
+
+// Fetch the live website infos
+const { data: liveWebsiteVersionData, isLoading: liveWebsiteVersionLoading, isFetching: liveWebsiteVersionFetching, isError: liveWebsiteVersionIsError, error: liveWebsiteVersionError, isSuccess: liveWebsiteVersionLoaded } = useLiveWebsiteVersion(queryClient, props.contractAddress, props.chainId)
 
 // Get the website plugins
 const { data: websiteVersionPlugins, isLoading: websiteVersionPluginsLoading, isFetching: websiteVersionPluginsFetching, isError: websiteVersionPluginsIsError, error: websiteVersionPluginsError, isSuccess: websiteVersionPluginsLoaded } = useWebsiteVersionPlugins(props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)) 
@@ -77,35 +81,14 @@ const pluginHardcodedSettings = computed(() => {
 
   const plugins = websiteVersionPlugins.value.filter(plugin => plugin.infos.name == 'proxiedWebsites' || plugin.infos.name == 'injectedVariables' || plugin.infos.name == 'staticFrontend')
 
-  // Sort: Put staticFrontend first (the 2 others are more technical)
-  plugins.sort((a, b) => {
-    if(a.infos.name == 'staticFrontend') {
-      return -1
-    }
-    if(b.infos.name == 'staticFrontend') {
-      return 1
-    }
-    return 0
-  })
+  // In non dev mode, we hide settings from these plugins
+  if(store.devMode == false) {
+    return []
+  }
 
   return plugins
 })
 
-// A list of chain short names (unfortunately not packaged with Viem)
-// Infos from https://chainid.network/chains.json
-const chainShortNames = {
-  1: 'eth',
-  11155111: 'sep',
-  17000: 'holesky',
-  10: 'oeth',
-  11155420: 'opsep',
-  42161: 'arb1',
-  42170: 'arb-nova',
-  421614: 'arb-sep',
-  8543: 'base',
-  85432: 'basesep',
-  31337: 'hardhat'
-}
 
 </script>
 
@@ -121,6 +104,16 @@ const chainShortNames = {
     </div>
     <div v-else-if="websiteVersionPluginsLoaded" class="settings">
 
+      <!-- <AdminPanel
+      v-if="websiteVersionPluginsLoaded"
+      :contractAddress 
+      :chainId 
+      :websiteVersion
+      :websiteVersionIndex
+      :websiteClient
+      :pluginsInfos="websiteVersionPlugins"
+      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" /> -->
+
       <!-- <AdminSettingsPanel
       v-if="websiteVersionPluginsLoaded"
       :contractAddress 
@@ -130,6 +123,26 @@ const chainShortNames = {
       :websiteClient
       :pluginsInfos="websiteVersionPlugins"
       :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" />  -->
+
+      <div class="settings-item" v-if="liveWebsiteVersionLoaded && liveWebsiteVersionData.websiteVersionIndex == websiteVersionIndex">
+        <AddressSettings
+          :contractAddress
+          :chainId
+          :websiteVersion
+          :websiteVersionIndex
+          :websiteClient
+          />
+      </div>
+
+      <div class="settings-item">
+        <DeveloperModeSettings
+          :contractAddress
+          :chainId
+          :websiteVersion
+          :websiteVersionIndex
+          :websiteClient
+          />
+      </div>
 
       <div v-for="panel in pluginSecondaryAdminPanels" class="settings-item">
         <div class="title">
@@ -176,46 +189,7 @@ const chainShortNames = {
           :pluginInfos="pluginInfos" />
       </div>
 
-      <div class="settings-item ens-settings" v-if="chainShortNames[chainId]">
-        <div class="title">
-          ENS domain name
-          <small class="text-muted" style="font-weight: normal; font-size:0.7em;">
-            Steps to configure your own domain
-          </small>
-        </div>
-        
-        <div class="text-90" style="margin-bottom: 0.7em">
-          To access this website with <code style="font-weight: bold;">web3://my-domain.eth</code>, edit <code style="font-weight: bold;">my-domain.eth</code> in the official ENS app, and add the following Text Record:
-        </div>
 
-        <div class="table-header">
-          <div>
-            Text Record Name
-          </div>
-          <div>
-            Text Record Value
-          </div>
-          <div>
-
-          </div>
-        </div>
-
-        <div class="table-row">
-          <div>
-            <code>
-              contentcontract
-            </code>
-          </div>
-          <div>
-            <code>
-              {{ chainShortNames[chainId] }}:{{ contractAddress }}
-            </code>
-          </div>
-          <div>
-          </div>
-        </div>
-
-      </div>
 
     </div>
   </div>
@@ -241,10 +215,4 @@ const chainShortNames = {
   margin-bottom: 0.75em;
 }
 
-
-
-.ens-settings .table-header,
-.ens-settings .table-row {
-  grid-template-columns: 1fr 3fr;
-}
 </style>

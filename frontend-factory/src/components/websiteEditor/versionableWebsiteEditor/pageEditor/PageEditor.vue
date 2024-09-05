@@ -5,6 +5,7 @@ import TextEditor from './TextEditor.vue';
 
 import { useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from '../../../../../../src/plugins/staticFrontend/tanstack-vue';
 
+
 const emit = defineEmits(['editCancelled', 'pageSaved'])
 
 const props = defineProps({

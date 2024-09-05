@@ -8,6 +8,7 @@ import TrashIcon from '../../../../icons/TrashIcon.vue';
 import ExclamationTriangleIcon from '../../../../icons/ExclamationTriangleIcon.vue';
 import ArrowRightIcon from '../../../../icons/ArrowRightIcon.vue';
 import { invalidateWebsiteVersionQuery } from '../../../../../../src/tanstack-vue.js';
+import { store } from '../../../../utils/store.js'
 
 const props = defineProps({
   file: {
@@ -86,7 +87,7 @@ const deleteFile = async () => {
         </a>
       </div>
       <div class="directory">
-        {{ fileDirectory }}
+        <span v-if="store.devMode">{{ fileDirectory }}</span>
       </div>
       <div class="actions">
         <a @click.stop.prevent="$emit('pageEditRequested')" class="white" v-if="locked == false && deleteIsPending == false">

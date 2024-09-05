@@ -6,6 +6,7 @@ import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useIsLocked } from '../../../../../../src/tanstack-vue.js';
 import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../../../src/plugins/staticFrontend/tanstack-vue.js';
+import { store } from '../../../../utils/store';
 
 import PlusLgIcon from '../../../../icons/PlusLgIcon.vue';
 import PageEditor from './PageEditor.vue';
@@ -103,7 +104,7 @@ const fileInfosBeingEdited = computed(() => {
           Name
         </div>
         <div class="type">
-          Folder
+          <span v-if="store.devMode">Folder</span>
         </div>
         <div>
         </div>

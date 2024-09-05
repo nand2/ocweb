@@ -16,6 +16,7 @@ import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
 import PagesTab from './PagesTab.vue';
 import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
 import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
+import { store } from '../../../utils/store';
 
 const props = defineProps({
   contractAddress: {
@@ -216,12 +217,12 @@ const showConfigPanel = ref(false)
       <a v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" @click="activeTab = panel.tabKey" :class="{tabPages: true, active: activeTab == panel.tabKey}">{{ panel.panel.title }}</a>
 
       <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'pages'" :class="{tabPages: true, active: activeTab == 'pages'}">Pages</a>
-      
-      <a @click="activeTab = 'preview'; previewTabRef?.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Preview</a>
+
+      <a v-if="staticFrontendInstalledPlugin && store.devMode" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
 
       <span class="separator"></span>
 
-      <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'files'" :class="{tabFiles: true, active: activeTab == 'files'}">Files</a>
+      <a @click="activeTab = 'preview'; previewTabRef?.refreshPreviewIframe()" :class="{tabPreview: true, active: activeTab == 'preview'}">Live view</a>
       <a @click="activeTab = 'plugins'" :class="{tabPlugins: true, active: activeTab == 'plugins'}">Plugins</a>
       <a @click="activeTab = 'settings'" :class="{tabSettings: true, active: activeTab == 'settings'}">Settings</a>
     </div>

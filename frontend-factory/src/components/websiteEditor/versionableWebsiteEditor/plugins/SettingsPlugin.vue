@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useSwitchChain, useAccount } from '@wagmi/vue'
 
 import { useContractAddresses, invalidateWebsiteVersionQuery } from '../../../../../../src/tanstack-vue';
+import { store } from '../../../../utils/store';
 import SettingsPluginProxiedWebsites from './SettingsPluginProxiedWebsites.vue';
 import SettingsPluginInjectedVariables from './SettingsPluginInjectedVariables.vue';
 import SettingsPluginStaticFrontend from './SettingsPluginStaticFrontend.vue';
