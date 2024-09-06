@@ -99,7 +99,7 @@ contract OCWebsiteFactoryToken {
                 '"image": "data:image/svg+xml;base64,', Base64.encode(bytes(svg)),'", '
                 '"external_url": "', web3Address, '", '
                 '"attributes": ['
-                    '{ "trait_type": "OCWebsite version", "value": ', LibStrings.toString(website.OCWebsiteVersion()), ' }'
+                    // '{ "trait_type": "OCWebsite version", "value": ', LibStrings.toString(website.OCWebsiteVersion()), ' }'
                 ']'
             '}'
         );
