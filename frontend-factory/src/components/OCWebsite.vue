@@ -12,15 +12,15 @@ import BoxArrowUpRightIcon from '../icons/BoxArrowUpRightIcon.vue';
 
 
 const props = defineProps({
-  contractAddress: {
-    type: String,
+  tokenId: {
+    type: Number,
     required: true,
   },
   chainId: {
     type: Number,
     required: true,
   },
-  subdomain: {
+  title: {
     type: String,
     default: null,
   },
@@ -40,44 +40,40 @@ const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContr
 
 const factoryAddress = computed(() => contractAddresses.value?.factories.find(f => f.chainId === props.chainId)?.address)
 
-// Load the token SVG template
-const { isSuccess: tokenTemplateLoaded, data: tokenSVGTemplate } = useQuery({
-  queryKey: ['OCWebsiteTokenTemplate', factoryAddress, props.chainId],
+// Fetch the details of the token (contract address, subdomain, SVG)
+const { data: detailedToken, isSuccess: detailedTokenLoaded, error: detailedTokenError } = useQuery({
+  queryKey: ['OCWebsiteDetailedToken', factoryAddress, props.chainId, props.tokenId],
   queryFn: async () => {
-    const response = await fetch(`web3://${factoryAddress.value}:${props.chainId}/tokenSVGTemplate?returns=(string)`)
+    const response = await fetch(`web3://${factoryAddress.value}:${props.chainId}/detailedToken/${props.tokenId}?returns=((uint256,address,string,string))`)
     if (!response.ok) {
       throw new Error('Network response was not ok')
     }
     const decodedResponse = await response.json()
-    return decodedResponse[0]
+    return { tokenId: parseInt(decodedResponse[0][0], 16), contractAddress: decodedResponse[0][1], subdomain: decodedResponse[0][2], tokenSVG: decodedResponse[0][3] }
   },
-  staleTime: 3600 * 1000,
+  staleTime: 24 * 3600 * 1000,
   enabled: computed(() => contractAddressesLoaded.value),
 })
 
 // Inject vars in the token SVG template, encode it as a data URL for CSS
-const tokenSVGTemplateDataUrlForCSS = computed(() => {
-  if (tokenSVGTemplate.value == null) {
+const tokenSVGDataUrlForCSS = computed(() => {
+  if (detailedTokenLoaded.value == false) {
     return null
   }
 
-  // Inject vars
-  const addressPart1 = props.contractAddress.toLowerCase().slice(0, 24);
-  const addressPart2 = props.contractAddress.toLowerCase().slice(24) + ":" + props.chainId;
-  const svg = tokenSVGTemplate.value
-    .replace(/{subdomain}/g, props.subdomain ? props.subdomain : '')
-    .replace(/{addressPart1}/g, addressPart1)
-    .replace(/{addressPart2}/g, addressPart2)
-
   // Encode as data URL
-  const base64EncodedSVG = btoa(svg);
+  const base64EncodedSVG = btoa(detailedToken.value.tokenSVG);
   return `url('data:image/svg+xml;base64,${base64EncodedSVG}')`
 })
 
 // Copy the web3 address to the clipboard
 const showCopiedIndicator = ref(false)
 function copyWeb3AddressToClipboard() {
-  navigator.clipboard.writeText(`web3://${props.contractAddress}:${props.chainId}`)
+  if(detailedTokenLoaded.value == false) {
+    return;
+  }
+
+  navigator.clipboard.writeText(`web3://${detailedToken.value.contractAddress}:${props.chainId}`)
 
   // Show a success message
   showCopiedIndicator.value = true
@@ -87,7 +83,11 @@ function copyWeb3AddressToClipboard() {
 }
 
 const urlWithSlash = computed(() => {
-  return `web3://${props.contractAddress}${props.chainId > 1 ? ':' + props.chainId : ''}/`
+  if(detailedTokenLoaded.value == false) {
+    return;
+  }
+
+  return `web3://${detailedToken.value.contractAddress}${props.chainId > 1 ? ':' + props.chainId : ''}/`
 })
 
 const showWalletConnectModal = ref(false)
@@ -107,10 +107,16 @@ const onClick = () => {
 </script>
 
 <template>
-  <div :class="{ocwebsite: true, isOpened: isOpened}" @click="onClick">
+  <h4 v-if="detailedTokenLoaded && title">
+    <a :href="'web3://' + detailedToken.contractAddress + (chainId > 1 ? ':' + chainId : '')" class="white" target="_blank">
+      {{ title }}
+    </a>
+  </h4>
+
+  <div :class="{ocwebsite: true, isOpened: isOpened}" @click="onClick" v-if="detailedTokenLoaded">
     <div class="header">
       <a @click.stop.prevent="copyWeb3AddressToClipboard()" :class="{'web3-address': true, copied: showCopiedIndicator}">
-        web3://{{ contractAddress }}:{{ chainId }} 
+        web3://{{ detailedToken.contractAddress }}:{{ chainId }} 
         <CopyIcon />
         <span class="copy-indicator">
           Copied!
@@ -124,7 +130,10 @@ const onClick = () => {
       </a>
     </div>
 
-    <OCWebsiteEditor class="editor" :contractAddress :chainId v-if="isOpened" />
+    <OCWebsiteEditor class="editor" 
+      :contractAddress="detailedToken.contractAddress"
+      :chainId 
+      v-if="isOpened" />
 
     <div class="footer">
 
@@ -135,10 +144,16 @@ const onClick = () => {
 
 
 <style scoped>
+h4 {
+  margin-top: 0em;
+  margin-bottom: 0.5em;
+  text-align: center;
+}
+
 .ocwebsite {
   width: 200px;
   height: min-content;
-  background-image: v-bind('tokenSVGTemplateDataUrlForCSS');
+  background-image: v-bind('tokenSVGDataUrlForCSS');
   background-size: cover;
   cursor: pointer;
   display: flex;

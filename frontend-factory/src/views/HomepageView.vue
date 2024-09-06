@@ -22,9 +22,9 @@ const exampleOCWebsiteInfos = computed(() => {
     return null
   }
 
-  const [address, chainId] = variable[1].split(':')
+  const [tokenId, chainId] = variable[1].split(':')
   return {
-    address,
+    tokenId: parseInt(tokenId),
     chainId: parseInt(chainId),
   }
 })
@@ -86,28 +86,18 @@ const faqEntries = [
       </h2>
       <div class="preview-ocwebsites">
         <div v-if="exampleOCWebsiteInfos">
-          <h4>
-            <a :href="'web3://' + exampleOCWebsiteInfos.address + (exampleOCWebsiteInfos.chainId > 1 ? ':' + exampleOCWebsiteInfos.chainId : '')" class="white" target="_blank">
-              Newly minted OCWebsite
-            </a>
-          </h4>
           <OCWebsite
-            :contractAddress="exampleOCWebsiteInfos.address" 
+            :tokenId="exampleOCWebsiteInfos.tokenId" 
             :chainId="exampleOCWebsiteInfos.chainId"
-            subdomain="example"
+            title="Newly minted OCWebsite"
             :isOpened="false"
             :showLinkAndCloseIcons="true" />
         </div>
         <div v-if="contractAddressesLoaded">
-          <h4>
-            <a :href="'web3://' + contractAddresses.self.address + (contractAddresses.self.chainId > 1 ? ':' + contractAddresses.self.chainId : '')" class="white" target="_blank">
-              OCWeb.eth itself
-            </a>
-          </h4>
           <OCWebsite
-            :contractAddress="contractAddresses.self.address" 
+            :tokenId="0" 
             :chainId="contractAddresses.self.chainId"
-            subdomain="factory"
+            title="OCWeb.eth itself"
             :isOpened="false"
             :showLinkAndCloseIcons="true" />
         </div>
@@ -173,12 +163,6 @@ code {
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 3em;
-}
-
-.preview-ocwebsites h4 {
-  margin-top: 0em;
-  margin-bottom: 0.5em;
-  text-align: center;
 }
 
 .mint-yours {

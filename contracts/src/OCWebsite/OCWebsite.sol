@@ -10,7 +10,7 @@ import "../interfaces/IStorageBackend.sol";
 import "./VersionableWebsite.sol";
 
 contract OCWebsite is VersionableWebsite {
-    uint public constant VERSION = 1;
+    uint public constant OCWebsiteVersion = 1;
 
     constructor(ClonableWebsiteVersionViewer _websiteVersionViewerImplementation) VersionableWebsite(_websiteVersionViewerImplementation) {
     }

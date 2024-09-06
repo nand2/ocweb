@@ -238,6 +238,8 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
 
   # Get the address of the OCWebsite
   OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
+  # Get the OCWebsite token id
+  OCWEBSITE_TOKEN_ID=2 # $(echo "$OUTPUT" | grep -oP 'Token ID: \K\d+')
 
   # Fetch the address of the injectedVariables plugin
   INJECTED_VARIABLES_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "InjectedVariablesPlugin" and .transactionType == "CREATE")][0].contractAddress')
@@ -248,5 +250,5 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
 
   # Add the OCWebsite address as a variable to the factory
   echo "Adding the example OCWebsite to the factory as a variable..."
-  cast send $INJECTED_VARIABLES_PLUGIN_ADDRESS "addVariable(address,uint,string,string)" $OCWEBSITE_FACTORY_FRONTEND_ADDRESS 0 ocwebsite-example "${OCWEBSITE_ADDRESS}:${CHAIN_ID}" --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
+  cast send $INJECTED_VARIABLES_PLUGIN_ADDRESS "addVariable(address,uint,string,string)" $OCWEBSITE_FACTORY_FRONTEND_ADDRESS 0 ocwebsite-example "${OCWEBSITE_TOKEN_ID}:${CHAIN_ID}" --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
 fi

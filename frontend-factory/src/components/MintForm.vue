@@ -50,7 +50,7 @@ async function mint() {
   })
 
   // Unable to find how to call that on transaction reception
-  queryClient.invalidateQueries({ queryKey: ['OCWebsiteList', factoryAddress.value, mintChainId.value, address] })
+  queryClient.invalidateQueries({ queryKey: ['OCWebsiteOwnedList', factoryAddress.value, mintChainId.value, address] })
 }
 
 const { data: transactionReceipt, isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })

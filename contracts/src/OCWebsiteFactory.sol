@@ -17,11 +17,15 @@ interface IFactoryExtension {
 }
 
 contract OCWebsiteFactory is ERC721Enumerable {
+    // The ocweb.eth frontend website
     OCWebsite public website;
-    OCWebsiteFactoryToken public immutable factoryToken;
+    // The contract handing the generation of the ERC721 token images
+    OCWebsiteFactoryToken public factoryToken;
 
-    ClonableOCWebsite public immutable websiteImplementation;
+    // The contract that will be cloned to create new websites
+    ClonableOCWebsite public websiteImplementation;
 
+    // Created websites
     OCWebsite[] public websites;
     mapping(OCWebsite => uint) public websiteToIndex;
     event WebsiteCreated(uint indexed websiteId, address website);
@@ -284,38 +288,55 @@ contract OCWebsiteFactory is ERC721Enumerable {
         return factoryToken.tokenSVG(tokenId);
     }
 
-    function tokenSVGTemplate() public view returns (string memory) {
-        return factoryToken.tokenSVGByVars("{subdomain}", "{addressPart1}", "{addressPart2}");
-    }
-
     struct DetailedToken {
         uint tokenId;
         address contractAddress;
         string subdomain;
+        string tokenSVG;
     }
-    function detailedTokensOfOwner(address user) public view returns (DetailedToken[] memory tokens) {
+    function detailedTokensOfOwner(address user, uint startIndex, uint count) public view returns (DetailedToken[] memory tokens) {
         uint tokenCount = balanceOf(user);
-        tokens = new DetailedToken[](tokenCount);
-        for(uint i = 0; i < tokenCount; i++) {
-            uint tokenId = tokenOfOwnerByIndex(user, i);
+        require(startIndex < tokenCount, "Index out of bounds");
+        
+        if(count == 0) {
+            count = tokenCount - startIndex;
+        }
+        else if(startIndex + count > tokenCount) {
+            count = tokenCount - startIndex;
+        }
+
+        tokens = new DetailedToken[](count);
+        for(uint i = 0; i < count; i++) {
+            uint tokenId = tokenOfOwnerByIndex(user, i + startIndex);
             tokens[i] = DetailedToken({
                 tokenId: tokenId,
                 contractAddress: address(websites[tokenId]),
-                subdomain: websiteToSubdomain[websites[tokenId]]
+                subdomain: websiteToSubdomain[websites[tokenId]],
+                tokenSVG: factoryToken.tokenSVG(tokenId)
             });
         }
 
         return tokens;
     }
 
-    function detailedTokens(uint[] memory tokenIds) public view returns (DetailedToken[] memory tokens) {
-        tokens = new DetailedToken[](tokenIds.length);
-        for(uint i = 0; i < tokenIds.length; i++) {
-            uint tokenId = tokenIds[i];
+    function detailedTokens(uint startIndex, uint count) public view returns (DetailedToken[] memory tokens) {
+        uint tokenCount = totalSupply();
+        require(startIndex < tokenCount, "Index out of bounds");
+        
+        if(count == 0) {
+            count = tokenCount - startIndex;
+        }
+        else if(startIndex + count > tokenCount) {
+            count = tokenCount - startIndex;
+        }
+
+        tokens = new DetailedToken[](count);
+        for(uint i = 0; i < count; i++) {
             tokens[i] = DetailedToken({
-                tokenId: tokenId,
-                contractAddress: address(websites[tokenId]),
-                subdomain: websiteToSubdomain[websites[tokenId]]
+                tokenId: i + startIndex,
+                contractAddress: address(websites[i + startIndex]),
+                subdomain: websiteToSubdomain[websites[i + startIndex]],
+                tokenSVG: factoryToken.tokenSVG(i + startIndex)
             });
         }
 
@@ -326,7 +347,8 @@ contract OCWebsiteFactory is ERC721Enumerable {
         return DetailedToken({
             tokenId: tokenId,
             contractAddress: address(websites[tokenId]),
-            subdomain: websiteToSubdomain[websites[tokenId]]
+            subdomain: websiteToSubdomain[websites[tokenId]],
+            tokenSVG: factoryToken.tokenSVG(tokenId)
         });
     }
 
@@ -336,6 +358,21 @@ contract OCWebsiteFactory is ERC721Enumerable {
 
     function setOwner(address _owner) public onlyOwner {
         owner = _owner;
+    }
+
+    /**
+     * Update the website implementation of newly minted websites.
+     * Existing websites are not affected.
+     */
+    function setWebsiteImplementation(ClonableOCWebsite _websiteImplementation) public onlyOwner {
+        websiteImplementation = _websiteImplementation;
+    }
+
+    /**
+     * Update the contract handling the generation of ERC721 token images.
+     */
+    function setFactoryToken(OCWebsiteFactoryToken _factoryToken) public onlyOwner {
+        factoryToken = _factoryToken;
     }
 
     function addExtension(IFactoryExtension _extension) public onlyOwner {

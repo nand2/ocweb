@@ -1,6 +1,7 @@
 <script setup>
 import { computed, defineProps } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
+import { useQueryClient } from '@tanstack/vue-query'
 import { useAccount } from '@wagmi/vue';
 
 import { useContractAddresses } from '../../../src/tanstack-vue.js';
@@ -14,6 +15,7 @@ const props = defineProps({
   },
 })
 
+const queryClient = useQueryClient()
 const { address, isConnected } = useAccount();
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 
@@ -24,16 +26,23 @@ const factoryChainId = computed(() => props.chain.id)
 
 // Fetch the OCWebsites owned by the user
 const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
-  queryKey: ['OCWebsiteList', factoryAddress, factoryChainId, address],
+  queryKey: ['OCWebsiteOwnedList', factoryAddress, factoryChainId, address],
   queryFn: async () => {
-    const response = await fetch(`web3://${factoryAddress.value}:${factoryChainId.value}/detailedTokensOfOwner/${address.value}?returns=((uint256,address,string)[])`)
+    const response = await fetch(`web3://${factoryAddress.value}:${factoryChainId.value}/detailedTokensOfOwner/${address.value}/0/0?returns=((uint256,address,string,string)[])`)
     if (!response.ok) {
       throw new Error('Network response was not ok')
     }
     const decodedResponse = await response.json()
-    return decodedResponse[0].map(([tokenId, contractAddress, subdomain]) => ({ tokenId: parseInt(tokenId, 16), contractAddress, subdomain }))
+    const entries = decodedResponse[0].map(([tokenId, contractAddress, subdomain, tokenSVG]) => ({ tokenId: parseInt(tokenId, 16), contractAddress, subdomain, tokenSVG }))
+
+    // Prefill the tanstack cache with the individual entries
+    entries.forEach(entry => {
+      queryClient.setQueryData(['OCWebsiteDetailedToken', factoryAddress, factoryChainId, entry.tokenId], entry)
+    })
+
+    return entries;
   },
-  staleTime: 3600 * 1000,
+  staleTime: 24 * 3600 * 1000,
   enabled: computed(() => contractAddressesLoaded.value && isConnected.value),
 })
 </script>
@@ -52,9 +61,8 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
     <div v-else class="oc-websites">
       <OCWebsite v-for="ocWebsite in ocWebsites" 
         :key="ocWebsite.tokenId" 
-        :contractAddress="ocWebsite.contractAddress" 
-        :chainId="factoryChainId"
-        :subdomain="ocWebsite.subdomain" />
+        :tokenId="ocWebsite.tokenId" 
+        :chainId="factoryChainId" />
     </div>
   </div>
 </template>

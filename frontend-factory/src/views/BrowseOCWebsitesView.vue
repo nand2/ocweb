@@ -2,14 +2,16 @@
 import { useAccount } from '@wagmi/vue';
 import { computed, watch, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query'
+import { useQueryClient } from '@tanstack/vue-query'
 
 import { useSupportedChains } from '../utils/ethereum.js';
 import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import ChainOCWebsites from '../components/ChainMyOCWebsites.vue';
-import OCWebsiteByTokenId from '../components/OCWebsiteByTokenId.vue';
+import OCWebsite from '../components/OCWebsite.vue';
 
 
 const { isConnected } = useAccount();
+const queryClient = useQueryClient()
 const { isSuccess: supportedChainsLoaded, data: supportedChains } = useSupportedChains()
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 
@@ -64,19 +66,37 @@ const { isSuccess: chainOCWebsiteCollectionLengthLoaded, data: chainOCWebsiteCol
 const numberPerPage = 10;
 const page = ref(1);
 
-const tokenIdsToBrowse = computed(() => {
-  if(chainOCWebsiteCollectionLengthLoaded.value == false) {
-    return []
-  }
+const startTokenId = computed(() => (page.value - 1) * numberPerPage)
 
-  return Array.from({ length: Math.min(chainOCWebsiteCollectionLength.value - (page.value - 1) * numberPerPage, numberPerPage) }).map((_, i) => (page.value - 1) * numberPerPage + i)
+// Get the detailed tokens for the current page
+// (Prefetch all infos in one go, more efficient)
+const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
+  queryKey: ['OCWebsiteList', browsedChainFactoryAddress, browsedChainId.value, startTokenId],
+  queryFn: async () => {
+    const response = await fetch(`web3://${browsedChainFactoryAddress.value}:${browsedChainId.value}/detailedTokens/${startTokenId.value}/${numberPerPage}?returns=((uint256,address,string,string)[])`)
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    const decodedResponse = await response.json()
+    const entries = decodedResponse[0].map(([tokenId, contractAddress, subdomain, tokenSVG]) => ({ tokenId: parseInt(tokenId, 16), contractAddress, subdomain, tokenSVG }))
+
+    // Prefill the tanstack cache with the individual entries
+    entries.forEach(entry => {
+      queryClient.setQueryData(['OCWebsiteDetailedToken', browsedChainFactoryAddress.value, browsedChainId.value, entry.tokenId], entry)
+    })
+
+    return entries;
+  },
+  staleTime: 24 * 3600 * 1000,
+  enabled: computed(() => chainOCWebsiteCollectionLengthLoaded.value),
 })
+
 </script>
 
 
 <template>
   <div class="browse-area">
-    <div v-if="supportedChainsLoaded == false">
+    <div v-if="ocWebsitesLoaded == false">
       Loading...
     </div>
 
@@ -93,11 +113,11 @@ const tokenIdsToBrowse = computed(() => {
       </div>
 
       <div class="oc-websites">
-        <OCWebsiteByTokenId
-          v-for="tokenId in tokenIdsToBrowse"
-          :key="tokenId"
-          :chain="orderedSupportedChains.find(c => c.id == browsedChainId)"
-          :tokenId="tokenId"
+        <OCWebsite
+          v-for="ocWebsite in ocWebsites"
+          :key="ocWebsite.tokenId"
+          :chainId="browsedChainId"
+          :tokenId="ocWebsite.tokenId"
         />
 
       </div>
