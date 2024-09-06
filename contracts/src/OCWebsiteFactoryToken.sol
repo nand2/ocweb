@@ -30,21 +30,6 @@ contract OCWebsiteFactoryToken {
         websiteFactory = _websiteFactory;
     }
 
-    function tokenWeb3Address(uint tokenId) public view returns (string memory web3Address) {
-        require(tokenId < websiteFactory.totalSupply(), "Token does not exist");
-
-        OCWebsite website = websiteFactory.websites(tokenId);
-
-        web3Address = string.concat(
-            "web3://", 
-            LibStrings.toHexString(address(website)));
-
-        uint chainId = block.chainid;
-        if(chainId > 1) {
-            web3Address = string.concat(web3Address, ":", LibStrings.toString(chainId));
-        }
-    }
-
     function tokenSVGByVars(string memory subdomain, string memory addressStrPart1, string memory addressStrPart2) public view returns (string memory) {
         return string.concat(
             '<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">'
@@ -89,7 +74,7 @@ contract OCWebsiteFactoryToken {
         string memory subdomain = websiteFactory.websiteToSubdomain(website);
 
         // Prepare the address part
-        string memory addressStr = tokenWeb3Address(tokenId);
+        string memory addressStr = websiteFactory.tokenWeb3Address(tokenId);
         addressStr = LibStrings.substring(addressStr, 7, bytes(addressStr).length);
         string memory addressStrPart1 = LibStrings.substring(addressStr, 0, 24);
         string memory addressStrPart2 = LibStrings.substring(addressStr, 24, bytes(addressStr).length);
@@ -103,15 +88,19 @@ contract OCWebsiteFactoryToken {
         OCWebsite website = websiteFactory.websites(tokenId);
 
         string memory svg = tokenSVG(tokenId);
-        string memory web3Address = tokenWeb3Address(tokenId);
+        string memory web3Address = websiteFactory.tokenWeb3Address(tokenId);
 
         return string.concat(
             '{'
                 '"id": "', LibStrings.toString(tokenId), '", '
-                '"name": "', web3Address, '", '
-                '"description": "A on-chain website using the web3:// protocol", '
+                '"name": "', websiteFactory.websiteToSubdomain(website), '", '
+                '"description": "A on-chain website using the web3:// protocol\\n\\nAddress: ', web3Address, '", '
+                '"type": "website", ' // Non standard
                 '"image": "data:image/svg+xml;base64,', Base64.encode(bytes(svg)),'", '
-                '"external_url": "', web3Address, '"'
+                '"external_url": "', web3Address, '", '
+                '"attributes": ['
+                    '{ "trait_type": "OCWebsite version", "value": ', LibStrings.toString(website.OCWebsiteVersion()), ' }'
+                ']'
             '}'
         );
     }

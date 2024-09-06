@@ -321,7 +321,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
 
     function detailedTokens(uint startIndex, uint count) public view returns (DetailedToken[] memory tokens) {
         uint tokenCount = totalSupply();
-        require(startIndex < tokenCount, "Index out of bounds");
+        require(startIndex == 0 || startIndex < tokenCount, "Index out of bounds");
         
         if(count == 0) {
             count = tokenCount - startIndex;
@@ -350,6 +350,21 @@ contract OCWebsiteFactory is ERC721Enumerable {
             subdomain: websiteToSubdomain[websites[tokenId]],
             tokenSVG: factoryToken.tokenSVG(tokenId)
         });
+    }
+
+    function tokenWeb3Address(uint tokenId) public view returns (string memory) {
+        require(tokenId < websites.length, "Token does not exist");
+
+        string memory web3Address = string.concat(
+            "web3://", 
+            LibStrings.toHexString(address(websites[tokenId])));
+
+        uint chainId = block.chainid;
+        if(chainId > 1) {
+            web3Address = string.concat(web3Address, ":", LibStrings.toString(chainId));
+        }
+
+        return web3Address;
     }
 
     //
