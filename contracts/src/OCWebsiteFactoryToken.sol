@@ -94,7 +94,7 @@ contract OCWebsiteFactoryToken {
             '{'
                 '"id": "', LibStrings.toString(tokenId), '", '
                 '"name": "', websiteFactory.websiteToSubdomain(website), '", '
-                '"description": "A on-chain website using the web3:// protocol\\n\\nAddress: ', web3Address, '", '
+                '"description": "A onchain website using the web3:// protocol\\n\\nAddress: ', web3Address, '", '
                 '"type": "website", ' // Non standard
                 '"image": "data:image/svg+xml;base64,', Base64.encode(bytes(svg)),'", '
                 '"external_url": "', web3Address, '", '

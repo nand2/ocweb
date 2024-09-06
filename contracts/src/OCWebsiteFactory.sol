@@ -292,6 +292,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
         uint tokenId;
         address contractAddress;
         string subdomain;
+        // The ERC721 token image
         string tokenSVG;
     }
     function detailedTokensOfOwner(address user, uint startIndex, uint count) public view returns (DetailedToken[] memory tokens) {

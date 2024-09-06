@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { useAccount } from '@wagmi/vue';
 
 import { useContractAddresses } from '../../../src/tanstack-vue.js';
-import OCWebsite from '../components/OCWebsite.vue';
+import MintedOCWebsite from '../components/MintedOCWebsite.vue';
 
 
 const props = defineProps({
@@ -59,7 +59,7 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
     </div>
 
     <div v-else class="oc-websites">
-      <OCWebsite v-for="ocWebsite in ocWebsites" 
+      <MintedOCWebsite v-for="ocWebsite in ocWebsites" 
         :key="ocWebsite.tokenId" 
         :tokenId="ocWebsite.tokenId" 
         :chainId="factoryChainId" />

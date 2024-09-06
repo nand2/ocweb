@@ -6,7 +6,7 @@ const { parse: parseYaml } = await import('yaml')
 
 import { useSupportedChains } from '../utils/ethereum.js';
 import { useInjectedVariables } from '../../../src/tanstack-vue.js';
-import OCWebsite from '../components/OCWebsite.vue';
+import MintedOCWebsite from '../components/MintedOCWebsite.vue';
 
 
 const { isConnected } = useAccount();
@@ -42,7 +42,7 @@ const { isSuccess: featuredOCWebsitesLoaded, data: featuredOCWebsites } = useQue
 
     <div v-else class="oc-websites">
       <div class="oc-website" v-for="featuredOCWebsite in featuredOCWebsites" :key="featuredOCWebsite.tokenId">
-        <OCWebsite
+        <MintedOCWebsite
           :chainId="featuredOCWebsite.chainId" 
           :tokenId="featuredOCWebsite.tokenId"
           :title="featuredOCWebsite.title" />

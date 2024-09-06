@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useInjectedVariables, useContractAddresses } from '../../../src/tanstack-vue.js';
-import OCWebsite from '../components/OCWebsite.vue';
+import MintedOCWebsite from '../components/MintedOCWebsite.vue';
 import Faq from '../components/utils/Faq.vue';
 
 const { isConnected, address } = useAccount();
@@ -86,7 +86,7 @@ const faqEntries = [
       </h2>
       <div class="preview-ocwebsites">
         <div v-if="exampleOCWebsiteInfos">
-          <OCWebsite
+          <MintedOCWebsite
             :tokenId="exampleOCWebsiteInfos.tokenId" 
             :chainId="exampleOCWebsiteInfos.chainId"
             title="Newly minted OCWebsite"
@@ -94,7 +94,7 @@ const faqEntries = [
             :showLinkAndCloseIcons="true" />
         </div>
         <div v-if="contractAddressesLoaded">
-          <OCWebsite
+          <MintedOCWebsite
             :tokenId="0" 
             :chainId="contractAddresses.self.chainId"
             title="OCWeb.eth itself"

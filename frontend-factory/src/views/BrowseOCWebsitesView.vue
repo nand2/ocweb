@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { useSupportedChains } from '../utils/ethereum.js';
 import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import ChainOCWebsites from '../components/ChainMyOCWebsites.vue';
-import OCWebsite from '../components/OCWebsite.vue';
+import MintedOCWebsite from '../components/MintedOCWebsite.vue';
 
 
 const { isConnected } = useAccount();
@@ -117,7 +117,7 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
         Loading...
       </div>
       <div v-else class="oc-websites">
-        <OCWebsite
+        <MintedOCWebsite
           v-for="ocWebsite in ocWebsites"
           :key="ocWebsite.tokenId"
           :chainId="browsedChainId"

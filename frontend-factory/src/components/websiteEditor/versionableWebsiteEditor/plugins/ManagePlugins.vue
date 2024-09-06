@@ -50,7 +50,7 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 // Prepare a contract client for the factory
 const { isSuccess: contractAddressesLoaded, data: contractAddresses } = useContractAddresses()
 const factoryContractClient = computed(() => {
-  if(viemClientLoaded.value == false || contractAddressesLoaded.valuye == false) {
+  if(viemClientLoaded.value == false || contractAddressesLoaded.value == false) {
     return null;
   }
 
