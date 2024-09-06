@@ -96,15 +96,16 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
 
 <template>
   <div class="browse-area">
-    <div v-if="ocWebsitesLoaded == false">
+      
+    <h2 style="margin-top: 0; margin-bottom: 1em">
+      Browse OCWebsites
+    </h2>
+
+    <div v-if="supportedChainsLoaded == false">
       Loading...
     </div>
 
     <div v-else>
-      
-      <h2 style="margin-top: 0; margin-bottom: 1em">
-        Browse OCWebsites
-      </h2>
 
       <div class="chain-selector">
         <div v-for="chain in orderedSupportedChains" :key="chain.id" class="chain" :class="{selected: chain.id == browsedChainId}" @click.stop.prevent="browsedChainId = chain.id; page = 1">
@@ -112,7 +113,10 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
         </div>
       </div>
 
-      <div class="oc-websites">
+      <div v-if="ocWebsitesLoaded == false">
+        Loading...
+      </div>
+      <div v-else class="oc-websites">
         <OCWebsite
           v-for="ocWebsite in ocWebsites"
           :key="ocWebsite.tokenId"

@@ -296,7 +296,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
     }
     function detailedTokensOfOwner(address user, uint startIndex, uint count) public view returns (DetailedToken[] memory tokens) {
         uint tokenCount = balanceOf(user);
-        require(startIndex < tokenCount, "Index out of bounds");
+        require(startIndex == 0 || startIndex < tokenCount, "Index out of bounds");
         
         if(count == 0) {
             count = tokenCount - startIndex;
