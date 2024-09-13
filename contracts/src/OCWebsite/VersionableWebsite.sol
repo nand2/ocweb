@@ -137,6 +137,10 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
     // 
 
     function addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint position) public override onlyOwner {
+        _addPlugin(websiteVersionIndex, plugin, position);
+    }
+
+    function _addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint position) internal {
         // Ensure that the plugin support one of the requested interfaces
         bytes4[] memory supportedInterfaces = getSupportedPluginInterfaces();
         bool supported = false;

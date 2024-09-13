@@ -49,4 +49,12 @@ const toggleAnswer = (id) => {
   padding-bottom: 0.5em;
 }
 
+.faq-entry-answer :deep(p) {
+  margin-top: 0;
+}
+
+.faq-entry-answer :deep(p):last-child {
+  margin-bottom: 0;
+}
+
 </style>

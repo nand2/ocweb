@@ -36,11 +36,15 @@ const faqEntries = [
   },
   {
     question: 'How does a <code>web3://</code> website work?',
-    answer: 'A <code>web3://</code> website is a smart contract which implements some specific methods to reply to browser requests.',
+    answer: '<p>A <code>web3://</code> website is a smart contract which advertise a <a href="https://docs.web3url.io/web3-url-structure/resolve-mode" target="_blank"><code>web3://</code> resolve mode</a> and implements some specific methods to reply to browser requests.</p><p>You can experiment with <code>web3://</code> by using the <a href="web3://w3-sandbox.eth/" target="_blank"><code>web3://</code> sandbox</a>.</p>',
+  },
+  {
+    question: 'Can I read any existing smart contract with <code>web3://</code>?',
+    answer: '<p>Yes. By default, existing smart contracts are considered as <a href="https://docs.web3url.io/web3-url-structure/resolve-mode/mode-auto" target="_blank">auto <code>web3://</code> resolve mode</a> and you can query its methods.</p><p>You can experiment with this by using the <a href="web3://w3-sandbox.eth/" target="_blank"><code>web3://</code> sandbox</a>.</p>',
   },
   {
     question: 'I am currently accessing this website via a normal <code>https://</code> URL. How come?',
-    answer: 'A HTTPS gateway server has been developed to allow users to easily access <code>web3://</code> websites with a normal browser. You can download a native <code>web3://</code> client, see the <a href="https://docs.web3url.io/" target="_blank">web3:// protocol documentation</a>.',
+    answer: 'A HTTPS gateway server has been developed to allow users to easily access <code>web3://</code> websites with a normal browser. You can also download a native <code>web3://</code> client, see the <a href="https://docs.web3url.io/" target="_blank">web3:// protocol documentation</a>.',
   },
   {
     question: 'What chains are supported by the <code>web3://</code> protocol?',
@@ -48,11 +52,15 @@ const faqEntries = [
   },
   {
     question: 'Where can I learn more about the web3:// protocol?',
-    answer: 'You can go to the <a href="web3://web3url.eth" target="_blank"><code>web3://</code> protocol homepage</a> and to the <a href="https://docs.web3url.io/" target="_blank"><code>web3://</code> documentation</a>.',
+    answer: 'You can go to the <a href="web3://web3url.eth" target="_blank"><code>web3://</code> protocol homepage</a>, to the <a href="https://docs.web3url.io/" target="_blank"><code>web3://</code> documentation</a> and experiment live with the <a href="web3://w3-sandbox.eth/" target="_blank"><code>web3://</code> sandbox</a>.',
   },
   {
     question: "What is the difference between the <code>web3://</code> protocol and OCWebsites?",
     answer: 'The <code>web3://</code> protocol is a standard for accessing websites built on the blockchain, OCWebsites are <code>web3://</code> websites prepackaged with a plugin system and an admin interface. Think <code>https://</code> vs. WordPress.',
+  },
+  {
+    question: "An OCWebsite is a NFT. Are all <code>web3://</code> websites NFTs?",
+    answer: 'No. A <code>web3://</code> website is a smart contract, and works without being an NFT. The NFT part is optional and can be useful to manage the ownership of the website.',
   }
 ]
 </script>

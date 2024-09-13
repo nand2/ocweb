@@ -85,7 +85,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
         factoryToken.setWebsiteFactory(this);
     }
 
-    function setWebsite(OCWebsite _website) public onlyOwner {
+    function setFactoryWebsite(OCWebsite _website) public onlyOwner {
         website = _website;
     }
 
@@ -172,6 +172,24 @@ contract OCWebsiteFactory is ERC721Enumerable {
         }
 
         return plugins;
+    }
+
+    function setWebsitePluginAsDefaultPlugin(IVersionableWebsitePlugin plugin, bool isDefaultPlugin) public onlyOwner {
+        for(uint i = 0; i < newWebsiteDefaultPlugins.length; i++) {
+            if(address(newWebsiteDefaultPlugins[i]) == address(plugin)) {
+                if(isDefaultPlugin) {
+                    return;
+                }
+                for (uint j = i; j < newWebsiteDefaultPlugins.length - 1; j++) {
+                    newWebsiteDefaultPlugins[j] = newWebsiteDefaultPlugins[j + 1];
+                }
+                newWebsiteDefaultPlugins.pop();
+                return;
+            }
+        }
+        if(isDefaultPlugin) {
+            newWebsiteDefaultPlugins.push(plugin);
+        }
     }
 
     function removeWebsitePlugin(IVersionableWebsitePlugin plugin) public onlyOwner {

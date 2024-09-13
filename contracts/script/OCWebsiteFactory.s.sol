@@ -153,7 +153,7 @@ contract OCWebsiteFactoryScript is Script {
             
 
             // Set the website as the factory frontend
-            factory.setWebsite(factoryFrontend);
+            factory.setFactoryWebsite(factoryFrontend);
 
             // Add the admin plugin, which use the factory frontend as admin interface
             {

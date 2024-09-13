@@ -32,7 +32,7 @@ if(isViewedAsWebsiteAdmin.value) {
       
       <RouterLink to="/">
         <div class="brand">
-          <img src="/logo.svg" class="logo" alt="Vue logo" />
+          <img src="/logo.svg" class="logo" />
           <span class="logo-text">
             OCWeb.eth
           </span>

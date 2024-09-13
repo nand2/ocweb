@@ -44,12 +44,22 @@ contract ClonableOCWebsite is OCWebsite {
         _addWebsiteVersion("Initial version", 0);
 
         // Add the plugins
-        WebsiteVersion storage websiteVersion = websiteVersions[0];
+        bytes4[] memory supportedInterfaces = getSupportedPluginInterfaces();
+        uint addedPluginCount = 0;
         for(uint i = 0; i < _plugins.length; i++) {
-            websiteVersion.pluginNodes.push(LinkedListNodePlugin({
-                plugin: _plugins[i],
-                next: uint96(i != _plugins.length - 1 ? i + 1 : 0)
-            }));
+            // Ensure that the plugin support one of the supported interfaces
+            bool supported = false;
+            for(uint j = 0; j < supportedInterfaces.length; j++) {
+                if(_plugins[i].supportsInterface(supportedInterfaces[j])) {
+                    supported = true;
+                    break;
+                }
+            }
+
+            if(supported) {
+                _addPlugin(0, _plugins[i], addedPluginCount);
+                addedPluginCount++;
+            }
         }
     }
 
