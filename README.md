@@ -40,6 +40,8 @@ New OCWebsites comes with an initial version. You can create a new version anyti
 - You can enable a viewer for non-live versions, in order to preview them, and/or to make available a historical version.
 - You can lock a version, which becomes immutable.
 
+![](./assets/ocWebAdminVersioning.png)
+
 ## OCWebsite plugins
 
 Several plugins come pre-installed with a newly minted OCWebsite.
