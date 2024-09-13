@@ -15,6 +15,8 @@ They are useful for both :
 - Developers: ability to upload a frontend (via admin or CLI) to your OCWebsite, manage multiple versions (switch live version), create and add your own plugins
 - Non-developers : Use the admin interface to configure themes, add and publish pages (at the moment, only one theme available)
 
+![](./assets/ocWebAdmin.png)
+
 ## ocweb CLI
 
 ``ocweb`` is a CLI tool to interact with OCWebsites. Install it with ``npm i ocweb``
@@ -42,6 +44,7 @@ New OCWebsites comes with an initial version. You can create a new version anyti
 
 Several plugins come pre-installed with a newly minted OCWebsite.
 
+![](./assets/ocWebAdminPlugins.png)
 
 ## Develop your own OCWebsite plugin
 
