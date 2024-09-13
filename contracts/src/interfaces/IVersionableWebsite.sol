@@ -67,7 +67,7 @@ interface IVersionableWebsitePlugin is IERC165 {
     // Represent an admin panel for this plugin
     // 2 types : 
     // - An autonomous webpage (which can be iframed by global admin panels)
-    // - A ES/UMD module which is loaded by a global admin panel
+    // - A UMD module which is loaded by a global admin panel
     //   In this case, the moduleForGlobalAdminPanel is the address of the
     //   admin panel plugin for which this plugin is a module
     struct AdminPanel {
