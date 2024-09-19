@@ -5,6 +5,7 @@ import { useSwitchChain, useAccount } from '@wagmi/vue'
 import { useQueryClient } from '@tanstack/vue-query'
 
 import FilesTab from './FilesTab.vue';
+import WelcomeTab from './WelcomeTab.vue';
 import PreviewTab from './PreviewTab.vue';
 import SettingsTab from './SettingsTab.vue';
 import PluginsTab from './PluginsTab.vue';
@@ -116,6 +117,10 @@ const initialTab = computed(() => {
     return ''
   }
 
+  // If the welcome tab is still shown, show it
+  if(store.hideWelcomeTab == false) {
+    return 'welcome'
+  }
   // If there are plugin primary admin panels, then the default tab is the first one
   if(pluginPrimaryAdminPanels.value.length > 0) {
     return pluginPrimaryAdminPanels.value[0].tabKey
@@ -137,6 +142,11 @@ watch(websiteVersionBeingEditedPluginsLoaded, () => {
     return;
   }
   activeTab.value = initialTab.value
+})
+watch(store, (newValue) => {
+  if(newValue.hideWelcomeTab == true && activeTab.value == 'welcome') {
+    activeTab.value = initialTab.value
+  }
 })
 
 // The list of loaded tabs (to avoid loading them all at once)
@@ -214,6 +224,8 @@ const showConfigPanel = ref(false)
     </div>
 
     <div class="tabs">
+      <a v-if="store.hideWelcomeTab == false" @click="activeTab = 'welcome'" :class="{tabWelcome: true, active: activeTab == 'welcome'}">Welcome</a>
+
       <a v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" @click="activeTab = panel.tabKey" :class="{tabPages: true, active: activeTab == panel.tabKey}">{{ panel.panel.title }}</a>
 
       <a v-if="staticFrontendInstalledPlugin" @click="activeTab = 'pages'" :class="{tabPages: true, active: activeTab == 'pages'}">Pages</a>
@@ -236,6 +248,15 @@ const showConfigPanel = ref(false)
       :websiteClient
       :pluginsInfos="websiteVersionBeingEditedPlugins"
       :pluginInfos="websiteVersionBeingEditedPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" /> -->
+
+    <WelcomeTab
+      v-if="activeTab == 'welcome'"
+      :websiteVersion="websiteVersionBeingEdited"
+      :websiteVersionIndex="websiteVersionBeingEditedIndex"
+      :contractAddress 
+      :chainId 
+      :websiteClient="websiteClient"
+      class="tab" />
 
     <div v-for="(panel, index) in pluginPrimaryAdminPanels" :key="index" class="tab">
       <!-- Plugin mode -->
