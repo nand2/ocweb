@@ -41,12 +41,11 @@ const { isSuccess: featuredOCWebsitesLoaded, data: featuredOCWebsites } = useQue
     </div>
 
     <div v-else class="oc-websites">
-      <div class="oc-website" v-for="featuredOCWebsite in featuredOCWebsites" :key="featuredOCWebsite.tokenId">
-        <MintedOCWebsite
-          :chainId="featuredOCWebsite.chainId" 
-          :tokenId="featuredOCWebsite.tokenId"
-          :title="featuredOCWebsite.title" />
-      </div>
+      <MintedOCWebsite
+        v-for="featuredOCWebsite in featuredOCWebsites" :key="featuredOCWebsite.tokenId"
+        :chainId="featuredOCWebsite.chainId" 
+        :tokenId="featuredOCWebsite.tokenId"
+        :title="featuredOCWebsite.title" />
     </div>
   </div>
 </template>

@@ -93,22 +93,20 @@ const faqEntries = [
         See for yourself
       </h2>
       <div class="preview-ocwebsites">
-        <div v-if="exampleOCWebsiteInfos">
-          <MintedOCWebsite
-            :tokenId="exampleOCWebsiteInfos.tokenId" 
-            :chainId="exampleOCWebsiteInfos.chainId"
-            title="Newly minted OCWebsite"
-            :isOpened="false"
-            :showLinkAndCloseIcons="true" />
-        </div>
-        <div v-if="contractAddressesLoaded">
-          <MintedOCWebsite
-            :tokenId="0" 
-            :chainId="contractAddresses.self.chainId"
-            title="OCWeb.eth itself"
-            :isOpened="false"
-            :showLinkAndCloseIcons="true" />
-        </div>
+        <MintedOCWebsite
+          v-if="exampleOCWebsiteInfos"
+          :tokenId="exampleOCWebsiteInfos.tokenId" 
+          :chainId="exampleOCWebsiteInfos.chainId"
+          title="Newly minted OCWebsite"
+          :isOpened="false"
+          :showLinkAndCloseIcons="true" />
+        <MintedOCWebsite
+          v-if="contractAddressesLoaded"
+          :tokenId="0" 
+          :chainId="contractAddresses.self.chainId"
+          title="OCWeb.eth itself"
+          :isOpened="false"
+          :showLinkAndCloseIcons="true" />
       </div>
     </div>
 
