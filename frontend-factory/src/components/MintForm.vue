@@ -29,10 +29,10 @@ const subdomainError = computed(() => {
     return null
   }
   if (subdomain.value.length < 3) {
-    return "Subdomain must be at least 3 characters long"
+    return "Must be at least 3 characters long"
   }
   if (!/^[a-z0-9-]+$/.test(subdomain.value)) {
-    return "Subdomain must only contain lowercase letters, numbers and hyphens"
+    return "Must only contain lowercase letters, numbers and hyphens"
   }
   return null
 })
@@ -110,7 +110,7 @@ const resetMintForm = () => {
         <WalletConnectButton />
       </div>
       <div class="form" v-else>
-        <div class="form-field">
+        <div class="form-field align-center">
           <label>
             Blockchain
           </label>
@@ -122,27 +122,24 @@ const resetMintForm = () => {
           </div>
         </div>
 
-        <div class="form-field">
+        <div class="form-field form-field-label-margined">
           <label>
-            ocweb.eth subdomain
+            Name
           </label>
           <div>
-            <div class="subdomain-field">
-              <input type="text" v-model="subdomain" placeholder="subdomain" :disabled="isPending || isConfirming" maxlength="14" />
-              <div class="suffix">
-                .{{ mintChainId > 0 ? supportedChains.find(c => c.id == mintChainId).shortName : '<chain>' }}.ocweb.eth
-              </div>
+            <div class="">
+              <input type="text" v-model="subdomain" placeholder="" :disabled="isPending || isConfirming" maxlength="14" style="max-width: 8em; margin-bottom: 0.2em" />
             </div>
             <div v-if="subdomainError" class="text-danger text-80">
               {{ subdomainError }}
             </div>
             <div v-else class="text-muted text-80">
-              Note: The ocweb.eth subdomain feature is not yet working (waiting for ENS v2).
+              May be used in the future as a ocweb.eth subdomain.
             </div>
           </div>
         </div>
 
-        <div class="form-field">
+        <div class="form-field align-center">
           <label>
             Your ENS domain
             <small>
@@ -150,7 +147,7 @@ const resetMintForm = () => {
             </small>
           </label>
           <div>
-            <div class="subdomain-field">
+            <div class="subdomain-field subdomain-field-with-prefix">
               <input type="text" v-model="ensDomain" placeholder="" :disabled="isPending || isConfirming" maxlength="14" />
               <div class="suffix">
                 .eth
@@ -159,7 +156,7 @@ const resetMintForm = () => {
           </div>
         </div>
 
-        <div class="form-field">
+        <div class="form-field align-center">
           <label>
             Price
           </label>
@@ -223,12 +220,8 @@ const resetMintForm = () => {
           To use your own ENS domain name, follow the instructions in the Settings tab of <a :href="newOCWebsiteWeb3Address + '/admin'" target="_blank">your admin panel</a>
         </div>
       </div>
-
-      <div class="text-muted text-90" style="max-width: 600px; margin: 2em auto 0em auto;">
-        The ocweb.eth subdomain feature is not yet working, we are awaiting ENS v2 deployment. You can still use your own .eth domain name.
-      </div>
       
-      <div class="text-90" style="margin-top: 1em;">
+      <div class="text-90" style="margin-top: 2em;">
         <a @click.prevent.stop="resetMintForm" href="#">Mint another OCWebsite</a>
       </div>
     </div>
@@ -258,7 +251,6 @@ const resetMintForm = () => {
 .form-field {
   display: flex;
   gap: 1em;
-  align-items: center;
 }
 @media (max-width: 700px) {
   .form-field {
@@ -266,8 +258,26 @@ const resetMintForm = () => {
     gap: 0.5em;
   }
 }
+.form-field.align-center {
+  align-items: center;
+}
+.form-field-label-margined > label {
+  margin-top: 0.5em;
+}
+@media (max-width: 700px) {
+  .form-field-label-margined {
+    align-items: center;
+  }
+  .form-field-label-margined > label {
+    margin-top: 0em;
+  }
+}
 
-.form-field label {
+.form-field input {
+  font-size: 1em;
+}
+
+.form-field > label {
   flex: 0 0 25%;
   text-align: right;
   font-weight: bold;
@@ -280,6 +290,15 @@ const resetMintForm = () => {
   color: var(--color-text-muted);
 }
 
+.form-field > div {
+  text-align: left;
+}
+@media (max-width: 700px) {
+  .form-field > div {
+    text-align: center;
+  }
+}
+
 .chain-selector {
   font-size: 1em;
 }
@@ -288,17 +307,16 @@ const resetMintForm = () => {
   display: flex;
   align-items: center;
 }
-@media (max-width: 700px) {
+/* @media (max-width: 700px) {
   .subdomain-field {
     flex-direction: column;
   }
-}
+} */
 
-.subdomain-field input {
+.subdomain-field-with-prefix input {
+  max-width: 110px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
-  font-size: 1em;
-  max-width: 110px;
 }
 
 .subdomain-field .suffix {
