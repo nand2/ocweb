@@ -86,36 +86,38 @@ const onClick = () => {
 </script>
 
 <template>
-  <h4 v-if="title">
-    <a :href="'web3://' + contractAddress + (chainId > 1 ? ':' + chainId : '')" class="white" target="_blank">
-      {{ title }}
-    </a>
-  </h4>
-
-  <div :class="{ocwebsite: true, isOpened: isOpened}" @click="onClick">
-    <div class="header">
-      <a @click.stop.prevent="copyWeb3AddressToClipboard()" :class="{'web3-address': true, copied: showCopiedIndicator}">
-        web3://{{ contractAddress }}:{{ chainId }} 
-        <CopyIcon />
-        <span class="copy-indicator">
-          Copied!
-        </span>
+  <div :class="{ocwebsite: true, isOpened: isOpened}">
+    <h4 v-if="title">
+      <a :href="'web3://' + contractAddress + (chainId > 1 ? ':' + chainId : '')" class="white" target="_blank">
+        {{ title }}
       </a>
-      <a v-if="showLinkAndCloseIcons" :href="urlWithSlash" target="_blank" class="white header-icon">
-        <BoxArrowUpRightIcon />
-      </a>
-      <a v-if="showLinkAndCloseIcons" @click.stop.prevent="isOpened = false" class="white header-icon">
-        <XCircleIcon class="close"  />
-      </a>
-    </div>
+    </h4>
 
-    <OCWebsiteEditor class="editor" 
-      :contractAddress="contractAddress"
-      :chainId 
-      v-if="isOpened" />
+    <div class="ocwebsite-widget" @click="onClick">
+      <div class="header">
+        <a @click.stop.prevent="copyWeb3AddressToClipboard()" :class="{'web3-address': true, copied: showCopiedIndicator}">
+          web3://{{ contractAddress }}:{{ chainId }} 
+          <CopyIcon />
+          <span class="copy-indicator">
+            Copied!
+          </span>
+        </a>
+        <a v-if="showLinkAndCloseIcons" :href="urlWithSlash" target="_blank" class="white header-icon">
+          <BoxArrowUpRightIcon />
+        </a>
+        <a v-if="showLinkAndCloseIcons" @click.stop.prevent="isOpened = false" class="white header-icon">
+          <XCircleIcon class="close"  />
+        </a>
+      </div>
 
-    <div class="footer">
+      <OCWebsiteEditor class="editor" 
+        :contractAddress="contractAddress"
+        :chainId 
+        v-if="isOpened" />
 
+      <div class="footer">
+
+      </div>
     </div>
   </div>
   <WalletConnectModal v-model:show="showWalletConnectModal" @connected="isOpened = true" />
@@ -131,6 +133,10 @@ h4 {
 
 .ocwebsite {
   width: 200px;
+  transition: width 0.5s;
+}
+
+.ocwebsite-widget {
   height: min-content;
   background-image: v-bind('tokenSVGDataUrlForCSS');
   background-size: cover;
@@ -138,10 +144,9 @@ h4 {
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  transition: width 0.5s;
 }
 
-.ocwebsite .header {
+.ocwebsite-widget .header {
   height: 100px;
   display: flex;
   justify-content: space-between;
@@ -150,7 +155,7 @@ h4 {
   padding-right: 0.5em;
 }
 
-.ocwebsite a.web3-address {
+.ocwebsite-widget a.web3-address {
   flex: 0 1 auto;
   display: flex;
   align-items: center;
@@ -171,16 +176,16 @@ h4 {
   margin-right: auto;
 }
 
-.ocwebsite a.web3-address:hover {
+.ocwebsite-widget a.web3-address:hover {
   background-color: rgb(255, 255, 255, 0.2);
 }
 
-.ocwebsite a.web3-address.copied {
+.ocwebsite-widget a.web3-address.copied {
   color: transparent;
   transition: color 0.25s;
 }
 
-.ocwebsite a.web3-address .copy-indicator {
+.ocwebsite-widget a.web3-address .copy-indicator {
   color: var(--color-text);
   position: absolute;
   left: 50%;
@@ -188,12 +193,12 @@ h4 {
   transition: opacity 0.25s;
 }
 
-.ocwebsite a.web3-address.copied .copy-indicator {
+.ocwebsite-widget a.web3-address.copied .copy-indicator {
   opacity: 1;
   transition: opacity 0.25s;
 }
 
-.ocwebsite .header .header-icon {
+.ocwebsite-widget .header .header-icon {
   display: flex;
   align-items: center;
   visibility: hidden;
@@ -202,17 +207,17 @@ h4 {
   padding: 0.5em 0.5em;
 }
 
-.ocwebsite .header .header-icon:hover {
+.ocwebsite-widget .header .header-icon:hover {
   color: var(--color-text);
 }
 
-.ocwebsite .header .header-icon svg {
+.ocwebsite-widget .header .header-icon svg {
   height: 25px;
   width: 25px;
   cursor: pointer;
 }
 
-.ocwebsite .editor {
+.ocwebsite-widget .editor {
   height: 0px;
   width: calc(100% - 2px);
   transition: height 0.5s;
@@ -220,7 +225,7 @@ h4 {
   border-right: 1px solid var(--color-divider);
 }
 
-.ocwebsite .footer {
+.ocwebsite-widget .footer {
   height: 100px;
   width: 100%;
   transition: height 0.5s;
@@ -229,14 +234,16 @@ h4 {
 
 .ocwebsite.isOpened {
   width: 800px;
-  cursor: default;
   transition: width 0.5s;
 }
-
 @media (max-width: 970px) {
   .ocwebsite.isOpened {
     width: 100%;
   }
+}
+
+.ocwebsite.isOpened .ocwebsite-widget {
+  cursor: default;
 }
 
 .ocwebsite.isOpened .header {
