@@ -20,7 +20,7 @@ interface IVersionableWebsite is IDecentralizedApp, IOwnable {
         
         // When not the live version, a frontend version can be viewed by this address,
         // which is a clone of a cheap proxy contract
-        IDecentralizedApp viewer;
+        IVersionableWebsiteViewer viewer;
         bool isViewable;
 
         // A lock at the version level: Plugins cannot be added, edited, or removed
@@ -57,6 +57,9 @@ interface IVersionableWebsite is IDecentralizedApp, IOwnable {
     function getPlugins(uint frontendIndex) external view returns (IVersionableWebsitePluginWithInfos[] memory pluginWithInfos);
     function reorderPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin, uint newPosition) external;
     function removePlugin(uint frontendIndex, address plugin) external;
+
+    function requestWebsiteVersion(uint256 websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
+    function clearPathCache(uint256 websiteVersionIndex, string[] memory paths) external;
 }
 
 interface IVersionableWebsitePlugin is IERC165 {
@@ -115,3 +118,7 @@ interface IVersionableWebsitePlugin is IERC165 {
     function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) external;
 }
 
+interface IVersionableWebsiteViewer is IDecentralizedApp {
+
+    function clearPathCache(string[] memory paths) external;
+}

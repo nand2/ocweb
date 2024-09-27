@@ -127,7 +127,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
                 body = string(data);
                 statusCode = 200;
 
-                uint headersCount = 1;
+                uint headersCount = 3;
                 if(frontend.files[i].compressionAlgorithm != CompressionAlgorithm.NONE) {
                     headersCount++;
                 }
@@ -137,10 +137,15 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
                 headers = new KeyValue[](headersCount);
                 headers[0].key = "Content-type";
                 headers[0].value = frontend.files[i].contentType;
+                // ERC-7761 cache invalidation support
+                headers[1].key = "Cache-control";
+                headers[1].value = "evm-events";
+                headers[2].key = "ETag";
+                headers[2].value = LibStrings.toString(frontend.files[i].contentKey);
                 if(frontend.files[i].compressionAlgorithm != CompressionAlgorithm.NONE) {
-                    headers[1].key = "Content-Encoding";
+                    headers[3].key = "Content-Encoding";
                     // We support brotli or gzip only
-                    headers[1].value = frontend.files[i].compressionAlgorithm == CompressionAlgorithm.BROTLI ? "br" : "gzip";
+                    headers[3].value = frontend.files[i].compressionAlgorithm == CompressionAlgorithm.BROTLI ? "br" : "gzip";
                 }
                 // If there is more chunk remaining, add a pointer to the next chunk
                 if(nextChunkId > 0) {
@@ -387,6 +392,11 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             require(fileFoundAtNewLocation == false, "File already exists at new location");
             
             frontend.files[fileIndex].filePath = newFilePaths[i];
+
+            // Send event to clear the cache at the old location
+            string[] memory paths = new string[](1);
+            paths[0] = string.concat("/", oldFilePaths[i]);
+            website.clearPathCache(websiteVersionIndex, paths);
         }
     }
 

@@ -9,6 +9,7 @@ import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 import "../interfaces/IVersionableWebsite.sol";
+import "../interfaces/IERC7761.sol";
 
 import '../library/Ownable.sol';
 import './ResourceRequestWebsite.sol';
@@ -378,8 +379,8 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         // Create the viewer if not done so yet
         if(enable && address(version.viewer) == address(0)) {
             ClonableWebsiteVersionViewer viewer = ClonableWebsiteVersionViewer(Clones.clone(address(websiteVersionViewerImplementation)));
-            viewer.initialize(IDecentralizedApp(address(this)), websiteVersionIndex);
-            version.viewer = IDecentralizedApp(viewer);
+            viewer.initialize(IVersionableWebsite(address(this)), websiteVersionIndex);
+            version.viewer = IVersionableWebsiteViewer(viewer);
         }
         version.isViewable = enable;
     }
@@ -391,41 +392,14 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
     //
 
     /**
-     * Return an answer to a web3:// request after the static frontend is served
-     * @return statusCode The HTTP status code to return. Returns 0 if you do not wish to
-     *                   process the call
+     * Return an response to a web3:// request
      */
     function request(string[] memory resource, KeyValue[] memory params) external virtual override(IDecentralizedApp, ResourceRequestWebsite) view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
-        uint frontendIndex = liveWebsiteVersionIndex;
 
-        // Get the frontend version to use
-        {
-            // Special path prefix : /__website_version/{id}
-            // Combined with the CLonableFrontendVersionViewer, this allows to serve a 
-            // specific frontend version
-            if(resource.length >= 2 && LibStrings.compare(resource[0], "__website_version")) {
-                uint overridenFrontendIndex = LibStrings.stringToUint(resource[1]);
-                if(overridenFrontendIndex < websiteVersions.length) {
-                    frontendIndex = overridenFrontendIndex;
+        WebsiteVersion storage websiteVersion = websiteVersions[liveWebsiteVersionIndex];
 
-                    string[] memory newResource = new string[](resource.length - 2);
-                    for(uint i = 0; i < newResource.length; i++) {
-                        newResource[i] = resource[i + 2];
-                    }
-                    resource = newResource;
-                }
-            }
-
-            // Get the frontend version
-            WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
-            // If we are serving a non-live, non-viewable frontend, we return a 404
-            if(frontendIndex != liveWebsiteVersionIndex && websiteVersion.isViewable == false) {
-                statusCode = 404;
-                return (statusCode, body, headers);
-            }
-        }
-
-        WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
+        // To remain gas efficient, this function do not call requestWebsiteVersion()
+        // (this would force requestWebsiteVersion() to be public instead of external)
 
         // Plugins: rewrite the request
         uint96 current = websiteVersion.headPluginLinkedList;
@@ -433,7 +407,7 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
             bool rewritten;
             string[] memory newResource;
             KeyValue[] memory newParams;
-            (rewritten, newResource, newParams) = websiteVersion.pluginNodes[current].plugin.rewriteWeb3Request(this, frontendIndex, resource, params);
+            (rewritten, newResource, newParams) = websiteVersion.pluginNodes[current].plugin.rewriteWeb3Request(this, liveWebsiteVersionIndex, resource, params);
             if(rewritten) {
                 resource = newResource;
                 params = newParams;
@@ -441,10 +415,10 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
             current = websiteVersion.pluginNodes[current].next;
         }
 
-        // Plugins: return content before the static content
+        // Plugins: return content
         current = websiteVersion.headPluginLinkedList;
         for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
-            (statusCode, body, headers) = websiteVersion.pluginNodes[current].plugin.processWeb3Request(this, frontendIndex, resource, params);
+            (statusCode, body, headers) = websiteVersion.pluginNodes[current].plugin.processWeb3Request(this, liveWebsiteVersionIndex, resource, params);
             if(statusCode != 0) {
                 return (statusCode, body, headers);
             }
@@ -455,5 +429,79 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         return (404, "", new KeyValue[](0));
     }
 
+    /**
+     * Non-standard way to fetch web3:// resources, used by the frontend viewer contract 
+     * (used to preview viewable non-live versions)
+     */
+    function requestWebsiteVersion(uint256 websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers) {
+        // Ensure that the website frontend index is within bounds
+        require(websiteVersionIndex < websiteVersions.length, "Invalid frontend index");
 
+        // Get the frontend version
+        WebsiteVersion storage websiteVersion = websiteVersions[websiteVersionIndex];
+
+        // If we are serving a non-live, non-viewable frontend, we return a 404
+        if(websiteVersionIndex != liveWebsiteVersionIndex && websiteVersion.isViewable == false) {
+            statusCode = 404;
+            return (statusCode, body, headers);
+        }
+
+        // Plugins: rewrite the request
+        uint96 current = websiteVersion.headPluginLinkedList;
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
+            bool rewritten;
+            string[] memory newResource;
+            KeyValue[] memory newParams;
+            (rewritten, newResource, newParams) = websiteVersion.pluginNodes[current].plugin.rewriteWeb3Request(this, websiteVersionIndex, resource, params);
+            if(rewritten) {
+                resource = newResource;
+                params = newParams;
+            }
+            current = websiteVersion.pluginNodes[current].next;
+        }
+
+        // Plugins: return content
+        current = websiteVersion.headPluginLinkedList;
+        for(uint i = 0; i < websiteVersion.pluginNodes.length; i++) {
+            (statusCode, body, headers) = websiteVersion.pluginNodes[current].plugin.processWeb3Request(this, websiteVersionIndex, resource, params);
+            if(statusCode != 0) {
+                return (statusCode, body, headers);
+            }
+            current = websiteVersion.pluginNodes[current].next;
+        }
+
+        // Default: Returning 404
+        return (404, "", new KeyValue[](0));
+    }
+
+    /**
+     * ERC-7761 support: Plugins can call this function to emit the clear path cache event
+     * Paths must be relative to the website root e.g. "/", "/index.html", "/css/style.css", ...
+     */
+    function clearPathCache(uint256 websiteVersionIndex, string[] memory paths) public {
+        // Ensure that the website frontend index is within bounds
+        require(websiteVersionIndex < websiteVersions.length, "Invalid frontend index");
+
+        // The caller must either be an installed plugin, or the owner
+        bool found = false;
+        WebsiteVersion storage version = websiteVersions[websiteVersionIndex];
+        for(uint i = 0; i < version.pluginNodes.length; i++) {
+            if(address(version.pluginNodes[i].plugin) == msg.sender) {
+                found = true;
+                break;
+            }
+        }
+        require(found || msg.sender == owner, "Unauthorized");
+
+        // If the version is live, emit the event
+        if(websiteVersionIndex == liveWebsiteVersionIndex) {
+            emit ClearPathCache(paths);
+        }
+        else {
+            // If the non-live version is viewable, tell the viewer to send the event
+            if(version.isViewable) {
+                version.viewer.clearPathCache(paths);
+            }
+        }
+    }
 }
