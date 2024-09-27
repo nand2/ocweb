@@ -95,9 +95,23 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
     /**
      * Set the live website version index
      */
-    function setLiveWebsiteVersionIndex(uint256 index) public onlyOwner {
-        require(index < websiteVersions.length, "Invalid index");
-        liveWebsiteVersionIndex = index;
+    function setLiveWebsiteVersionIndex(uint256 newLiveWebsiteVersionIndex) public onlyOwner {
+        require(newLiveWebsiteVersionIndex < websiteVersions.length, "Invalid index");
+        require(newLiveWebsiteVersionIndex != liveWebsiteVersionIndex, "Already live");
+        
+        // Clear the cache of the requested website version index viewer, if enabled
+        if(websiteVersions[newLiveWebsiteVersionIndex].isViewable) {
+            string[] memory paths = new string[](1);
+            paths[0] = "*";
+            _clearPathCache(newLiveWebsiteVersionIndex, paths);
+        }
+
+        liveWebsiteVersionIndex = newLiveWebsiteVersionIndex;
+
+        // Clear the cache of the live version
+        string[] memory paths = new string[](1);
+        paths[0] = "*";
+        _clearPathCache(liveWebsiteVersionIndex, paths);
     }
 
     /**
@@ -139,6 +153,12 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
 
     function addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint position) public override onlyOwner {
         _addPlugin(websiteVersionIndex, plugin, position);
+
+        // Clear the cache of the whole website version : we don't know how this plugin
+        // will affect the website
+        string[] memory paths = new string[](1);
+        paths[0] = "*";
+        _clearPathCache(websiteVersionIndex, paths);
     }
 
     function _addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint position) internal {
@@ -227,14 +247,14 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         }
     }
 
-    function reorderPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin, uint newPosition) public onlyOwner {
+    function reorderPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint newPosition) public onlyOwner {
         // Ensure that the global lock is not active
         require(lockedAt == 0, "Frontend library is locked");
 
         // Ensure that the websiteVersionIndex is within bounds
-        require(frontendIndex < websiteVersions.length, "Invalid website version index");
+        require(websiteVersionIndex < websiteVersions.length, "Invalid website version index");
 
-        WebsiteVersion storage websiteVersion = websiteVersions[frontendIndex];
+        WebsiteVersion storage websiteVersion = websiteVersions[websiteVersionIndex];
 
         // Ensure that the websiteVersion is not locked
         require(websiteVersion.locked == false, "Website version is locked");
@@ -279,6 +299,12 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
             websiteVersion.pluginNodes[current].next = websiteVersion.pluginNodes[newPrevious].next;
             websiteVersion.pluginNodes[newPrevious].next = current;
         }
+
+        // Clear the cache of the whole website version : we don't know how this reordering
+        // will affect the website
+        string[] memory paths = new string[](1);
+        paths[0] = "*";
+        _clearPathCache(websiteVersionIndex, paths);
     }
 
     function removePlugin(uint websiteVersionIndex, address plugin) public onlyOwner {
@@ -344,6 +370,12 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
                 break;
             }
         }
+
+        // Clear the cache of the whole website version : we don't know how this plugin removal
+        // will affect the website
+        string[] memory paths = new string[](1);
+        paths[0] = "*";
+        _clearPathCache(websiteVersionIndex, paths);
     }
 
     /**
@@ -376,12 +408,21 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
         require(websiteVersionIndex < websiteVersions.length, "Invalid frontend index");
 
         WebsiteVersion storage version = websiteVersions[websiteVersionIndex];
+        
         // Create the viewer if not done so yet
         if(enable && address(version.viewer) == address(0)) {
             ClonableWebsiteVersionViewer viewer = ClonableWebsiteVersionViewer(Clones.clone(address(websiteVersionViewerImplementation)));
             viewer.initialize(IVersionableWebsite(address(this)), websiteVersionIndex);
             version.viewer = IVersionableWebsiteViewer(viewer);
         }
+
+        // If we disable a viewer, clear cache for all paths
+        if(enable == false) {
+            string[] memory paths = new string[](1);
+            paths[0] = "*";
+            _clearPathCache(websiteVersionIndex, paths);
+        }
+
         version.isViewable = enable;
     }
 
@@ -492,6 +533,12 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
             }
         }
         require(found || msg.sender == owner, "Unauthorized");
+
+        _clearPathCache(websiteVersionIndex, paths);
+    }
+
+    function _clearPathCache(uint256 websiteVersionIndex, string[] memory paths) private {
+        WebsiteVersion storage version = websiteVersions[websiteVersionIndex];
 
         // If the version is live, emit the event
         if(websiteVersionIndex == liveWebsiteVersionIndex) {

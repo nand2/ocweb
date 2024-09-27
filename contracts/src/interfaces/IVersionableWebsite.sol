@@ -47,16 +47,16 @@ interface IVersionableWebsite is IDecentralizedApp, IOwnable {
 
 
     // Enable/disable the viewer, for a frontend version which is not the live one
-    function enableViewerForWebsiteVersion(uint256 frontendIndex, bool enable) external;
+    function enableViewerForWebsiteVersion(uint256 websiteVersionIndex, bool enable) external;
 
-    function addPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin, uint position) external;
+    function addPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint position) external;
     struct IVersionableWebsitePluginWithInfos {
         IVersionableWebsitePlugin plugin;
         IVersionableWebsitePlugin.Infos infos;
     }
-    function getPlugins(uint frontendIndex) external view returns (IVersionableWebsitePluginWithInfos[] memory pluginWithInfos);
-    function reorderPlugin(uint frontendIndex, IVersionableWebsitePlugin plugin, uint newPosition) external;
-    function removePlugin(uint frontendIndex, address plugin) external;
+    function getPlugins(uint websiteVersionIndex) external view returns (IVersionableWebsitePluginWithInfos[] memory pluginWithInfos);
+    function reorderPlugin(uint websiteVersionIndex, IVersionableWebsitePlugin plugin, uint newPosition) external;
+    function removePlugin(uint websiteVersionIndex, address plugin) external;
 
     function requestWebsiteVersion(uint256 websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
     function clearPathCache(uint256 websiteVersionIndex, string[] memory paths) external;

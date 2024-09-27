@@ -235,7 +235,6 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             frontend.storageBackend = storageBackends[0];
         }
 
-
         uint totalFundsUsed = 0;
         for(uint i = 0; i < fileUploadInfos.length; i++) {
             // Check if the file already exists as a directory
@@ -288,6 +287,16 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
                 });
                 frontend.files.push(fileInfos);
             }
+
+            // If the file was found, send an event to clear the cache of the file
+            // We need to prefix all paths with a slash
+            // Note: Would be more efficient to send all edited files in one event, but 
+            // we are constrained with stack too deep -- a good refactor could help
+            if(fileFound) {
+                string[] memory prefixedPaths = new string[](1);
+                prefixedPaths[0] = string.concat("/", fileUploadInfos[i].filePath);
+                website.clearPathCache(websiteVersionIndex, prefixedPaths);
+            }
         }
 
         // Send back remaining funds sent by the caller
@@ -323,6 +332,12 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         if(msg.value - fundsUsed > 0) {
             payable(msg.sender).transfer(msg.value - fundsUsed);
         }
+
+        // Send an event to clear the cache of the file
+        // We need to prefix the path with a slash
+        string[] memory prefixedPaths = new string[](1);
+        prefixedPaths[0] = string.concat("/", filePath);
+        website.clearPathCache(websiteVersionIndex, prefixedPaths);
     }
 
     /**
@@ -392,12 +407,15 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             require(fileFoundAtNewLocation == false, "File already exists at new location");
             
             frontend.files[fileIndex].filePath = newFilePaths[i];
-
-            // Send event to clear the cache at the old location
-            string[] memory paths = new string[](1);
-            paths[0] = string.concat("/", oldFilePaths[i]);
-            website.clearPathCache(websiteVersionIndex, paths);
         }
+
+        // Send an event to clear the cache at the old location of all files
+        // We need to prefix all paths with a slash
+        string[] memory prefixedPaths = new string[](oldFilePaths.length);
+        for(uint i = 0; i < oldFilePaths.length; i++) {
+            prefixedPaths[i] = string.concat("/", oldFilePaths[i]);
+        }
+        website.clearPathCache(websiteVersionIndex, prefixedPaths);
     }
 
     /**
@@ -430,6 +448,14 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             frontend.files[fileIndex] = frontend.files[frontend.files.length - 1];
             frontend.files.pop();
         }
+
+        // Send an event to clear the cache of the removed files
+        // We need to prefix all paths with a slash
+        string[] memory prefixedPaths = new string[](filePaths.length);
+        for(uint i = 0; i < filePaths.length; i++) {
+            prefixedPaths[i] = string.concat("/", filePaths[i]);
+        }
+        website.clearPathCache(websiteVersionIndex, prefixedPaths);
     }
 
     /**
@@ -456,6 +482,11 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             }
             frontend.files.pop();
         }
+
+        // Send an event to clear the cache of all files
+        string[] memory prefixedPaths = new string[](1);
+        prefixedPaths[0] = "*";
+        website.clearPathCache(websiteVersionIndex, prefixedPaths);
     }
 
     function _findFileIndexByName(StaticFrontend storage frontend, string memory filePath) internal view returns (bool, uint) {
