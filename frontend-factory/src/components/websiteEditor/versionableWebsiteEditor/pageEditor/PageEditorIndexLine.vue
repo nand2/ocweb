@@ -89,7 +89,7 @@ const deleteFile = async () => {
             <FileEarmarkIcon v-else />
           </span>
           <span>
-            {{ fileName.slice(0, -3) }}<span class="text-muted">{{ fileName.slice(-3) }}</span>
+            {{ fileName.slice(0, -3) }}<span class="text-muted" v-if="store.devMode">{{ fileName.slice(-3) }}</span>
           </span>
         </a>
       </div>

@@ -90,7 +90,7 @@ const faqEntries = [
 
     <div class="preview-area">
       <h2>
-        See for yourself
+        Explore some OCWebsites admin interfaces
       </h2>
       <div class="preview-ocwebsites">
         <MintedOCWebsite
@@ -111,7 +111,12 @@ const faqEntries = [
     </div>
 
     <div class="mint-yours">
-      <button @click="router.push({ path: '/mint' })" class="lg">Mint your own OCWebsite</button>
+      <h2>
+        Mint your own OCWebsite
+      </h2>
+      <button @click="router.push({ path: '/mint' })" class="lg">
+        Mint now
+      </button>
     </div>
 
     <div class="faq">
@@ -173,8 +178,11 @@ code {
 
 .mint-yours {
   text-align: center;
-  font-size: 1.2em;
   margin-bottom: 2em;
+}
+
+.mint-yours button {
+  font-size: 1.3em;
 }
 
 .faq {

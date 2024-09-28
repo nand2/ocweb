@@ -161,7 +161,7 @@ const resetMintForm = () => {
             Price
           </label>
           <div>
-            Free + gas fees
+            Free + blockchain gas fees
           </div>
         </div>
 
