@@ -58,9 +58,13 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
             body = string.concat(body, '}');
             
             statusCode = 200;
-            headers = new KeyValue[](1);
+            headers = new KeyValue[](3);
             headers[0].key = "Content-type";
             headers[0].value = "application/json";
+            headers[1].key = "Cache-control";
+            headers[1].value = "evm-events";
+            headers[2].key = "ETag";
+            headers[2].value = LibStrings.toHexString(uint(keccak256(abi.encodePacked(body))), 32);
             return (statusCode, body, headers);
         }
     }
@@ -92,6 +96,11 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
         }
 
         vars.push(KeyValueVariable({key: key, value: value}));
+
+        // Send an event to clear the cache of the file
+        string[] memory prefixedPaths = new string[](1);
+        prefixedPaths[0] = "/variables.json";
+        website.clearPathCache(websiteVersionIndex, prefixedPaths);
     }
 
     function getVariables(IVersionableWebsite website, uint websiteVersionIndex) public view returns (KeyValueVariable[] memory) {
@@ -115,5 +124,10 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
                 return;
             }
         }
+
+        // Send an event to clear the cache of the file
+        string[] memory prefixedPaths = new string[](1);
+        prefixedPaths[0] = "/variables.json";
+        website.clearPathCache(websiteVersionIndex, prefixedPaths);
     }
 }
