@@ -104,7 +104,7 @@ const preRenameError = ref('')
 const { isPending: renameIsPending, isError: renameIsError, error: renameError, isSuccess: renameIsSuccess, mutate: renameMutate, reset: renameReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction to rename the file
-    const transaction = await props.staticFrontendPluginClient.prepareRenameFilesTransaction(props.websiteVersionIndex, [props.file.filePath], [newFileName.value]);
+    const transaction = await props.staticFrontendPluginClient.prepareRenameFilesTransaction(props.websiteVersionIndex, [props.file.filePath], [props.folderParents.map(folder => folder + "/").join() + newFileName.value]);
 
     const hash = await props.staticFrontendPluginClient.executeTransaction(transaction);
 
