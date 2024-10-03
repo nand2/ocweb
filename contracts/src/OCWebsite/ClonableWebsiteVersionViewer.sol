@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "./ResourceRequestWebsite.sol";
 import "../library/LibStrings.sol";
 import "../interfaces/IVersionableWebsite.sol";
-import "../interfaces/IERC7761.sol";
+import "../interfaces/IERC7774.sol";
 
 /**
  * Simple proxy to view non-live frontend versions (which need to be authorized
@@ -27,7 +27,7 @@ contract ClonableWebsiteVersionViewer is IVersionableWebsiteViewer, ResourceRequ
     }
 
     /**
-     * ERC-7761 support: Plugins can call this function to emit the clear path cache event
+     * ERC-7774 support: Plugins can call this function to emit the clear path cache event
      * Paths must be relative to the website root e.g. "/", "/index.html", "/css/style.css", ...
      */
     function clearPathCache(string[] memory paths) public {

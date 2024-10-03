@@ -9,7 +9,7 @@ import "../interfaces/IDecentralizedApp.sol";
 import "../interfaces/IFileInfos.sol";
 import "../interfaces/IStorageBackend.sol";
 import "../interfaces/IVersionableWebsite.sol";
-import "../interfaces/IERC7761.sol";
+import "../interfaces/IERC7774.sol";
 
 import '../library/Ownable.sol';
 import './ResourceRequestWebsite.sol';
@@ -516,7 +516,7 @@ contract VersionableWebsite is IVersionableWebsite, ResourceRequestWebsite, Owna
     }
 
     /**
-     * ERC-7761 support: Plugins can call this function to emit the clear path cache event
+     * ERC-7774 support: Plugins can call this function to emit the clear path cache event
      * Paths must be relative to the website root e.g. "/", "/index.html", "/css/style.css", ...
      */
     function clearPathCache(uint256 websiteVersionIndex, string[] memory paths) public {

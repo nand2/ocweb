@@ -137,7 +137,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
                 headers = new KeyValue[](headersCount);
                 headers[0].key = "Content-type";
                 headers[0].value = frontend.files[i].contentType;
-                // ERC-7761 cache invalidation support
+                // ERC-7774 cache invalidation support
                 headers[1].key = "Cache-control";
                 headers[1].value = "evm-events";
                 headers[2].key = "ETag";

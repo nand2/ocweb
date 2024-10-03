@@ -90,7 +90,7 @@ const faqEntries = [
 
     <div class="preview-area">
       <h2>
-        Explore some OCWebsites admin interfaces
+        Explore some OCWebsite admin interfaces
       </h2>
       <div class="preview-ocwebsites">
         <MintedOCWebsite
