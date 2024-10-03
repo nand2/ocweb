@@ -7,6 +7,7 @@ import "../../interfaces/IVersionableWebsite.sol";
 import "../../library/LibStrings.sol";
 import "../../interfaces/IFileInfos.sol";
 import "../../library/Ownable.sol";
+import "./staticFrontendPlugin/StaticFrontendPluginLibrary.sol";
 
 contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
     struct StaticFrontend {
@@ -289,13 +290,12 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
             }
 
             // If the file was found, send an event to clear the cache of the file
-            // We need to prefix all paths with a slash
             // Note: Would be more efficient to send all edited files in one event, but 
             // we are constrained with stack too deep -- a good refactor could help
             if(fileFound) {
-                string[] memory prefixedPaths = new string[](1);
-                prefixedPaths[0] = string.concat("/", fileUploadInfos[i].filePath);
-                website.clearPathCache(websiteVersionIndex, prefixedPaths);
+                string[] memory pathsToClear = new string[](1);
+                pathsToClear[0] = fileUploadInfos[i].filePath;
+                website.clearPathCache(websiteVersionIndex, StaticFrontendPluginLibrary._preparePathsForClearPathCacheEvent(pathsToClear));
             }
         }
 
@@ -334,10 +334,9 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         }
 
         // Send an event to clear the cache of the file
-        // We need to prefix the path with a slash
-        string[] memory prefixedPaths = new string[](1);
-        prefixedPaths[0] = string.concat("/", filePath);
-        website.clearPathCache(websiteVersionIndex, prefixedPaths);
+        string[] memory pathsToClear = new string[](1);
+        pathsToClear[0] = filePath;
+        website.clearPathCache(websiteVersionIndex, StaticFrontendPluginLibrary._preparePathsForClearPathCacheEvent(pathsToClear));
     }
 
     /**
@@ -410,12 +409,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         }
 
         // Send an event to clear the cache at the old location of all files
-        // We need to prefix all paths with a slash
-        string[] memory prefixedPaths = new string[](oldFilePaths.length);
-        for(uint i = 0; i < oldFilePaths.length; i++) {
-            prefixedPaths[i] = string.concat("/", oldFilePaths[i]);
-        }
-        website.clearPathCache(websiteVersionIndex, prefixedPaths);
+        website.clearPathCache(websiteVersionIndex, StaticFrontendPluginLibrary._preparePathsForClearPathCacheEvent(oldFilePaths));
     }
 
     /**
@@ -450,12 +444,7 @@ contract StaticFrontendPlugin is ERC165, IVersionableWebsitePlugin, Ownable {
         }
 
         // Send an event to clear the cache of the removed files
-        // We need to prefix all paths with a slash
-        string[] memory prefixedPaths = new string[](filePaths.length);
-        for(uint i = 0; i < filePaths.length; i++) {
-            prefixedPaths[i] = string.concat("/", filePaths[i]);
-        }
-        website.clearPathCache(websiteVersionIndex, prefixedPaths);
+        website.clearPathCache(websiteVersionIndex, StaticFrontendPluginLibrary._preparePathsForClearPathCacheEvent(filePaths));
     }
 
     /**
