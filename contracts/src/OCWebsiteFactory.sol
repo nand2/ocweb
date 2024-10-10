@@ -45,37 +45,21 @@ contract OCWebsiteFactory is UUPSUpgradeable, ERC721EnumerableUpgradeable, Ownab
     IVersionableWebsitePlugin[] public newWebsiteDefaultPlugins;
 
 
-    /**
-     * 
-     * @param _topdomain eth
-     * @param _domain ocweb
-     * @param _domain2 <chainShortName>
-     */
-    struct ConstructorParams {
-        address owner;
-        string topdomain;
-        string domain;
-        string domain2;
-        OCWebsiteFactoryToken factoryToken;
-        ClonableOCWebsite websiteImplementation;
-        ClonableWebsiteVersionViewer websiteVersionViewerImplementation;
-    }
-    constructor(ConstructorParams memory _params) {
-        topdomain = _params.topdomain;
-        domain = _params.domain;
-        domain2 = _params.domain2;
+    function initialize(address _owner, string memory _topdomain, string memory _domain, string memory _domain2, OCWebsiteFactoryToken _factoryToken, ClonableOCWebsite _websiteImplementation, ClonableWebsiteVersionViewer _websiteVersionViewerImplementation) public initializer {
+        __Ownable_init(_owner);
+        __ERC721_init("OCWebsite", "OCW");
+        __ERC721Enumerable_init();
 
-        factoryToken = _params.factoryToken;
-        websiteImplementation = _params.websiteImplementation;
-        websiteVersionViewerImplementation = _params.websiteVersionViewerImplementation;
+        topdomain = _topdomain;
+        domain = _domain;
+        domain2 = _domain2;
+
+        factoryToken = _factoryToken;
+        websiteImplementation = _websiteImplementation;
+        websiteVersionViewerImplementation = _websiteVersionViewerImplementation;
 
         // Adding some backlinks
         factoryToken.setWebsiteFactory(this);
-    }
-
-    function initialize(address owner_) public initializer {
-        __Ownable_init(owner_);
-        __ERC721_init("OCWebsite", "OCW");
     }
 
     function setFactoryWebsite(OCWebsite _website) public onlyOwner {

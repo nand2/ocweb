@@ -13,6 +13,12 @@ remappings = [
   "ens-contracts=contracts/lib/ens-contracts/contracts/", 
   "@ensdomains/buffer=contracts/lib/buffer/"
 ]
+# Necessary for openzeppelin upgrades plugins
+# https://docs.openzeppelin.com/upgrades-plugins/1.x/foundry-upgrades
+ast = true
+ffi = true
+build_info = true
+extra_output = ["storageLayout"]
 
 solc = "0.8.24"
 evm_version = "cancun"
@@ -20,6 +26,7 @@ evm_version = "cancun"
 fs_permissions = [
   { path = "dist/frontend-factory/", access = "read" }, 
   { path = "dist/frontend-welcome/", access = "read" }, 
-  { path = "assets/", access = "read" }]
+  { path = "assets/", access = "read" },
+  { path = "contracts/out/", access = "read" }]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

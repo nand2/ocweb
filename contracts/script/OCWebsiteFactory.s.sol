@@ -3,6 +3,12 @@ pragma solidity ^0.8.13;
 
 import { Script, console } from "forge-std/Script.sol";
 
+// Openzeappelin Upgrade plugin
+import { Upgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
+import { Options } from "openzeppelin-foundry-upgrades/Options.sol";
+import { DefenderOptions } from "openzeppelin-foundry-upgrades/Options.sol";
+import { TxOverrides } from "openzeppelin-foundry-upgrades/Options.sol";
+
 // ENS
 // import { ENSRegistry } from "ens-contracts/registry/ENSRegistry.sol";
 // import { ReverseRegistrar } from "ens-contracts/reverseRegistrar/ReverseRegistrar.sol";
@@ -98,17 +104,23 @@ contract OCWebsiteFactoryScript is Script {
                 ClonableWebsiteVersionViewer websiteVersionViewerImplementation = new ClonableWebsiteVersionViewer();
 
                 // Deploying the blog factory
-                // {salt: bytes32(vm.envBytes("CONTRACT_SALT"))}
-                factory = new OCWebsiteFactory(OCWebsiteFactory.ConstructorParams({
-                    owner: msg.sender,
-                    topdomain: "eth",
-                    domain: domain,
-                    domain2: getChainShortName(targetChain),
-                    factoryToken: factoryToken,
-                    websiteImplementation: websiteImplementation,
-                    websiteVersionViewerImplementation: websiteVersionViewerImplementation
-                }));
-                factory.initialize(msg.sender);
+                // The Upgrades.deployUUPSProxy is unable to access config from foundry.toml,
+                // so force the foundry out folder here as an env var
+                vm.setEnv("FOUNDRY_OUT", "contracts/out");
+                // Deploy the proxy
+                Options memory opts;
+                // We link LibStrings.sol, which we know will not selfdestruct nor modify state
+                opts.unsafeAllow = "external-library-linking";
+                address factoryProxy = Upgrades.deployUUPSProxy(
+                    "OCWebsiteFactory.sol:OCWebsiteFactory",
+                    abi.encodeCall(OCWebsiteFactory.initialize, (msg.sender, "eth", domain, getChainShortName(targetChain), factoryToken, websiteImplementation, websiteVersionViewerImplementation)), 
+                    opts
+                );
+                factory = OCWebsiteFactory(factoryProxy);
+                
+                // Deploying the blog factory (bypassing proxy, for testing)
+                // factory = new OCWebsiteFactory();
+                // factory.initialize(msg.sender, "eth", domain, getChainShortName(targetChain), factoryToken, websiteImplementation, websiteVersionViewerImplementation);
 
                 // Transfer the website implementation ownership to the factory
                 // Not strictly necessary, but let's be sure it stays never changed
