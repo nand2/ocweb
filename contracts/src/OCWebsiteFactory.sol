@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/proxy/Clones.sol";
+import { Clones } from "@openzeppelin/contracts/proxy/Clones.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import { ERC721EnumerableUpgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import { Ownable2StepUpgradeable } from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 import { LibStrings } from "./library/LibStrings.sol";
 import "./OCWebsite/OCWebsite.sol";
@@ -16,7 +18,7 @@ interface IFactoryExtension {
   function getName() external view returns (string memory);
 }
 
-contract OCWebsiteFactory is ERC721Enumerable {
+contract OCWebsiteFactory is UUPSUpgradeable, ERC721EnumerableUpgradeable, Ownable2StepUpgradeable {
     // The ocweb.eth frontend website
     OCWebsite public website;
     // The contract handing the generation of the ERC721 token images
@@ -41,18 +43,6 @@ contract OCWebsiteFactory is ERC721Enumerable {
     // VersionableWebsite plugins
     IVersionableWebsitePlugin[] public websiteAvailablePlugins;
     IVersionableWebsitePlugin[] public newWebsiteDefaultPlugins;
- 
-    // The owner of the factory
-    address public owner;
-
-    // For possible future extensions : a listing of extension contracts
-    IFactoryExtension[] public extensions;
-
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
-        _;
-    }
 
 
     /**
@@ -70,9 +60,7 @@ contract OCWebsiteFactory is ERC721Enumerable {
         ClonableOCWebsite websiteImplementation;
         ClonableWebsiteVersionViewer websiteVersionViewerImplementation;
     }
-    constructor(ConstructorParams memory _params) ERC721("OCWebsite", "OCW") {
-        owner = _params.owner;
-
+    constructor(ConstructorParams memory _params) {
         topdomain = _params.topdomain;
         domain = _params.domain;
         domain2 = _params.domain2;
@@ -83,6 +71,11 @@ contract OCWebsiteFactory is ERC721Enumerable {
 
         // Adding some backlinks
         factoryToken.setWebsiteFactory(this);
+    }
+
+    function initialize(address owner_) public initializer {
+        __Ownable_init(owner_);
+        __ERC721_init("OCWebsite", "OCW");
     }
 
     function setFactoryWebsite(OCWebsite _website) public onlyOwner {
@@ -282,16 +275,16 @@ contract OCWebsiteFactory is ERC721Enumerable {
     // ERC721
     //
 
-    function _beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize) internal override {
-        super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address previousOwner = super._update(to, tokenId, auth);
 
         // Update the owner of the website, when moving the token (not minting)
-        if(from != address(0)) {
-            for(uint i = 0; i < batchSize; i++) {
-                OCWebsite userWebsite = websites[firstTokenId + i];
-                userWebsite.transferOwnership(to);
-            }
+        if(previousOwner != address(0)) {
+            OCWebsite userWebsite = websites[tokenId];
+            userWebsite.transferOwnership(to);
         }
+
+        return previousOwner;
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
@@ -390,10 +383,6 @@ contract OCWebsiteFactory is ERC721Enumerable {
     // Admin
     //
 
-    function setOwner(address _owner) public onlyOwner {
-        owner = _owner;
-    }
-
     /**
      * Update the website implementation of newly minted websites.
      * Existing websites are not affected.
@@ -409,31 +398,8 @@ contract OCWebsiteFactory is ERC721Enumerable {
         factoryToken = _factoryToken;
     }
 
-    function addExtension(IFactoryExtension _extension) public onlyOwner {
-        require(address(_extension) != address(0), "Extension address cannot be 0");
-
-        for(uint i = 0; i < extensions.length; i++) {
-            require(address(extensions[i]) != address(_extension), "Extension already added");
-            require(LibStrings.compare(extensions[i].getName(), _extension.getName()) == false, "Extension name already used");
-        }
-
-        extensions.push(_extension);
-    }
-
-    struct ExtensionInfo {
-        string name;
-        address extensionAddress;
-    }
-    function getExtensions() public view returns (ExtensionInfo[] memory) {
-        ExtensionInfo[] memory infos = new ExtensionInfo[](extensions.length);
-        for(uint i = 0; i < extensions.length; i++) {
-            infos[i] = ExtensionInfo({
-                name: extensions[i].getName(),
-                extensionAddress: address(extensions[i])
-            });
-        }
-
-        return infos;
-    }
-
+    /**
+     * Proxy upgrade: Who can upgrade the implementation?
+     */
+    function _authorizeUpgrade(address _impl) internal virtual override onlyOwner { }
 }

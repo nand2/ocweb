@@ -4,21 +4,21 @@ pragma solidity ^0.8.13;
 import { Script, console } from "forge-std/Script.sol";
 
 // ENS
-import { ENSRegistry } from "ens-contracts/registry/ENSRegistry.sol";
-import { ReverseRegistrar } from "ens-contracts/reverseRegistrar/ReverseRegistrar.sol";
-import { Root } from "ens-contracts/root/Root.sol";
-import { BaseRegistrarImplementation } from "ens-contracts/ethregistrar/BaseRegistrarImplementation.sol";
-import { DummyOracle } from "ens-contracts/ethregistrar/DummyOracle.sol";
-import { ExponentialPremiumPriceOracle } from "ens-contracts/ethregistrar/ExponentialPremiumPriceOracle.sol";
-import { AggregatorInterface } from "ens-contracts/ethregistrar/StablePriceOracle.sol";
-import { StaticMetadataService } from "ens-contracts/wrapper/StaticMetadataService.sol";
-import { NameWrapper } from "ens-contracts/wrapper/NameWrapper.sol";
-import { IMetadataService } from "ens-contracts/wrapper/IMetadataService.sol";
-import { ETHRegistrarController } from "ens-contracts/ethregistrar/ETHRegistrarController.sol";
-import { OwnedResolver } from "ens-contracts/resolvers/OwnedResolver.sol";
-import { ExtendedDNSResolver } from "ens-contracts/resolvers/profiles/ExtendedDNSResolver.sol";
-import { PublicResolver } from "ens-contracts/resolvers/PublicResolver.sol";
-import { IPriceOracle } from "ens-contracts/ethregistrar/IPriceOracle.sol";
+// import { ENSRegistry } from "ens-contracts/registry/ENSRegistry.sol";
+// import { ReverseRegistrar } from "ens-contracts/reverseRegistrar/ReverseRegistrar.sol";
+// import { Root } from "ens-contracts/root/Root.sol";
+// import { BaseRegistrarImplementation } from "ens-contracts/ethregistrar/BaseRegistrarImplementation.sol";
+// import { DummyOracle } from "ens-contracts/ethregistrar/DummyOracle.sol";
+// import { ExponentialPremiumPriceOracle } from "ens-contracts/ethregistrar/ExponentialPremiumPriceOracle.sol";
+// import { AggregatorInterface } from "ens-contracts/ethregistrar/StablePriceOracle.sol";
+// import { StaticMetadataService } from "ens-contracts/wrapper/StaticMetadataService.sol";
+// import { NameWrapper } from "ens-contracts/wrapper/NameWrapper.sol";
+// import { IMetadataService } from "ens-contracts/wrapper/IMetadataService.sol";
+// import { ETHRegistrarController } from "ens-contracts/ethregistrar/ETHRegistrarController.sol";
+// import { OwnedResolver } from "ens-contracts/resolvers/OwnedResolver.sol";
+// import { ExtendedDNSResolver } from "ens-contracts/resolvers/profiles/ExtendedDNSResolver.sol";
+// import { PublicResolver } from "ens-contracts/resolvers/PublicResolver.sol";
+// import { IPriceOracle } from "ens-contracts/ethregistrar/IPriceOracle.sol";
 
 // EthStorage
 import { TestEthStorageContractKZG } from "storage-contracts-v1/TestEthStorageContractKZG.sol";
@@ -108,6 +108,7 @@ contract OCWebsiteFactoryScript is Script {
                     websiteImplementation: websiteImplementation,
                     websiteVersionViewerImplementation: websiteVersionViewerImplementation
                 }));
+                factory.initialize(msg.sender);
 
                 // Transfer the website implementation ownership to the factory
                 // Not strictly necessary, but let's be sure it stays never changed
@@ -187,15 +188,15 @@ contract OCWebsiteFactoryScript is Script {
             console.log("web3:// factory: ", web3FactoryAddress);
 
             // If local, point the domain to the factory website
-            if(targetChain == TargetChain.LOCAL) {
-                // Get ENS nameWrapper (will deploy ENS and register domain name if necessary)
-                (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController, PublicResolver publicResolver) = registerDomainAndGetEnsContracts(targetChain, domain);
+            // if(targetChain == TargetChain.LOCAL) {
+            //     // Get ENS nameWrapper (will deploy ENS and register domain name if necessary)
+            //     (NameWrapper nameWrapper, BaseRegistrarImplementation baseRegistrar, ETHRegistrarController ethRegistrarController, PublicResolver publicResolver) = registerDomainAndGetEnsContracts(targetChain, domain);
 
-                bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
-                bytes32 domainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
-                nameWrapper.setRecord(domainNamehash, msg.sender, address(publicResolver), 365 * 24 * 3600);
-                publicResolver.setAddr(domainNamehash, address(factory.website()));
-            }
+            //     bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
+            //     bytes32 domainNamehash = keccak256(abi.encodePacked(topdomainNamehash, keccak256(abi.encodePacked(domain))));
+            //     nameWrapper.setRecord(domainNamehash, msg.sender, address(publicResolver), 365 * 24 * 3600);
+            //     publicResolver.setAddr(domainNamehash, address(factory.website()));
+            // }
 
             // If local, send some ETH to a testing account
             if(targetChain == TargetChain.LOCAL) {
@@ -214,127 +215,127 @@ contract OCWebsiteFactoryScript is Script {
      * - sepolia : Register test domain, return the name wrapper
      * - mainnet : Return the name wrapper
      */
-    function registerDomainAndGetEnsContracts(TargetChain targetChain, string memory domain) public returns (NameWrapper, BaseRegistrarImplementation, ETHRegistrarController, PublicResolver) {
-        NameWrapper nameWrapper;
-        BaseRegistrarImplementation registrar;
-        ETHRegistrarController registrarController;
-        PublicResolver publicResolver;
+    // function registerDomainAndGetEnsContracts(TargetChain targetChain, string memory domain) public returns (NameWrapper, BaseRegistrarImplementation, ETHRegistrarController, PublicResolver) {
+    //     NameWrapper nameWrapper;
+    //     BaseRegistrarImplementation registrar;
+    //     ETHRegistrarController registrarController;
+    //     PublicResolver publicResolver;
 
-        // Local chain : deploy ENS
-        if(targetChain == TargetChain.LOCAL){
-            ENSRegistry registry;
+    //     // Local chain : deploy ENS
+    //     if(targetChain == TargetChain.LOCAL){
+    //         ENSRegistry registry;
             
-            bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
+    //         bytes32 topdomainNamehash = keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("eth"))));
 
-            // ENS registry
-            registry = new ENSRegistry();
-            console.log("ENS registry: ", vm.toString(address(registry)));
-            console.log("ENS registry owner: ", vm.toString(registry.owner(0x0)));
+    //         // ENS registry
+    //         registry = new ENSRegistry();
+    //         console.log("ENS registry: ", vm.toString(address(registry)));
+    //         console.log("ENS registry owner: ", vm.toString(registry.owner(0x0)));
         
-            // Root
-            Root root = new Root(registry);
-            console.log("Root: ", vm.toString(address(root)));
-            registry.setOwner(0x0, address(root));
-            root.setController(msg.sender, true);
+    //         // Root
+    //         Root root = new Root(registry);
+    //         console.log("Root: ", vm.toString(address(root)));
+    //         registry.setOwner(0x0, address(root));
+    //         root.setController(msg.sender, true);
             
-            // ENS reverse registrar
-            ReverseRegistrar reverseRegistrar = new ReverseRegistrar(registry);
-            console.log("Reverse registrar: ", vm.toString(address(reverseRegistrar)));
-            root.setSubnodeOwner(keccak256(abi.encodePacked("reverse")), msg.sender);
-            registry.setSubnodeOwner(keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("reverse")))), keccak256(abi.encodePacked("addr")), address(reverseRegistrar));
+    //         // ENS reverse registrar
+    //         ReverseRegistrar reverseRegistrar = new ReverseRegistrar(registry);
+    //         console.log("Reverse registrar: ", vm.toString(address(reverseRegistrar)));
+    //         root.setSubnodeOwner(keccak256(abi.encodePacked("reverse")), msg.sender);
+    //         registry.setSubnodeOwner(keccak256(abi.encodePacked(bytes32(0x0), keccak256(abi.encodePacked("reverse")))), keccak256(abi.encodePacked("addr")), address(reverseRegistrar));
             
-            // Base registrar implementation
-            registrar = new BaseRegistrarImplementation(registry, topdomainNamehash);
-            root.setSubnodeOwner(keccak256(abi.encodePacked("eth")), address(registrar));
-            console.log("Base registrar: ", vm.toString(address(registrar)));
+    //         // Base registrar implementation
+    //         registrar = new BaseRegistrarImplementation(registry, topdomainNamehash);
+    //         root.setSubnodeOwner(keccak256(abi.encodePacked("eth")), address(registrar));
+    //         console.log("Base registrar: ", vm.toString(address(registrar)));
             
-            ExponentialPremiumPriceOracle priceOracle;
-            {
-                // Dummy price oracle
-                DummyOracle oracle = new DummyOracle(160000000000);
-                console.log("Dummy oracle: ", vm.toString(address(oracle)));
+    //         ExponentialPremiumPriceOracle priceOracle;
+    //         {
+    //             // Dummy price oracle
+    //             DummyOracle oracle = new DummyOracle(160000000000);
+    //             console.log("Dummy oracle: ", vm.toString(address(oracle)));
 
-                // Exponential price oracle
-                uint256[] memory rentPrices = new uint256[](5);
-                rentPrices[0] = 0;
-                rentPrices[1] = 0;
-                rentPrices[2] = 20294266869609;
-                rentPrices[3] = 5073566717402;
-                rentPrices[4] = 158548959919;
-                priceOracle = new ExponentialPremiumPriceOracle(AggregatorInterface(address(oracle)), rentPrices, 100000000000000000000000000, 21);
-                console.log("Exponential price oracle: ", vm.toString(address(priceOracle)));
-            }
+    //             // Exponential price oracle
+    //             uint256[] memory rentPrices = new uint256[](5);
+    //             rentPrices[0] = 0;
+    //             rentPrices[1] = 0;
+    //             rentPrices[2] = 20294266869609;
+    //             rentPrices[3] = 5073566717402;
+    //             rentPrices[4] = 158548959919;
+    //             priceOracle = new ExponentialPremiumPriceOracle(AggregatorInterface(address(oracle)), rentPrices, 100000000000000000000000000, 21);
+    //             console.log("Exponential price oracle: ", vm.toString(address(priceOracle)));
+    //         }
 
-            {
-                // Static metadata service
-                StaticMetadataService metadata = new StaticMetadataService("http://localhost:8080/name/0x{id}");
-                console.log("Static metadata service: ", vm.toString(address(metadata)));
+    //         {
+    //             // Static metadata service
+    //             StaticMetadataService metadata = new StaticMetadataService("http://localhost:8080/name/0x{id}");
+    //             console.log("Static metadata service: ", vm.toString(address(metadata)));
 
-                // Name wrapper
-                nameWrapper = new NameWrapper(registry, registrar, IMetadataService(address(metadata)));
-                console.log("Name wrapper: ", vm.toString(address(nameWrapper)));
-                registrar.addController(address(nameWrapper));
-            }
+    //             // Name wrapper
+    //             nameWrapper = new NameWrapper(registry, registrar, IMetadataService(address(metadata)));
+    //             console.log("Name wrapper: ", vm.toString(address(nameWrapper)));
+    //             registrar.addController(address(nameWrapper));
+    //         }
 
-            // Eth Registrar controller
-            registrarController = new ETHRegistrarController(registrar, priceOracle, 0 /** min commitment age normally to 60, put it to 0 for fast registration testing */, 86400, reverseRegistrar, nameWrapper, registry);
-            console.log("ETH registrar controller: ", vm.toString(address(registrarController)));
-            nameWrapper.setController(address(registrarController), true);
-            reverseRegistrar.setController(address(registrarController), true);
-            console.log("Eth resolver: ", vm.toString(registry.resolver(topdomainNamehash)));
+    //         // Eth Registrar controller
+    //         registrarController = new ETHRegistrarController(registrar, priceOracle, 0 /** min commitment age normally to 60, put it to 0 for fast registration testing */, 86400, reverseRegistrar, nameWrapper, registry);
+    //         console.log("ETH registrar controller: ", vm.toString(address(registrarController)));
+    //         nameWrapper.setController(address(registrarController), true);
+    //         reverseRegistrar.setController(address(registrarController), true);
+    //         console.log("Eth resolver: ", vm.toString(registry.resolver(topdomainNamehash)));
 
-            {
-                // Eth owned resolver
-                OwnedResolver ethOwnedResolver = new OwnedResolver();
-                console.log("Eth resolver: ", vm.toString(address(ethOwnedResolver)));
-                registrar.setResolver(address(ethOwnedResolver));
-                console.log("Registry: Eth resolver: ", vm.toString(registry.resolver(topdomainNamehash)));
+    //         {
+    //             // Eth owned resolver
+    //             OwnedResolver ethOwnedResolver = new OwnedResolver();
+    //             console.log("Eth resolver: ", vm.toString(address(ethOwnedResolver)));
+    //             registrar.setResolver(address(ethOwnedResolver));
+    //             console.log("Registry: Eth resolver: ", vm.toString(registry.resolver(topdomainNamehash)));
 
-                // Extended resolver
-                ExtendedDNSResolver extendedResolver = new ExtendedDNSResolver();
-                console.log("Extended resolver: ", vm.toString(address(extendedResolver)));
+    //             // Extended resolver
+    //             ExtendedDNSResolver extendedResolver = new ExtendedDNSResolver();
+    //             console.log("Extended resolver: ", vm.toString(address(extendedResolver)));
 
-                // Public resolver
-                publicResolver = new PublicResolver(registry, nameWrapper, address(registrarController), address(reverseRegistrar));
-                console.log("Public resolver: ", vm.toString(address(publicResolver)));
-                reverseRegistrar.setDefaultResolver(address(publicResolver));
-            }
+    //             // Public resolver
+    //             publicResolver = new PublicResolver(registry, nameWrapper, address(registrarController), address(reverseRegistrar));
+    //             console.log("Public resolver: ", vm.toString(address(publicResolver)));
+    //             reverseRegistrar.setDefaultResolver(address(publicResolver));
+    //         }
 
-            // TODO: call ethOwnedResolver.setInterface()
-        }
-        // Sepolia: Get ENS sepolia addresses
-        else if(targetChain == TargetChain.SEPOLIA) {
-            nameWrapper = NameWrapper(0x0635513f179D50A207757E05759CbD106d7dFcE8);
-            registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
-            registrarController = ETHRegistrarController(0xFED6a969AaA60E4961FCD3EBF1A2e8913ac65B72);
-            publicResolver = PublicResolver(0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63);
-        }
-        // Sepolia: Get ENS holesky addresses
-        else if(targetChain == TargetChain.HOLESKY) {
-            nameWrapper = NameWrapper(0xab50971078225D365994dc1Edcb9b7FD72Bb4862);
-            registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
-            registrarController = ETHRegistrarController(0x179Be112b24Ad4cFC392eF8924DfA08C20Ad8583);
-            publicResolver = PublicResolver(0x9010A27463717360cAD99CEA8bD39b8705CCA238);
-        }
-        // Mainnet: Get ENS mainnet addresses
-        else if(targetChain == TargetChain.MAINNET) {
-            nameWrapper = NameWrapper(0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401);
-            registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
-            registrarController = ETHRegistrarController(0x253553366Da8546fC250F225fe3d25d0C782303b);
-            publicResolver = PublicResolver(0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63);
-        }
+    //         // TODO: call ethOwnedResolver.setInterface()
+    //     }
+    //     // Sepolia: Get ENS sepolia addresses
+    //     else if(targetChain == TargetChain.SEPOLIA) {
+    //         nameWrapper = NameWrapper(0x0635513f179D50A207757E05759CbD106d7dFcE8);
+    //         registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
+    //         registrarController = ETHRegistrarController(0xFED6a969AaA60E4961FCD3EBF1A2e8913ac65B72);
+    //         publicResolver = PublicResolver(0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63);
+    //     }
+    //     // Sepolia: Get ENS holesky addresses
+    //     else if(targetChain == TargetChain.HOLESKY) {
+    //         nameWrapper = NameWrapper(0xab50971078225D365994dc1Edcb9b7FD72Bb4862);
+    //         registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
+    //         registrarController = ETHRegistrarController(0x179Be112b24Ad4cFC392eF8924DfA08C20Ad8583);
+    //         publicResolver = PublicResolver(0x9010A27463717360cAD99CEA8bD39b8705CCA238);
+    //     }
+    //     // Mainnet: Get ENS mainnet addresses
+    //     else if(targetChain == TargetChain.MAINNET) {
+    //         nameWrapper = NameWrapper(0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401);
+    //         registrar = BaseRegistrarImplementation(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
+    //         registrarController = ETHRegistrarController(0x253553366Da8546fC250F225fe3d25d0C782303b);
+    //         publicResolver = PublicResolver(0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63);
+    //     }
 
 
-        // Local : Register domain
-        if(targetChain == TargetChain.LOCAL) {
-            bytes[] memory data = new bytes[](0);
-            bytes32 commitment = registrarController.makeCommitment(domain, msg.sender, 365 * 24 * 3600, 0x00, address(0x0), data, false, 0);
-            registrarController.commit(commitment);
-            registrarController.register{value: 0.05 ether}(domain, msg.sender, 365 * 24 * 3600, 0x00, address(0x0), data, false, 0);
-        }
+    //     // Local : Register domain
+    //     if(targetChain == TargetChain.LOCAL) {
+    //         bytes[] memory data = new bytes[](0);
+    //         bytes32 commitment = registrarController.makeCommitment(domain, msg.sender, 365 * 24 * 3600, 0x00, address(0x0), data, false, 0);
+    //         registrarController.commit(commitment);
+    //         registrarController.register{value: 0.05 ether}(domain, msg.sender, 365 * 24 * 3600, 0x00, address(0x0), data, false, 0);
+    //     }
 
-        return (nameWrapper, registrar, registrarController, publicResolver);
-    }
+    //     return (nameWrapper, registrar, registrarController, publicResolver);
+    // }
 
     struct Config {
         uint256 maxKvSizeBits;
