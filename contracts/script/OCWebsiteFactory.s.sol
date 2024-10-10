@@ -128,7 +128,7 @@ contract OCWebsiteFactoryScript is Script {
                 // Upgrades.upgradeProxy(
                 //     factoryProxy,
                 //     "OCWebsiteFactoryV2.sol",
-                //     abi.encodeCall(OCWebsiteFactoryV2.initialize, (42)), 
+                //     abi.encodeCall(OCWebsiteFactoryV2.initializeV2, (42)), 
                 //     opts
                 // );
 

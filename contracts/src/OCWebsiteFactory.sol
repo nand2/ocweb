@@ -46,6 +46,7 @@ contract OCWebsiteFactory is UUPSUpgradeable, ERC721EnumerableUpgradeable, Ownab
 
 
     function initialize(address _owner, string memory _topdomain, string memory _domain, string memory _domain2, OCWebsiteFactoryToken _factoryToken, ClonableOCWebsite _websiteImplementation, ClonableWebsiteVersionViewer _websiteVersionViewerImplementation) public initializer {
+        __UUPSUpgradeable_init();
         __Ownable_init(_owner);
         __ERC721_init("OCWebsite", "OCW");
         __ERC721Enumerable_init();
