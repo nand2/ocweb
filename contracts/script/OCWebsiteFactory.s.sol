@@ -35,6 +35,7 @@ import { CompressionAlgorithm } from "../src/interfaces/IFileInfos.sol";
 import { KeyValue } from "../src/interfaces/IDecentralizedApp.sol";
 
 import { OCWebsiteFactory } from "../src/OCWebsiteFactory.sol";
+import { OCWebsiteFactoryV2 } from "../src/OCWebsiteFactoryV2.sol";
 import { OCWebsiteFactoryToken } from "../src/OCWebsiteFactoryToken.sol";
 import { OCWebsite } from "../src/OCWebsite/OCWebsite.sol";
 import { ClonableOCWebsite } from "../src/OCWebsite/ClonableOCWebsite.sol";
@@ -121,6 +122,15 @@ contract OCWebsiteFactoryScript is Script {
                 // Deploying the blog factory (bypassing proxy, for testing)
                 // factory = new OCWebsiteFactory();
                 // factory.initialize(msg.sender, "eth", domain, getChainShortName(targetChain), factoryToken, websiteImplementation, websiteVersionViewerImplementation);
+
+                // Proxy upgrade
+                // opts.referenceContract = "OCWebsiteFactory.sol:OCWebsiteFactory";
+                // Upgrades.upgradeProxy(
+                //     factoryProxy,
+                //     "OCWebsiteFactoryV2.sol",
+                //     abi.encodeCall(OCWebsiteFactoryV2.initialize, (42)), 
+                //     opts
+                // );
 
                 // Transfer the website implementation ownership to the factory
                 // Not strictly necessary, but let's be sure it stays never changed
