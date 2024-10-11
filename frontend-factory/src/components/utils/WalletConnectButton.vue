@@ -15,9 +15,12 @@ const { connectors, connect } = useConnect({
   },
 });
 
-// If there is only the injected connector, keep it, otherwise remove it
+// In the connectors of type "injected" : if there is only one of id "injected", keep it, otherwise 
+// remove it (Otherwise we get some proper names such as "Metamask", and we get this UX-weird "Injected")
 const filteredConnectors = computed(() => {
-  return connectors.length > 1 ? connectors.filter((connector) => connector.name !== 'Injected') : connectors;
+  const otherTypeConnectors = connectors.filter((connector) => connector.type != 'injected');
+  const injectedTypeConnectors = connectors.filter((connector) => connector.type == 'injected');
+  return [...otherTypeConnectors, ...injectedTypeConnectors.length == 1 ? injectedTypeConnectors : injectedTypeConnectors.filter((connector) => connector.id != 'injected')];
 });
 </script>
 
