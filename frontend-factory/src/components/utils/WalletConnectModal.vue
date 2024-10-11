@@ -25,7 +25,7 @@ const { connectors, connect } = useConnect({
 const filteredConnectors = computed(() => {
   const otherTypeConnectors = connectors.filter((connector) => connector.type != 'injected');
   const injectedTypeConnectors = connectors.filter((connector) => connector.type == 'injected');
-  return [...otherTypeConnectors, ...injectedTypeConnectors.length == 1 ? injectedTypeConnectors : injectedTypeConnectors.filter((connector) => connector.id != 'injected')];
+  return [...injectedTypeConnectors.length == 1 ? injectedTypeConnectors : injectedTypeConnectors.filter((connector) => connector.id != 'injected'), ...otherTypeConnectors];
 });
 </script>
 
