@@ -150,41 +150,10 @@ contract OCWebsiteFactory is UUPSUpgradeable, ERC721EnumerableUpgradeable, Ownab
         return plugins;
     }
 
-    function setWebsitePluginAsDefaultPlugin(IVersionableWebsitePlugin plugin, bool isDefaultPlugin) public onlyOwner {
-        for(uint i = 0; i < newWebsiteDefaultPlugins.length; i++) {
-            if(address(newWebsiteDefaultPlugins[i]) == address(plugin)) {
-                if(isDefaultPlugin) {
-                    return;
-                }
-                for (uint j = i; j < newWebsiteDefaultPlugins.length - 1; j++) {
-                    newWebsiteDefaultPlugins[j] = newWebsiteDefaultPlugins[j + 1];
-                }
-                newWebsiteDefaultPlugins.pop();
-                return;
-            }
-        }
-        if(isDefaultPlugin) {
-            newWebsiteDefaultPlugins.push(plugin);
-        }
+    function setWebsitePlugins(IVersionableWebsitePlugin[] memory _websiteAvailablePlugins, IVersionableWebsitePlugin[] memory _newWebsiteDefaultPlugins) public onlyOwner {
+        websiteAvailablePlugins = _websiteAvailablePlugins;
+        newWebsiteDefaultPlugins = _newWebsiteDefaultPlugins;
     }
-
-    function removeWebsitePlugin(IVersionableWebsitePlugin plugin) public onlyOwner {
-        for(uint i = 0; i < websiteAvailablePlugins.length; i++) {
-            if(address(websiteAvailablePlugins[i]) == address(plugin)) {
-                websiteAvailablePlugins[i] = websiteAvailablePlugins[websiteAvailablePlugins.length - 1];
-                websiteAvailablePlugins.pop();
-                return;
-            }
-        }
-        for(uint i = 0; i < newWebsiteDefaultPlugins.length; i++) {
-            if(address(newWebsiteDefaultPlugins[i]) == address(plugin)) {
-                newWebsiteDefaultPlugins[i] = newWebsiteDefaultPlugins[newWebsiteDefaultPlugins.length - 1];
-                newWebsiteDefaultPlugins.pop();
-                return;
-            }
-        }
-    }
-
 
     //
     // Handle subdomains

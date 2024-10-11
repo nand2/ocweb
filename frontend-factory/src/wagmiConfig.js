@@ -3,7 +3,7 @@ import { mainnet, sepolia, holesky, hardhat, arbitrum, arbitrumNova, optimism, b
 import { injected, coinbaseWallet } from '@wagmi/vue/connectors'
 
 export const config = createConfig({
-  chains: [mainnet, sepolia, holesky, hardhat],
+  chains: [optimism, base, arbitrum, mainnet, sepolia, holesky, hardhat],
   connectors: [
     injected(),
     // coinbaseWallet({
@@ -18,7 +18,6 @@ export const config = createConfig({
     [holesky.id]: http(),
     [hardhat.id]: http(),
     [arbitrum.id]: http(),
-    [arbitrumNova.id]: http(),
     [optimism.id]: http(),
     [base.id]: http(),
   },

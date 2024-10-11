@@ -172,8 +172,7 @@ contract OCWebsiteFactoryScript is Script {
             }
             // if(targetChain != TargetChain.SEPOLIA && targetChain != TargetChain.LOCAL) {
             //     injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "sep"), string.concat(LibStrings.toHexString(0x27D14546641278e8B097f3c7AbfC8e7609725f2F), ":", LibStrings.toString(11155111)));
-            // }
-            
+            // }            
 
             // Set the website as the factory frontend
             factory.setFactoryWebsite(factoryFrontend);
