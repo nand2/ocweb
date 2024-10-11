@@ -3,10 +3,10 @@
 set -euo pipefail
 
 # Target chain: If empty, default to "local"
-# Can be: local, sepolia, holesky, mainnet, base-sepolia, base
+# Can be: local, sepolia, holesky, mainnet, base-sepolia, base, optimism
 TARGET_CHAIN=${1:-local}
 # Check that target chain is in allowed values
-if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TARGET_CHAIN" != "holesky" ] && [ "$TARGET_CHAIN" != "mainnet" ] && [ "$TARGET_CHAIN" != "base-sepolia" ] && [ "$TARGET_CHAIN" != "base" ]; then
+if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TARGET_CHAIN" != "holesky" ] && [ "$TARGET_CHAIN" != "mainnet" ] && [ "$TARGET_CHAIN" != "base-sepolia" ] && [ "$TARGET_CHAIN" != "base" ] && [ "$TARGET_CHAIN" != "optimism" ]; then
   echo "Invalid target chain: $TARGET_CHAIN"
   exit 1
 fi
@@ -59,6 +59,10 @@ elif [ "$TARGET_CHAIN" == "base" ]; then
   PRIVKEY=$PRIVATE_KEY_BASE
   RPC_URL=https://mainnet.base.org
   CHAIN_ID=8453
+elif [ "$TARGET_CHAIN" == "optimism" ]; then
+  PRIVKEY=$PRIVATE_KEY_OPTIMISM
+  RPC_URL=https://mainnet.optimism.io/
+  CHAIN_ID=10
 else
   echo "Not implemented yet"
   exit 1
@@ -70,6 +74,11 @@ fi
 if [ "$TARGET_CHAIN" == "base-sepolia" ] || [ "$TARGET_CHAIN" == "base" ]; then
   export ETHERSCAN_API_KEY=$BASESCAN_API_KEY
 fi
+# If optimism, copy OPTIMISTIC_ETHERSCAN_API_KEY into it
+if [ "$TARGET_CHAIN" == "optimism" ]; then
+  export ETHERSCAN_API_KEY=$OPTIMISTIC_ETHERSCAN_API_KEY
+fi
+
 
 
 # Timestamp
@@ -108,6 +117,9 @@ elif [ "$TARGET_CHAIN" == "base-sepolia" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   FORGE_SCRIPT_OPTIONS="--broadcast --verify"
 elif [ "$TARGET_CHAIN" == "base" ]; then
+  # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
+  FORGE_SCRIPT_OPTIONS="--broadcast --verify --slow"
+elif [ "$TARGET_CHAIN" == "optimism" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   FORGE_SCRIPT_OPTIONS="--broadcast --verify --slow"
 else

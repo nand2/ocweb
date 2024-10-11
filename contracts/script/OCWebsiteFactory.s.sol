@@ -50,7 +50,7 @@ import { IVersionableWebsite } from "../src/interfaces/IVersionableWebsite.sol";
 import { OCWebAdminPlugin } from "../src/OCWebsite/plugins/OCWebAdminPlugin.sol";
 
 contract OCWebsiteFactoryScript is Script {
-    enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE }
+    enum TargetChain{ LOCAL, SEPOLIA, HOLESKY, MAINNET, BASE_SEPOLIA, BASE, OPTIMISM }
 
     function setUp() public {}
 
@@ -71,6 +71,8 @@ contract OCWebsiteFactoryScript is Script {
                 targetChain = TargetChain.BASE_SEPOLIA;
             } else if(keccak256(abi.encodePacked(vm.envString("TARGET_CHAIN"))) == keccak256(abi.encodePacked("base"))) {
                 targetChain = TargetChain.BASE;
+            } else if(keccak256(abi.encodePacked(vm.envString("TARGET_CHAIN"))) == keccak256(abi.encodePacked("optimism"))) {
+                targetChain = TargetChain.OPTIMISM;
             }
             else {
                 console.log("Unknown target chain: ", targetChainString);
@@ -419,6 +421,8 @@ contract OCWebsiteFactoryScript is Script {
             return "basesep";
         } else if(targetChain == TargetChain.BASE) {
             return "base";
+        } else if(targetChain == TargetChain.OPTIMISM) {
+            return "oeth";
         }
     }
 }
