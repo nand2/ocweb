@@ -538,7 +538,12 @@ const toggleFullscreen = () => {
       <a @click.prevent.stop="toggleFullscreen()" class="white" title="(Ctrl-Shift-f)">
         <ArrowsFullscreenIcon v-if="fullScreen == false" />
         <FullscreenExitIcon v-else />
-        Preview
+        <span v-if="fullScreen == false" style="display:inline-block">
+          Full Screen Preview
+        </span>
+        <span v-else>
+          Close Full Screen Preview
+        </span>
       </a>
     </div>
 
@@ -587,6 +592,7 @@ const toggleFullscreen = () => {
   .toolbar {
     display: flex;
     gap: 0.5em;
+    flex-wrap: wrap;
   }
 
   .toolbar > a {
@@ -597,6 +603,7 @@ const toggleFullscreen = () => {
     border-radius: 0.25em;
     display: flex;
     gap: 0.5em;
+    white-space: nowrap;
   }
 
   .toolbar > a > svg {

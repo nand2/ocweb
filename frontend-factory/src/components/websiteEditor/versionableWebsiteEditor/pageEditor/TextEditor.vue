@@ -215,6 +215,12 @@ const fullscreen = ref(false)
   display: flex;
   gap: 2em;
 }
+@media (max-width: 768px) {
+  .editor-and-preview.preview-active .editor-and-preview-inner {
+    flex-direction: column;
+    gap: 1em;
+  }
+}
 
 .editor-and-preview.preview-active .editor-and-preview-inner .editor-with-toolbar {
   flex: 0 0 50%;
