@@ -3,6 +3,8 @@ import { ref, onMounted, watch, shallowRef } from 'vue'
 const { default: markdownit } = await import('markdown-it')
 // import markdownit from 'markdown-it'
 const { basicSetup: codeMirrorBasicSetup, EditorView } = await import("codemirror")
+const { keymap } = await import("@codemirror/view");
+const { defaultKeymap } = await import("@codemirror/commands");
 const { markdown: codeMirrorMarkdown } = await import("@codemirror/lang-markdown")
 const { EditorState, Compartment: codeMirrorCompartment } = await import("@codemirror/state")
 const { oneDark: codeMirrorOneDarkTheme } = await import('@codemirror/theme-one-dark');
@@ -90,11 +92,14 @@ let editorExtensions = () => [
   // Readonly state, ready to be modified
   editorReadonlyCompartment.of(EditorState.readOnly.of(false)),
   // Update listener: Update the preview
-  editorUpdateListenerExtension
+  editorUpdateListenerExtension,
+  // Keymap
+  editorKeymapCompartment.of(keymap.of(defaultKeymap)),
 ]
 let editorThemeOverrideCompartment = new codeMirrorCompartment()
 let editorReadonlyCompartment = new codeMirrorCompartment()
 let editorThemeCompartment = new codeMirrorCompartment()
+let editorKeymapCompartment = new codeMirrorCompartment()
 
 // Initialize the editor
 onMounted(() => {
@@ -144,6 +149,7 @@ const fullscreen = ref(false)
         <div class="toolbar" v-if="editor != null && contentType == 'text/markdown'">
           <TextEditorToolbarMarkdown 
             :editor="editor"
+            :editorKeymapCompartment
             :contractAddress
             :chainId
             :pluginInfos

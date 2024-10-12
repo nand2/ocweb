@@ -1,6 +1,10 @@
 <script setup>
-import { ref, defineProps, defineEmits, computed } from 'vue';
+import { ref, defineProps, defineEmits, computed, onMounted } from 'vue';
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
+const { keymap } = await import("@codemirror/view");
+const { defaultKeymap } = await import("@codemirror/commands");
+const { Prec } = await import("@codemirror/state");
+const { markdownKeymap } = await import("@codemirror/lang-markdown")
 
 import { useStaticFrontendPluginClient, useStaticFrontend } from '../../../../../../src/plugins/staticFrontend/tanstack-vue.js';
 import Modal from '../../../utils/Modal.vue';
@@ -20,6 +24,10 @@ import QuoteIcon from '../../../../icons/QuoteIcon.vue';
 
 const props = defineProps({
   editor: {
+    type: Object,
+    required: true,
+  },
+  editorKeymapCompartment: {
     type: Object,
     required: true,
   },
@@ -55,6 +63,121 @@ const queryClient = useQueryClient()
 // Fetch the static frontend
 const { data: staticFrontend, isLoading: staticFrontendLoading, isFetching: staticFrontendFetching, isError: staticFrontendIsError, error: staticFrontendError, isSuccess: staticFrontendLoaded } = useStaticFrontend(queryClient, props.contractAddress, props.chainId, props.pluginInfos.plugin, computed(() => props.websiteVersionIndex))
 
+// On mount: Add keybindings to the editor
+onMounted(() => {
+  const myKeybindings = [
+    {
+      key: "Ctrl-b",
+      run: (view) => {
+        toggleSurroundWithStrings('**', '**');
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-i",
+      run: (view) => {
+        toggleSurroundWithStrings('*', '*');
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-1",
+      run: (view) => {
+        toggleHeading(1);
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-2",
+      run: (view) => {
+        toggleHeading(2);
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-3",
+      run: (view) => {
+        toggleHeading(3);
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-4",
+      run: (view) => {
+        toggleHeading(4);
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-5",
+      run: (view) => {
+        toggleHeading(5);
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-6",
+      run: (view) => {
+        toggleHeading(6);
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-u",
+      run: (view) => {
+        insertListEntry();
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-Shift-c",
+      run: (view) => {
+        toggleSurroundWithStrings('\n```\n', '\n```\n');
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-shift-l",
+      run: (view) => {
+        insertLink();
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-q",
+      run: (view) => {
+        toggleBlockquote();
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-shift-i",
+      run: (view) => {
+        showImageModal.value = true;
+        return true;
+      }
+    },
+    {
+      key: "Ctrl-shift-f",
+      run: (view) => {
+        toggleFullscreen();
+        return true;
+      }
+    }
+  ];
+
+  props.editor.dispatch({
+    effects: props.editorKeymapCompartment.reconfigure(
+      Prec.highest(
+        keymap.of([
+          ...myKeybindings, 
+          ...markdownKeymap,
+          ...defaultKeymap
+        ])
+      )
+    )
+  });
+})
 
 
 const toggleSurroundWithStrings = (startString, endString) => {
@@ -395,24 +518,24 @@ const toggleFullscreen = () => {
 <template>
   <div>
     <div class="toolbar">
-      <a @click.prevent.stop="toggleSurroundWithStrings('**', '**')" class="white"><TypeBoldIcon /></a>
-      <a @click.prevent.stop="toggleSurroundWithStrings('*', '*')" class="white"><TypeItalicIcon /></a>
+      <a @click.prevent.stop="toggleSurroundWithStrings('**', '**')" class="white" title="Bold (Ctrl-b)"><TypeBoldIcon /></a>
+      <a @click.prevent.stop="toggleSurroundWithStrings('*', '*')" class="white" title="Italic (Ctrl-i)"><TypeItalicIcon /></a>
 
-      <a @click.prevent.stop="toggleHeading(1)" class="white"><TypeH1Icon /></a>
-      <a @click.prevent.stop="toggleHeading(2)" class="white"><TypeH2Icon /></a>
-      <a @click.prevent.stop="toggleHeading(3)" class="white"><TypeH3Icon /></a>
+      <a @click.prevent.stop="toggleHeading(1)" class="white" title="Heading 1 (Ctrl-1)"><TypeH1Icon /></a>
+      <a @click.prevent.stop="toggleHeading(2)" class="white" title="Heading 2 (Ctrl-2)"><TypeH2Icon /></a>
+      <a @click.prevent.stop="toggleHeading(3)" class="white" title="Heading 3 (Ctrl-3)"><TypeH3Icon /></a>
 
-      <a @click.prevent.stop="insertListEntry()" class="white"><ListUlIcon /></a>
+      <a @click.prevent.stop="insertListEntry()" class="white" title="List entry (Ctrl-u)"><ListUlIcon /></a>
 
-      <a @click.prevent.stop="toggleSurroundWithStrings('\n```\n', '\n```\n')" class="white"><CodeSlashIcon /></a>
+      <a @click.prevent.stop="toggleSurroundWithStrings('\n```\n', '\n```\n')" class="white" title="Code (Ctrl-Shift-C)"><CodeSlashIcon /></a>
 
-      <a @click.prevent.stop="toggleBlockquote()" class="white"><QuoteIcon /></a>
+      <a @click.prevent.stop="toggleBlockquote()" class="white" title="Blockquote (Ctrl-q)"><QuoteIcon /></a>
       
-      <a @click.prevent.stop="insertLink()" class="white"><Link45DegIcon /></a>
+      <a @click.prevent.stop="insertLink()" class="white" title="Link (Ctrl-Shift-L)"><Link45DegIcon /></a>
 
-      <a @click.prevent.stop="showImageModal = true" class="white"><ImageIcon /></a>
+      <a @click.prevent.stop="showImageModal = true" class="white" title="Upload image (Ctrl-Shift-i)"><ImageIcon /></a>
 
-      <a @click.prevent.stop="toggleFullscreen()" class="white">
+      <a @click.prevent.stop="toggleFullscreen()" class="white" title="(Ctrl-Shift-f)">
         <ArrowsFullscreenIcon v-if="fullScreen == false" />
         <FullscreenExitIcon v-else />
         Preview
