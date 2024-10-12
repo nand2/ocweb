@@ -219,4 +219,52 @@ const fullscreen = ref(false)
   flex: 1 1 50%;
   overflow-y: auto;
 }
+
+.preview {
+  overflow-wrap: break-word;
+}
+
+.preview :deep(img) {
+  max-width: 100%;
+  height: auto;
+}
+@media (max-width: 768px) {
+  .preview :deep(img) {
+    width: 100%;
+  }
+}
+
+.preview :deep(blockquote) {
+  color: var(--color-text-muted);
+  border-left: .25em solid var(--color-divider);
+  padding: 0 1em;
+  margin: 0;
+}
+
+.preview :deep(code) {
+  background-color: var(--color-light-bg);
+  padding: .2em .4em;
+  border-radius: 6px;
+}
+
+.preview :deep(pre) {
+  padding: 16px;
+  background-color: var(--color-light-bg);
+  overflow-y: auto;
+}
+
+.preview :deep(pre) table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+.preview :deep(table) tr:nth-child(2n) {
+  background-color: var(--color-light-bg);
+}
+
+.preview :deep(table) th, 
+.preview :deep(table) td {
+  padding: 6px 13px;
+  border: 1px solid var(--color-divider);
+}
 </style>
