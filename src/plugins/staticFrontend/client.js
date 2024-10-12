@@ -218,18 +218,26 @@ class StaticFrontendPluginClient {
           continue;
         }
 
-        // Fetching remote file content
-        const remoteFileData = await this.readFileFully(websiteVersionIndex, compressedFileInfo, false);
-        // If the file data is not identical, it's a different file: we need to upload it
+        // Check if the file to upload is identical to the remote file. If different, we need to upload it
         let isIdentical = true;
-        if (remoteFileData.length !== compressedFileInfo.data.length) {
-          // Theorically we should not enter here, but just in case
+        // Fetching remote file content
+        let remoteFileData = null;
+        try {
+          remoteFileData = await this.readFileFully(websiteVersionIndex, compressedFileInfo, false);
+        } catch (e) {
+          // It could fail if e.g. the file is not completely uploaded yet
           isIdentical = false;
-        } else {
-          for (let i = 0; i < remoteFileData.length; i++) {
-            if (remoteFileData[i] !== compressedFileInfo.data[i]) {
-              isIdentical = false;
-              break;
+        }
+        if(isIdentical) {
+          if (remoteFileData.length !== compressedFileInfo.data.length) {
+            // Theorically we should not enter here, but just in case
+            isIdentical = false;
+          } else {
+            for (let i = 0; i < remoteFileData.length; i++) {
+              if (remoteFileData[i] !== compressedFileInfo.data[i]) {
+                isIdentical = false;
+                break;
+              }
             }
           }
         }

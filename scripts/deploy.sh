@@ -183,7 +183,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   # Upload the factory frontend
   PRIVATE_KEY=$PRIVKEY \
   WEB3_ADDRESS=web3://$OCWEBSITEFACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
-  node . --rpc $RPC_URL --skip-tx-validation upload frontend-factory/dist/* / --exclude 'frontend-factory/dist/variables.json'
+  node . --rpc $RPC_URL --skip-tx-validation upload frontend-factory/dist/* / --exclude 'frontend-factory/dist/variables.json' --exclude 'frontend-factory/dist/config/featured.yml'
 fi
 
 
