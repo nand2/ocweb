@@ -88,7 +88,49 @@ const faqEntries = [
       </div>
     </div>
 
-    <div class="preview-area">
+    <div class="usecases">
+      <h2>
+        A default theme included for your OCWebsite
+      </h2>
+
+      <div style="text-align: center; margin-bottom: 0.7em;">
+        Make pages, upload images, and configure your OCWebsite in the admin interface.
+      </div>
+
+      <div class="panels">
+        <div>
+          <img src="/screenshots/default-theme.jpg" />
+          <a href="web3://nandx.eth" target="_blank" class="btn sm" style="margin-top: 0.5em">View example live</a>
+        </div>
+        <div>
+          <img src="/screenshots/default-theme-admin.jpg" />
+          <a href="web3://nandx.eth/admin" target="_blank" class="btn sm" style="margin-top: 0.5em">View admin of example live</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="usecases">
+      <h2>
+        Tools for developers
+      </h2>
+
+      <div style="text-align: center; margin-bottom: 0.7em;">
+        Upload your frontends (via the admin interface or CLI), make plugins, ... <code>web3://ocweb.eth</code> is itself an OCWebsite!
+      </div>
+
+      <div class="panels">
+        <div>
+          <img src="/screenshots/static-frontend-admin.jpg" />
+          <a href="web3://ocweb.eth/admin" target="_blank" class="btn sm" style="margin-top: 0.5em">View web3://ocweb.eth admin live</a>
+        </div>
+        <div>
+          <img src="/screenshots/cli.jpg" />
+          <a href="https://github.com/nand2/ocweb" target="_blank" class="btn sm" style="margin-top: 0.5em">View ocweb CLI github</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="preview-area">
       <h2>
         Explore some OCWebsite admin interfaces
       </h2>
@@ -108,7 +150,7 @@ const faqEntries = [
           :isOpened="false"
           :showLinkAndCloseIcons="true" />
       </div>
-    </div>
+    </div> -->
 
     <div class="mint-yours">
       <h2>
@@ -159,6 +201,15 @@ code {
   }
 }
 
+.usecases h2 {
+  text-align: center;
+  margin-bottom: 0.25em;
+}
+
+.usecases img {
+  max-width: 100%;
+  border: 1px solid var(--color-divider);
+}
 
 .preview-area h2 {
   text-align: center;

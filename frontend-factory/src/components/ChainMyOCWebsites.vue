@@ -6,6 +6,7 @@ import { useAccount } from '@wagmi/vue';
 
 import { useContractAddresses } from '../../../src/tanstack-vue.js';
 import MintedOCWebsite from '../components/MintedOCWebsite.vue';
+import LayourTextWindowReverseIcon from '../icons/LayoutTextWindowReverseIcon.vue'
 
 
 const props = defineProps({
@@ -50,8 +51,9 @@ const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
 
 <template>
   <div>
-    <div v-if="ocWebsitesLoaded == false">
-      Loading...
+    <div v-if="ocWebsitesLoaded == false" style="margin: 4em 0; display: flex; align-items: center; gap: 0.5em; justify-content: center;">
+      <LayourTextWindowReverseIcon class="anim-pulse" /> 
+      Loading your websites ...
     </div>
 
     <div v-else-if="ocWebsites.length == 0" class="not-owing-ocwebsites-message">
