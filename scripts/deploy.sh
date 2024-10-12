@@ -181,9 +181,13 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
   echo "Uploading frontend to OCWebsiteFactoryFrontend ($OCWEBSITEFACTORY_FRONTEND_ADDRESS) ..."
 
   # Upload the factory frontend
+  OCWEB_UPLOAD_ARGS=
+  if [ "$TARGET_CHAIN" == "local" ]; then
+    OCWEB_UPLOAD_ARGS="--skip-tx-validation"
+  fi
   PRIVATE_KEY=$PRIVKEY \
   WEB3_ADDRESS=web3://$OCWEBSITEFACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
-  node . --rpc $RPC_URL --skip-tx-validation upload frontend-factory/dist/* / --exclude 'frontend-factory/dist/variables.json' --exclude 'frontend-factory/dist/config/featured.yml'
+  node . --rpc $RPC_URL $OCWEB_UPLOAD_ARGS upload frontend-factory/dist/* / --exclude 'frontend-factory/dist/variables.json' --exclude 'frontend-factory/dist/config/featured.yml'
 fi
 
 
