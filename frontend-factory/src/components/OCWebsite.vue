@@ -133,7 +133,7 @@ h4 {
 
 .ocwebsite {
   width: 200px;
-  transition: width 0.5s;
+  /* transition: width 0.5s; */
 }
 
 .ocwebsite-widget {
@@ -151,7 +151,7 @@ h4 {
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  transition: height 0.5s;
+  /* transition: height 0.5s; */
   padding-right: 0.5em;
 }
 
@@ -165,7 +165,7 @@ h4 {
   visibility: hidden;
   opacity: 0;
   font-size: 1px;
-  transition: color 0.25s, visibility 0.25s, opacity 0.25s, font-size 0.25s 0.25s;
+  /* transition: color 0.25s, visibility 0.25s, opacity 0.25s, font-size 0.25s 0.25s; */
   cursor: pointer;
   overflow: hidden;
   white-space: nowrap;
@@ -182,7 +182,7 @@ h4 {
 
 .ocwebsite-widget a.web3-address.copied {
   color: transparent;
-  transition: color 0.25s;
+  /* transition: color 0.25s; */
 }
 
 .ocwebsite-widget a.web3-address .copy-indicator {
@@ -190,12 +190,12 @@ h4 {
   position: absolute;
   left: 50%;
   opacity: 0;
-  transition: opacity 0.25s;
+  /* transition: opacity 0.25s; */
 }
 
 .ocwebsite-widget a.web3-address.copied .copy-indicator {
   opacity: 1;
-  transition: opacity 0.25s;
+  /* transition: opacity 0.25s; */
 }
 
 .ocwebsite-widget .header .header-icon {
@@ -203,7 +203,7 @@ h4 {
   align-items: center;
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0.5s, opacity 0.5s;
+  /* transition: visibility 0.5s, opacity 0.5s; */
   padding: 0.5em 0.5em;
 }
 
@@ -220,7 +220,7 @@ h4 {
 .ocwebsite-widget .editor {
   height: 0px;
   width: calc(100% - 2px);
-  transition: height 0.5s;
+  /* transition: height 0.5s; */
   border-left: 1px solid var(--color-divider);
   border-right: 1px solid var(--color-divider);
 }
@@ -228,13 +228,13 @@ h4 {
 .ocwebsite-widget .footer {
   height: 100px;
   width: 100%;
-  transition: height 0.5s;
+  /* transition: height 0.5s; */
 }
 
 
 .ocwebsite.isOpened {
   width: 800px;
-  transition: width 0.5s;
+  /* transition: width 0.5s; */
 }
 @media (max-width: 970px) {
   .ocwebsite.isOpened {
@@ -248,30 +248,30 @@ h4 {
 
 .ocwebsite.isOpened .header {
   height: 50px;
-  transition: height 0.5s;
+  /* transition: height 0.5s; */
 }
 
 .ocwebsite.isOpened .web3-address {
   visibility: visible;
   opacity: 1;
   font-size: 1em;
-  transition: color 0.25s, visibility 0.25s 0.25s, opacity 0.25s 0.25s, font-size 0.25s;
+  /* transition: color 0.25s, visibility 0.25s 0.25s, opacity 0.25s 0.25s, font-size 0.25s; */
 }
 
 .ocwebsite.isOpened .header .header-icon {
   visibility: visible;
   opacity: 1;
-  transition: visibility 0.5s, opacity 0.5s;
+  /* transition: visibility 0.5s, opacity 0.5s; */
 }
 
 .ocwebsite.isOpened .editor {
   height: auto;
-  transition: height 0.5s;
+  /* transition: height 0.5s; */
 }
 
 .ocwebsite.isOpened .footer {
   height: 50px;
-  transition: height 0.5s;
+  /* transition: height 0.5s; */
 }
 
 </style>
