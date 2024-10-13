@@ -60,6 +60,24 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
 
             (statusCode, body, headers) = adminWebsite.request(newResource, params);
 
+            // If there is a "Cache-control: evm-events" header, we will replace it with 
+            // "Cache-control: evm-events=<addressOfAdminWebsite><newResourcePath>"
+            // That way, we indicate that the contract emitting the cache clearing events is 
+            // the admin website
+            for(uint i = 0; i < headers.length; i++) {
+                if(LibStrings.compare(headers[i].key, "Cache-control") && LibStrings.compare(headers[i].value, "evm-events")) {
+                    string memory path = "/";
+                    for(uint j = 0; j < newResource.length; j++) {
+                        path = string.concat(path, newResource[j]);
+                        if(j < newResource.length - 1) {
+                            path = string.concat(path, "/");
+                        }
+                    }
+
+                    headers[i].value = string.concat("evm-events=\"", LibStrings.toHexString(address(adminWebsite)), path, "\"");
+                }
+            }
+
             return (statusCode, body, headers);
         }
     }

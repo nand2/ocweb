@@ -16,9 +16,7 @@ if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "
   echo "Invalid section: $SECTION"
   exit 1
 fi
-# Domain name
-DEFAULT_DOMAIN="ocweb"
-DOMAIN=${3:-$DEFAULT_DOMAIN}
+DOMAIN=ocweb
 
 
 # Setup cleanup
@@ -144,6 +142,12 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
     while ! grep -q "Listening on 127.0.0.1:8545" /tmp/anvil.log; do
       sleep 0.2
     done
+  fi
+
+  # Optimism chain: Ask for confirmation
+  if [ "$TARGET_CHAIN" == "optimism" ]; then
+    echo "Please confirm that you want to deploy on Optimism"
+    read -p "Press enter to continue"
   fi
 
 
