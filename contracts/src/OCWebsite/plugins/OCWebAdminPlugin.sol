@@ -29,7 +29,7 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
         return
             Infos({
                 name: "ocWebAdmin",
-                version: "0.1.0",
+                version: "0.1.1",
                 title: "Admin interface",
                 subTitle: "Served at the /admin/ path",
                 author: "nand",
