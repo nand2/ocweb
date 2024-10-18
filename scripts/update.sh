@@ -109,6 +109,12 @@ if [ "$TARGET_CHAIN" != "local" ]; then
   read -p "Press enter to continue"
 fi
 
+# Extra args for ocweb CLI
+OCWEB_CLI_EXTRA_ARGS=
+if [ "$TARGET_CHAIN" == "local" ]; then
+  OCWEB_CLI_EXTRA_ARGS="--skip-tx-validation"
+fi
+
 # Get the factory address, and the factory frontend address
 if [ "$CHAIN_ID" == "10" ] || [ "$CHAIN_ID" == "17000" ]; then
   OCWEBSITE_FACTORY_ADDRESS=$(node . factory-infos ${CHAIN_ID} | grep 'Address:' |  awk '{print $2}')
@@ -121,7 +127,48 @@ fi
 
 # Update files in the factory frontend
 if [ "$SECTION" == "factory-frontend-files" ]; then
+  NEW_VERSION_MESSAGE="${@:3}"
+  if [ "$NEW_VERSION_MESSAGE" == "" ]; then
+    echo "Please provide a message for the new version"
+    exit 1
+  fi
+
+  # Build factory
+  echo "Building factory frontend..."
+  npm run build-factory
+
   echo "Updating files on factory frontend $OCWEBSITE_FACTORY_FRONTEND_WEB3_ADDRESS ..."
 
-  # First create a new version
+  # First create a new website version
+  echo "Creating a new website version..."
+  PRIVATE_KEY=$PRIVKEY \
+  WEB3_ADDRESS=web3://$OCWEBSITE_FACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
+  node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS version-add "$NEW_VERSION_MESSAGE"
+
+  sleep 1
+
+  # Get the number of the newly created version
+  echo "Fetching the number of the new website version..."
+  WEBSITE_VERSION_INDEX=$(WEB3_ADDRESS=web3://$OCWEBSITE_FACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
+  node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS version-ls | tail -n1 | awk '{print $1}')
+  echo "New website version number: $WEBSITE_VERSION_INDEX"
+
+  # Make it viewable
+  echo "Making the new website version viewable..."
+  PRIVATE_KEY=$PRIVKEY \
+  WEB3_ADDRESS=web3://$OCWEBSITE_FACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
+  node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS --website-version $WEBSITE_VERSION_INDEX version-set-viewable true
+
+  # Upload the files to the new website version
+  echo "Uploading files to the new website version..."
+  PRIVATE_KEY=$PRIVKEY \
+  WEB3_ADDRESS=web3://$OCWEBSITE_FACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
+  node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS --website-version $WEBSITE_VERSION_INDEX \
+  upload frontend-factory/dist/* / --sync --exclude 'frontend-factory/dist/variables.json' --exclude 'frontend-factory/dist/config/featured.yml'
+
+  # Set the new website version live
+  echo "Setting the new website version live..."
+  PRIVATE_KEY=$PRIVKEY \
+  WEB3_ADDRESS=web3://$OCWEBSITE_FACTORY_FRONTEND_ADDRESS:${CHAIN_ID} \
+  node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS version-set-live $WEBSITE_VERSION_INDEX
 fi
