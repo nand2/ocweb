@@ -27,6 +27,10 @@ class FactoryClient {
     return this.#viemClient.chain
   }
 
+  address() {
+    return this.#factoryAddress
+  }
+
   async prepareMintTransaction(subdomain) {
     return {
       functionName: 'mintWebsite',
@@ -34,8 +38,8 @@ class FactoryClient {
     }
   }
 
-  async detailedTokensOfOwner(address) {
-    return await this.#viemWebsiteContract.read.detailedTokensOfOwner([address])
+  async detailedTokensOfOwner(address, startIndex, count) {
+    return await this.#viemWebsiteContract.read.detailedTokensOfOwner([address, startIndex, count])
   }
   
 

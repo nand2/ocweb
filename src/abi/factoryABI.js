@@ -2,45 +2,211 @@ export const abi = [
   {
     inputs: [
       {
-        components: [
-          {
-            internalType: "address",
-            name: "owner",
-            type: "address"
-          },
-          {
-            internalType: "string",
-            name: "topdomain",
-            type: "string"
-          },
-          {
-            internalType: "string",
-            name: "domain",
-            type: "string"
-          },
-          {
-            internalType: "contract OCWebsiteFactoryToken",
-            name: "factoryToken",
-            type: "address"
-          },
-          {
-            internalType: "contract ClonableOCWebsite",
-            name: "websiteImplementation",
-            type: "address"
-          },
-          {
-            internalType: "contract ClonableWebsiteVersionViewer",
-            name: "websiteVersionViewerImplementation",
-            type: "address"
-          }
-        ],
-        internalType: "struct OCWebsiteFactory.ConstructorParams",
-        name: "_params",
-        type: "tuple"
+        internalType: "address",
+        name: "target",
+        type: "address"
       }
     ],
-    stateMutability: "nonpayable",
-    type: "constructor"
+    name: "AddressEmptyCode",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "ERC1167FailedCreateClone",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "implementation",
+        type: "address"
+      }
+    ],
+    name: "ERC1967InvalidImplementation",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "ERC1967NonPayable",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "ERC721EnumerableForbiddenBatchMint",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "sender",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      },
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address"
+      }
+    ],
+    name: "ERC721IncorrectOwner",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "operator",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      }
+    ],
+    name: "ERC721InsufficientApproval",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "approver",
+        type: "address"
+      }
+    ],
+    name: "ERC721InvalidApprover",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "operator",
+        type: "address"
+      }
+    ],
+    name: "ERC721InvalidOperator",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address"
+      }
+    ],
+    name: "ERC721InvalidOwner",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "receiver",
+        type: "address"
+      }
+    ],
+    name: "ERC721InvalidReceiver",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "sender",
+        type: "address"
+      }
+    ],
+    name: "ERC721InvalidSender",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      }
+    ],
+    name: "ERC721NonexistentToken",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "index",
+        type: "uint256"
+      }
+    ],
+    name: "ERC721OutOfBoundsIndex",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "FailedInnerCall",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "InvalidInitialization",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "NotInitializing",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address"
+      }
+    ],
+    name: "OwnableInvalidOwner",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address"
+      }
+    ],
+    name: "OwnableUnauthorizedAccount",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "UUPSUnauthorizedCallContext",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "slot",
+        type: "bytes32"
+      }
+    ],
+    name: "UUPSUnsupportedProxiableUUID",
+    type: "error"
   },
   {
     anonymous: false,
@@ -96,6 +262,57 @@ export const abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: false,
+        internalType: "uint64",
+        name: "version",
+        type: "uint64"
+      }
+    ],
+    name: "Initialized",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address"
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "OwnershipTransferStarted",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address"
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "OwnershipTransferred",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "from",
@@ -122,6 +339,19 @@ export const abi = [
     inputs: [
       {
         indexed: true,
+        internalType: "address",
+        name: "implementation",
+        type: "address"
+      }
+    ],
+    name: "Upgraded",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "uint256",
         name: "websiteId",
         type: "uint256"
@@ -137,27 +367,21 @@ export const abi = [
     type: "event"
   },
   {
-    inputs: [
+    inputs: [],
+    name: "UPGRADE_INTERFACE_VERSION",
+    outputs: [
       {
-        internalType: "contract IFactoryExtension",
-        name: "_extension",
-        type: "address"
+        internalType: "string",
+        name: "",
+        type: "string"
       }
     ],
-    name: "addExtension",
-    outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function"
   },
   {
-    inputs: [
-      {
-        internalType: "contract IStorageBackend",
-        name: "storageBackend",
-        type: "address"
-      }
-    ],
-    name: "addStorageBackend",
+    inputs: [],
+    name: "acceptOwnership",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -220,9 +444,125 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "string",
+        name: "subdomain",
+        type: "string"
+      }
+    ],
+    name: "computeSubdomainNameHash",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      }
+    ],
+    name: "detailedToken",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "tokenId",
+            type: "uint256"
+          },
+          {
+            internalType: "address",
+            name: "contractAddress",
+            type: "address"
+          },
+          {
+            internalType: "string",
+            name: "subdomain",
+            type: "string"
+          },
+          {
+            internalType: "string",
+            name: "tokenSVG",
+            type: "string"
+          }
+        ],
+        internalType: "struct OCWebsiteFactory.DetailedToken",
+        name: "token",
+        type: "tuple"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "startIndex",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "count",
+        type: "uint256"
+      }
+    ],
+    name: "detailedTokens",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "tokenId",
+            type: "uint256"
+          },
+          {
+            internalType: "address",
+            name: "contractAddress",
+            type: "address"
+          },
+          {
+            internalType: "string",
+            name: "subdomain",
+            type: "string"
+          },
+          {
+            internalType: "string",
+            name: "tokenSVG",
+            type: "string"
+          }
+        ],
+        internalType: "struct OCWebsiteFactory.DetailedToken[]",
+        name: "tokens",
+        type: "tuple[]"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "user",
         type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "startIndex",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "count",
+        type: "uint256"
       }
     ],
     name: "detailedTokensOfOwner",
@@ -242,6 +582,11 @@ export const abi = [
           {
             internalType: "string",
             name: "subdomain",
+            type: "string"
+          },
+          {
+            internalType: "string",
+            name: "tokenSVG",
             type: "string"
           }
         ],
@@ -267,19 +612,13 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    name: "extensions",
+    inputs: [],
+    name: "domain2",
     outputs: [
       {
-        internalType: "contract IFactoryExtension",
+        internalType: "string",
         name: "",
-        type: "address"
+        type: "string"
       }
     ],
     stateMutability: "view",
@@ -291,19 +630,6 @@ export const abi = [
     outputs: [
       {
         internalType: "contract OCWebsiteFactoryToken",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "websiteVersionViewerImplementation",
-    outputs: [
-      {
-        internalType: "contract ClonableWebsiteVersionViewer",
         name: "",
         type: "address"
       }
@@ -325,96 +651,6 @@ export const abi = [
         internalType: "address",
         name: "",
         type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "getExtensions",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "string",
-            name: "name",
-            type: "string"
-          },
-          {
-            internalType: "address",
-            name: "extensionAddress",
-            type: "address"
-          }
-        ],
-        internalType: "struct OCWebsiteFactory.ExtensionInfo[]",
-        name: "",
-        type: "tuple[]"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "name",
-        type: "string"
-      }
-    ],
-    name: "getStorageBackendByName",
-    outputs: [
-      {
-        internalType: "contract IStorageBackend",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes4[]",
-        name: "interfaceFilters",
-        type: "bytes4[]"
-      }
-    ],
-    name: "getStorageBackends",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "contract IStorageBackend",
-            name: "storageBackend",
-            type: "address"
-          },
-          {
-            internalType: "string",
-            name: "name",
-            type: "string"
-          },
-          {
-            internalType: "string",
-            name: "title",
-            type: "string"
-          },
-          {
-            internalType: "string",
-            name: "version",
-            type: "string"
-          },
-          {
-            internalType: "bool",
-            name: "interfaceValid",
-            type: "bool"
-          }
-        ],
-        internalType: "struct IStorageBackendLibrary.IStorageBackendWithInfos[]",
-        name: "",
-        type: "tuple[]"
       }
     ],
     stateMutability: "view",
@@ -470,7 +706,7 @@ export const abi = [
                 type: "string"
               },
               {
-                internalType: "IVersionableWebsitePlugin[]",
+                internalType: "contract IVersionableWebsitePlugin[]",
                 name: "dependencies",
                 type: "address[]"
               },
@@ -529,6 +765,49 @@ export const abi = [
     inputs: [
       {
         internalType: "address",
+        name: "_owner",
+        type: "address"
+      },
+      {
+        internalType: "string",
+        name: "_topdomain",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "_domain",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "_domain2",
+        type: "string"
+      },
+      {
+        internalType: "contract OCWebsiteFactoryToken",
+        name: "_factoryToken",
+        type: "address"
+      },
+      {
+        internalType: "contract ClonableOCWebsite",
+        name: "_websiteImplementation",
+        type: "address"
+      },
+      {
+        internalType: "contract ClonableWebsiteVersionViewer",
+        name: "_websiteVersionViewerImplementation",
+        type: "address"
+      }
+    ],
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "owner",
         type: "address"
       },
@@ -550,11 +829,61 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [{
-      internalType: "string",
-      name: "subdomain",
-      type: "string"
-    }],
+    inputs: [
+      {
+        internalType: "string",
+        name: "subdomain",
+        type: "string"
+      }
+    ],
+    name: "isSubdomainValid",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      },
+      {
+        internalType: "string",
+        name: "",
+        type: "string"
+      }
+    ],
+    stateMutability: "pure",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "subdomain",
+        type: "string"
+      }
+    ],
+    name: "isSubdomainValidAndAvailable",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "result",
+        type: "bool"
+      },
+      {
+        internalType: "string",
+        name: "reason",
+        type: "string"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "subdomain",
+        type: "string"
+      }
+    ],
     name: "mintWebsite",
     outputs: [
       {
@@ -631,14 +960,34 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [
+    inputs: [],
+    name: "pendingOwner",
+    outputs: [
       {
-        internalType: "contract IVersionableWebsitePlugin",
-        name: "plugin",
+        internalType: "address",
+        name: "",
         type: "address"
       }
     ],
-    name: "removeWebsitePlugin",
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "proxiableUUID",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -715,12 +1064,12 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "_owner",
+        internalType: "contract OCWebsiteFactoryToken",
+        name: "_factoryToken",
         type: "address"
       }
     ],
-    name: "setOwner",
+    name: "setFactoryToken",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -733,7 +1082,7 @@ export const abi = [
         type: "address"
       }
     ],
-    name: "setWebsite",
+    name: "setFactoryWebsite",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -741,15 +1090,46 @@ export const abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
+        internalType: "contract ClonableOCWebsite",
+        name: "_websiteImplementation",
+        type: "address"
       }
     ],
-    name: "storageBackends",
+    name: "setWebsiteImplementation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IVersionableWebsitePlugin[]",
+        name: "_websiteAvailablePlugins",
+        type: "address[]"
+      },
+      {
+        internalType: "contract IVersionableWebsitePlugin[]",
+        name: "_newWebsiteDefaultPlugins",
+        type: "address[]"
+      }
+    ],
+    name: "setWebsitePlugins",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32"
+      }
+    ],
+    name: "subdomainNameHashToWebsite",
     outputs: [
       {
-        internalType: "contract IStorageBackend",
+        internalType: "contract OCWebsite",
         name: "",
         type: "address"
       }
@@ -852,8 +1232,14 @@ export const abi = [
     type: "function"
   },
   {
-    inputs: [],
-    name: "tokenSVGTemplate",
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256"
+      }
+    ],
+    name: "tokenURI",
     outputs: [
       {
         internalType: "string",
@@ -872,7 +1258,7 @@ export const abi = [
         type: "uint256"
       }
     ],
-    name: "tokenURI",
+    name: "tokenWeb3Address",
     outputs: [
       {
         internalType: "string",
@@ -930,6 +1316,37 @@ export const abi = [
     name: "transferFrom",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newImplementation",
+        type: "address"
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes"
+      }
+    ],
+    name: "upgradeToAndCall",
+    outputs: [],
+    stateMutability: "payable",
     type: "function"
   },
   {
@@ -991,6 +1408,38 @@ export const abi = [
         internalType: "uint256",
         name: "",
         type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract OCWebsite",
+        name: "",
+        type: "address"
+      }
+    ],
+    name: "websiteToSubdomain",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "websiteVersionViewerImplementation",
+    outputs: [
+      {
+        internalType: "contract ClonableWebsiteVersionViewer",
+        name: "",
+        type: "address"
       }
     ],
     stateMutability: "view",

@@ -5,7 +5,7 @@ import { hideBin } from 'yargs/helpers'
 import fs from 'fs'
 import path from 'path'
 import mime from 'mime';
-import { createWalletClient, http, publicActions, toBlobs, toHex, setupKzg, encodeFunctionData, getContract, formatEther } from 'viem'
+import { createWalletClient, createPublicClient, http, publicActions, toBlobs, toHex, setupKzg, encodeFunctionData, getContract, formatEther } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import * as viemChains from 'viem/chains'
 import { VersionableWebsiteClient } from './versionableWebsiteClient.js'
@@ -55,6 +55,20 @@ const y = yargs(hideBin(process.argv))
   )
   .command('list <chainId>',
     'List the OCWebsites owned by the wallet',
+    (yargs) => {
+      yargs.option('factory-address', {
+        type: 'string',
+        requiresArg: true,
+        description: "The factory contract address of the OCWebsite. Example: 0x1234567890abcdef1234567890abcdef12345678"
+      })
+      yargs.positional('chainId', {
+        type: 'number',
+        description: 'The chain id of the blockchain where to mint. Example: 10 (Optimism mainnet)'
+      })
+    }
+  )
+  .command('factory-infos <chainId>',
+    'Advanced: Show infos about the factory contract',
     (yargs) => {
       yargs.option('factory-address', {
         type: 'string',
@@ -175,9 +189,11 @@ if(args.web3Address == null) {
 // First handle the mint/list commands : they do not require an existing website as an argument
 //
 
-if(["mint", "list"].includes(args._[0])) {
-  // Ensure we have a private key
-  if(args.privateKey == null) {
+if(["mint", "list", "factory-infos"].includes(args._[0])) {
+  let requiresPrivateKey = ["mint", "list"].includes(args._[0])
+
+  // If necessary, ensure we have a private key
+  if(requiresPrivateKey && args.privateKey == null) {
     console.error("Private key is required.")
     process.exit(1)
   }
@@ -202,17 +218,26 @@ if(["mint", "list"].includes(args._[0])) {
   }
 
   // Prepare the viem client
-  const account = privateKeyToAccount(args.privateKey)
-  const viemClient = createWalletClient({
-    account,
-    chain: viemChain,
-    transport: http(rpcUrl)
-  }).extend(publicActions)
+  let viemClient = null
+  if(requiresPrivateKey) {
+    const account = privateKeyToAccount(args.privateKey)
+    viemClient = createWalletClient({
+      account,
+      chain: viemChain,
+      transport: http(rpcUrl)
+    }).extend(publicActions)
 
-  // Print the account address, and its balance
-  const accountAddress = account.address
-  const accountBalance = formatEther((await viemClient.getBalance({address: accountAddress})) / BigInt(10**13) * BigInt(10**13))
-  console.log("Wallet: " + chalk.bold(accountAddress) + " Balance: " + chalk.bold(accountBalance + " " + viemChain.nativeCurrency.symbol))
+    // Print the account address, and its balance
+    const accountAddress = account.address
+    const accountBalance = formatEther((await viemClient.getBalance({address: accountAddress})) / BigInt(10**13) * BigInt(10**13))
+    console.log("Wallet: " + chalk.bold(accountAddress) + " Balance: " + chalk.bold(accountBalance + " " + viemChain.nativeCurrency.symbol))
+  }
+  else {
+    viemClient = createPublicClient({
+      chain: viemChain,
+      transport: http(rpcUrl)
+    })
+  }
 
   await processCommand(args._[0], args, viemClient);
 

@@ -2,11 +2,12 @@ import chalk from "chalk";
 import readline from 'node:readline/promises';
 
 import { FactoryClient } from './factoryClient.js'
+import { getDeploymentAddressByChainId } from './deployments.js'
 
 async function processCommand(command, args, viemClient) {
 
   // Validate the factory address
-  let factoryAddress = args.factoryAddress || null
+  let factoryAddress = args.factoryAddress || getDeploymentAddressByChainId(viemClient.chain.id) || null
   // Later: we will ship a list of factory addresses
   if(factoryAddress == null) {
     console.error("Factory address is required.")
@@ -18,8 +19,10 @@ async function processCommand(command, args, viemClient) {
     process.exit(1)
   }
 
-  console.log("Factory: " + chalk.bold(factoryAddress) + " on chain " + chalk.bold(viemClient.chain.name) + " (id " + viemClient.chain.id + ")")
-  console.log("")
+  if(command != "factory-infos") {
+    console.log("Factory: " + chalk.bold(factoryAddress) + " on chain " + chalk.bold(viemClient.chain.name) + " (id " + viemClient.chain.id + ")")
+    console.log("")
+  }
 
   // Prepare the FactoryClient
   const factoryClient = new FactoryClient(viemClient, factoryAddress);
@@ -32,6 +35,10 @@ async function processCommand(command, args, viemClient) {
 
     case "list":
       await list(factoryClient, args)
+      break
+
+    case "factory-infos":
+      await factoryInfos(factoryClient, args)
       break
   }
 }
@@ -99,13 +106,17 @@ async function mint(factoryClient, args) {
 
 async function list(factoryClient, args) {
   // Fetch the list of minted websites
-  const websites = await factoryClient.detailedTokensOfOwner(factoryClient.viemClient().account.address);
+  const websites = await factoryClient.detailedTokensOfOwner(factoryClient.viemClient().account.address, 0, 0);
 
   // Display the list
   console.log("Minted websites:")
   websites.forEach(website => {
     console.log(chalk.bold(website.contractAddress) + " (token " + website.tokenId + " subdomain " + website.subdomain + ")")
   })
+}
+
+async function factoryInfos(factoryClient, args) {
+  console.log("Address: " + chalk.bold(factoryClient.address()))
 }
 
 export { processCommand };
