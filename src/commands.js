@@ -117,6 +117,10 @@ async function list(factoryClient, args) {
 
 async function factoryInfos(factoryClient, args) {
   console.log("Address: " + chalk.bold(factoryClient.address()))
+
+  const websiteAddress = await factoryClient.website()
+  console.log("Website: " + chalk.bold("web3://" + websiteAddress + (factoryClient.chain().id > 1 ? ":" + factoryClient.chain().id : "")))
+  // console.log("Website contract address: " + chalk.bold(websiteAddress))
 }
 
 export { processCommand };

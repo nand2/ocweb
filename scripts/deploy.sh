@@ -78,27 +78,6 @@ if [ "$TARGET_CHAIN" == "optimism" ]; then
 fi
 
 
-
-# Timestamp
-TIMESTAMP=$(date +%s)
-
-# Function to get the mime type of a file
-function get_file_mime_type {
-  # If file ends with .css, return text/css (the file command returns text/plain sometimes...
-  if [[ $1 == *.css ]]; then
-    echo "text/css"
-    return
-  fi
-  # If file ends with .js, return application/javascript (the file command returns application/octet-stream sometimes...
-  if [[ $1 == *.js ]]; then
-    echo "text/javascript"
-    return
-  fi
-  # Use the file command to get the mime type
-  file --brief --mime-type $1
-}
-
-
 # Preparing options for forge
 FORGE_SCRIPT_OPTIONS=
 if [ "$TARGET_CHAIN" == "local" ]; then
@@ -126,6 +105,12 @@ else
 fi
 
 
+# Non-hardhat chain: Ask for confirmation
+if [ "$TARGET_CHAIN" != "local" ]; then
+  echo "Please confirm that you want to deploy on $TARGET_CHAIN"
+  read -p "Press enter to continue"
+fi
+
 
 # Section contracts: Deploy the contracts
 if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
@@ -143,13 +128,6 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
       sleep 0.2
     done
   fi
-
-  # Optimism chain: Ask for confirmation
-  if [ "$TARGET_CHAIN" == "optimism" ]; then
-    echo "Please confirm that you want to deploy on Optimism"
-    read -p "Press enter to continue"
-  fi
-
 
   # Execute the forge script, copy the output for later processing
   exec 5>&1

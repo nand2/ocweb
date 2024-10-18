@@ -104,6 +104,11 @@ const y = yargs(hideBin(process.argv))
         array: true,
         default: []
       })
+      yargs.option('sync', {
+        type: 'boolean',
+        description: 'Remove files on the website that are not sent in the upload',
+        default: false
+      })
       yargs.positional('arguments', {
         type: 'string',
         description: 'The files or directories to upload, followed by the destination folder on the website. Examples: oweb upload ; ocweb upload ./folder ; ocweb upload ./img.jpg ; ocweb upload ./folder /remote-folder ; ocweb upload ./folder1 ./folder2 /remote-folder',

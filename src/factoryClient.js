@@ -41,6 +41,10 @@ class FactoryClient {
   async detailedTokensOfOwner(address, startIndex, count) {
     return await this.#viemWebsiteContract.read.detailedTokensOfOwner([address, startIndex, count])
   }
+
+  async website() {
+    return await this.#viemWebsiteContract.read.website()
+  }
   
 
 

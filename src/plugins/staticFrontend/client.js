@@ -124,11 +124,14 @@ class StaticFrontendPluginClient {
 
   /**
    * Prepare the addition of several files to a frontend websiteVersionIndex
-   * fileInfos: An array of objects with the following properties:
-   * - filePath: The path of the file, without leading /. E.g. "index.html", "assets/logo.png"
-   * - size: The size of the file
-   * - contentType: The content type of the file. E.g. "text/html", "image/png"
-   * - data: Uint8Array of the data of the file
+   * @param fileInfos: An array of objects with the following properties:
+   *   - filePath: The path of the file, without leading /. E.g. "index.html", "assets/logo.png"
+   *   - size: The size of the file
+   *   - contentType: The content type of the file. E.g. "text/html", "image/png"
+   *   - data: Uint8Array of the data of the file
+   * @param opts: An object with the following optional properties:
+   *   - includeRemoveTransactionsToSync: If true, the files that are not in the fileInfos array will 
+   *                                      be removed from the frontend.
    * @returns 2 arrays : 
    *          - One array of transactions to execute
    *            Each transaction is an object with the necessary fields to execute it
@@ -136,7 +139,12 @@ class StaticFrontendPluginClient {
    *            the transactions before executing them
    *          - One array of fileInfos that were skipped because they were already uploaded
    */
-  async prepareAddFilesTransactions(websiteVersionIndex, fileInfos) {
+  async prepareAddFilesTransactions(websiteVersionIndex, fileInfos, opts) {
+    // Default options
+    opts = opts || {
+      includeRemoveTransactionsToSync: false,
+    }
+
     // Get the website version
     const websiteVersion = await this.#viemWebsiteContract.read.getWebsiteVersion([websiteVersionIndex])
     // Get the live website version
@@ -356,6 +364,17 @@ class StaticFrontendPluginClient {
         args: [this.#websiteContractAddress, websiteVersionIndex, currentFileUploadInfos],
         metadata: { files: currentFileUploadInfosMetadata },
       })
+    }
+
+    // If the includeRemoveTransactionsToSync option is set, remove the files that are not in the fileInfos array
+    if(opts.includeRemoveTransactionsToSync) {
+      const filesToRemove = staticFrontend.files.filter(file => !fileInfos.find(fileInfo => fileInfo.filePath == file.filePath))
+      if(filesToRemove.length > 0) {
+        let renameFilesTransaction = await this.prepareRemoveFilesTransaction(websiteVersionIndex, filesToRemove.map(file => file.filePath))
+        // Add an empty metadata field
+        renameFilesTransaction.metadata = {}
+        transactions.push(renameFilesTransaction)
+      }
     }
 
     return { transactions, skippedFiles: skippedCompressedFilesInfos }

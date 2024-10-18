@@ -137,7 +137,7 @@ async function upload(staticFrontendPluginClient, websiteVersionIndex, staticFro
 
     // Content type detection
     let contentType = mime.getType(filePath.source.split('.').pop())
-    if(contentType == "") {
+    if(!contentType) {
       contentType = "application/octet-stream"
     }
 
@@ -150,18 +150,22 @@ async function upload(staticFrontendPluginClient, websiteVersionIndex, staticFro
   })
 
   // Prepare the upload transactions
-  const { transactions: uploadTransactions, skippedFiles } = await staticFrontendPluginClient.prepareAddFilesTransactions(websiteVersionIndex, fileInfos)
+  const { transactions: uploadTransactions, skippedFiles } = await staticFrontendPluginClient.prepareAddFilesTransactions(websiteVersionIndex, fileInfos, {
+    includeRemoveTransactionsToSync: args.sync,
+  })
 
   // Print about the transactions
   if(uploadTransactions.length > 0) {
-    console.log(chalk.bold("" + uploadTransactions.length + " transaction(s) will be needed") + " Uploading " + Math.round(uploadTransactions.reduce((acc, tx) => acc + (tx.metadata.sizeSent || tx.metadata.files.reduce((acc, file) => acc + file.sizeSent, 0)), 0) / 1024) + "KB")
+    console.log(chalk.bold("" + uploadTransactions.length + " transaction(s) will be needed") + " Uploading " + Math.round(uploadTransactions.reduce((acc, tx) => acc + (tx.metadata.sizeSent || tx.metadata.files && tx.metadata.files.reduce((acc, file) => acc + file.sizeSent, 0) || 0), 0) / 1024) + "KB")
     console.log();
     const txFunctionToLabel = {
       "addFiles": "Uploading files",
       "appendToFile": "Add data to file",
+      "removeFiles": "Removing files",
     }
     uploadTransactions.forEach((transaction, transactionIndex) => {
-      console.log(chalk.bold(`Transaction ${transactionIndex + 1}:` + (txFunctionToLabel[transaction.functionName] ? ` ${txFunctionToLabel[transaction.functionName]}` : "Unrecognized function")))
+      const functionNameForLogging = transaction.functionName == 'removeFiles' ? chalk.red(transaction.functionName) : transaction.functionName;
+      console.log(chalk.bold(`Transaction ${transactionIndex + 1}:` + (txFunctionToLabel[transaction.functionName] ? ` ${functionNameForLogging}` : "Unrecognized function")))
       
       if(transaction.functionName == "addFiles") {
         transaction.args[2].forEach((file, fileIndex) => {
@@ -182,6 +186,11 @@ async function upload(staticFrontendPluginClient, websiteVersionIndex, staticFro
       }
       else if(transaction.functionName == "appendToFile") {
         console.log("   " + chalk.bold(transaction.args[2]) + " +" + Math.round(transaction.metadata.sizeSent / 1024) + " KB (chunk " + (transaction.metadata.chunkId + 1) + "/" + transaction.metadata.chunksCount + ")")
+      }
+      else if(transaction.functionName == "removeFiles") {
+        transaction.args[2].forEach(file => {
+          console.log(" - " + chalk.bold(file))
+        })
       }
       console.log("")
     });
