@@ -20,6 +20,14 @@ class VersionableWebsiteClient {
     })
   }
 
+  chain() {
+    return this.#viemClient.chain
+  }
+
+  address() {
+    return this.#websiteContractAddress
+  }
+
   async prepareAddWebsiteVersionTransaction(description, pluginsCopiedFromFrontendVersionIndex) {
     return {
       functionName: 'addWebsiteVersion',

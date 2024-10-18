@@ -4,7 +4,7 @@ import readline from 'node:readline/promises';
 import { FactoryClient } from './factoryClient.js'
 import { getDeploymentAddressByChainId } from './deployments.js'
 
-async function processCommand(command, args, viemClient) {
+async function processFactoryCommand(command, args, viemClient) {
 
   // Validate the factory address
   let factoryAddress = args.factoryAddress || getDeploymentAddressByChainId(viemClient.chain.id) || null
@@ -123,4 +123,213 @@ async function factoryInfos(factoryClient, args) {
   // console.log("Website contract address: " + chalk.bold(websiteAddress))
 }
 
-export { processCommand };
+async function processCommand(command, args, websiteClient) {
+
+  // Command switch
+  switch(command) {
+    case "version-ls":
+      await versionLs(websiteClient, args)
+      break
+    
+    case "version-add":
+      await versionAdd(websiteClient, args)
+      break
+  }
+}
+
+async function versionLs(websiteClient, args) {
+  // Get the live website version
+  const liveWebsiteVersionInfos = await websiteClient.getLiveWebsiteVersion();
+
+  // Fetch the list of versions
+  const versions = await websiteClient.getWebsiteVersions(0, 0)
+
+  // Display the list
+  console.log("Versions:")
+  versions[0].forEach((version, index) => {
+    // Prepare the web3 address
+    const web3AddressChainPart = websiteClient.chain().id > 1 ? ":" + websiteClient.chain().id : ""
+    let web3Address = "";
+    if(index == liveWebsiteVersionInfos.websiteVersionIndex) {
+      web3Address = "web3://" + websiteClient.address() + web3AddressChainPart
+    } else if(version.isViewable) {
+      web3Address = "web3://" + version.viewer + web3AddressChainPart
+    }
+    else {
+      const web3AdressLength = "web3://".length + 42 + web3AddressChainPart.length
+      const labelToPrint = " not viewable "
+      const dashesToPrint = web3AdressLength - labelToPrint.length
+      const labelWithDashes = "-".repeat(Math.floor(dashesToPrint / 2)) + labelToPrint + "-".repeat(Math.ceil(dashesToPrint / 2))
+      web3Address = chalk.dim(labelWithDashes)
+    }
+
+    // Print it
+    let logEntry = index + "  " + web3Address + "  " + version.description
+    if(index == liveWebsiteVersionInfos.websiteVersionIndex) {
+      logEntry = chalk.bold(logEntry)
+    }
+    if(version.locked) {
+      logEntry += " " + chalk.bold("(locked)")
+    }
+    if(index == liveWebsiteVersionInfos.websiteVersionIndex) {
+      logEntry += " " + chalk.bold("(live)")
+    }
+    console.log(logEntry)
+  })
+}
+
+async function versionAdd(websiteClient, args) {
+  // Get the live website version
+  const liveWebsiteVersionInfos = await websiteClient.getLiveWebsiteVersion();
+
+  // Prepare the transaction
+  const transaction = await websiteClient.prepareAddWebsiteVersionTransaction(args.title, liveWebsiteVersionInfos.websiteVersionIndex);
+
+  // Ask for confirmation (if not requested to be skipped)
+  if(args.skipTxValidation == false) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    const confirmationAnswer = await rl.question("A transaction is about to be sent, which will cost some ETH. Do you confirm? (y/n) ");
+    rl.close();
+    if(confirmationAnswer != "y") {
+      console.log("Cancelled.")
+      process.exit(1)
+    }
+    console.log("")
+  }
+
+  // Execute the transaction (resimulate again, as time may have passed since the user confirmation)
+  let transactionHash = null
+  try {
+    transactionHash = await websiteClient.executeTransaction(transaction);
+    console.log("Transaction sent: " + transactionHash)
+  }
+  catch(e) {
+    console.error("Transaction failed:", e.shortMessage || e.message)
+    process.exit(1)
+  }
+
+  // Wait for the transaction receipt
+  let transactionReceipt = null
+  try {
+    transactionReceipt = await websiteClient.waitForTransactionReceipt(transactionHash);
+    console.log("Transaction confirmed")
+  }
+  catch(e) {
+    console.error("Transaction failed:", e.shortMessage || e.message)
+    process.exit(1)
+  }
+}
+
+async function processWebsiteVersionCommand(command, args, websiteClient, websiteVersionIndex) {
+  switch(command) {
+    case "version-set-live":
+      await versionSetLive(websiteClient, websiteVersionIndex, args)
+      break
+    
+    case "version-set-viewable":
+      await versionSetViewable(websiteClient, websiteVersionIndex, args)
+      break
+  }
+}
+
+async function versionSetLive(websiteClient, websiteVersionIndex, args) {
+  // Get the live website version
+  const liveWebsiteVersionInfos = await websiteClient.getLiveWebsiteVersion();
+  if(websiteVersionIndex == liveWebsiteVersionInfos.websiteVersionIndex) {
+    console.error("This version is already the live version")
+    return;
+  }
+
+  // Prepare the transaction
+  const transaction = await websiteClient.prepareSetLiveWebsiteVersionIndexTransaction(websiteVersionIndex);
+
+  // Ask for confirmation (if not requested to be skipped)
+  if(args.skipTxValidation == false) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    const confirmationAnswer = await rl.question("A transaction is about to be sent, which will cost some ETH. Do you confirm? (y/n) ");
+    rl.close();
+    if(confirmationAnswer != "y") {
+      console.log("Cancelled.")
+      process.exit(1)
+    }
+    console.log("")
+  }
+
+  // Execute the transaction (resimulate again, as time may have passed since the user confirmation)
+  let transactionHash = null
+  try {
+    transactionHash = await websiteClient.executeTransaction(transaction);
+    console.log("Transaction sent: " + transactionHash)
+  }
+  catch(e) {
+    console.error("Transaction failed:", e.shortMessage || e.message)
+    process.exit(1)
+  }
+
+  // Wait for the transaction receipt
+  let transactionReceipt = null
+  try {
+    transactionReceipt = await websiteClient.waitForTransactionReceipt(transactionHash);
+    console.log("Transaction confirmed")
+  }
+  catch(e) {
+    console.error("Transaction failed:", e.shortMessage || e.message)
+    process.exit(1)
+  }
+}
+
+async function versionSetViewable(websiteClient, websiteVersionIndex, args) {
+  // Get the live website version
+  const liveWebsiteVersionInfos = await websiteClient.getLiveWebsiteVersion();
+  if(websiteVersionIndex == liveWebsiteVersionInfos.websiteVersionIndex) {
+    console.warn("This version is the live version: it is always viewable. The updated viewer status will only have effect when another version is set as live.")
+  }
+  
+  // Prepare the transaction
+  const transaction = await websiteClient.prepareEnableViewerForWebsiteVersionTransaction(websiteVersionIndex, args.isViewable);
+
+  // Ask for confirmation (if not requested to be skipped)
+  if(args.skipTxValidation == false) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    const confirmationAnswer = await rl.question("A transaction is about to be sent, which will cost some ETH. Do you confirm? (y/n) ");
+    rl.close();
+    if(confirmationAnswer != "y") {
+      console.log("Cancelled.")
+      process.exit(1)
+    }
+    console.log("")
+  }
+
+  // Execute the transaction (resimulate again, as time may have passed since the user confirmation)
+  let transactionHash = null
+  try {
+    transactionHash = await websiteClient.executeTransaction(transaction);
+    console.log("Transaction sent: " + transactionHash)
+  }
+  catch(e) {
+    console.error("Transaction failed:", e.shortMessage || e.message)
+    process.exit(1)
+  }
+
+  // Wait for the transaction receipt
+  let transactionReceipt = null
+  try {
+    transactionReceipt = await websiteClient.waitForTransactionReceipt(transactionHash);
+    console.log("Transaction confirmed")
+  }
+  catch(e) {
+    console.error("Transaction failed:", e.shortMessage || e.message)
+    process.exit(1)
+  }
+}
+
+export { processFactoryCommand, processCommand, processWebsiteVersionCommand };

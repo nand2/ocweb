@@ -13,7 +13,7 @@ import { StaticFrontendPluginClient } from './plugins/staticFrontend/client.js'
 import readline from 'node:readline/promises';
 import chalk from "chalk";
 import { exit } from "process";
-import { processCommand } from "./commands.js";
+import { processFactoryCommand, processCommand, processWebsiteVersionCommand } from "./commands.js";
 import { processCommand as processStaticFrontendPluginCommand } from './plugins/staticFrontend/commands.js'
 
 const y = yargs(hideBin(process.argv))
@@ -78,6 +78,72 @@ const y = yargs(hideBin(process.argv))
       yargs.positional('chainId', {
         type: 'number',
         description: 'The chain id of the blockchain where to mint. Example: 10 (Optimism mainnet)'
+      })
+    }
+  )
+  .command('version-ls',
+    'List the versions of the OCWebsite',
+    (yargs) => {
+      yargs.option('web3-address', {
+        alias: 'a',
+        type: 'string',
+        requiresArg: true,
+        description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
+      })
+    }
+  )
+  .command('version-add [title]',
+    'Add a new version in the OCWebsite',
+    (yargs) => {
+      yargs.option('web3-address', {
+        alias: 'a',
+        type: 'string',
+        requiresArg: true,
+        description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
+      })
+      yargs.positional('title', {
+        type: 'string',
+        description: 'The title of the version',
+        default: ''
+      })
+    }
+  )
+  .command('version-set-live <website-version>',
+    'Set the live version of the OCWebsite',
+    (yargs) => {
+      yargs.option('web3-address', {
+        alias: 'a',
+        type: 'string',
+        requiresArg: true,
+        description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
+      })
+      yargs.positional('website-version', {
+        alias: 'w',
+        type: 'string',
+        requiresArg: true,
+        description: "The version number in your OCWebsite"
+      })
+    }
+  )
+  .command('version-set-viewable <isViewable>',
+    'Set the live version of the OCWebsite',
+    (yargs) => {
+      yargs.option('web3-address', {
+        alias: 'a',
+        type: 'string',
+        requiresArg: true,
+        description: "The web3:// address of the OCWebsite. Format: web3://<address>:<chain-id>. Example: web3://0x9bd03768a7DCc129555dE410FF8E85528A4F88b5:31337 (Environment variable: WEB3_ADDRESS)"
+      })
+      yargs.option('website-version', {
+        alias: 'w',
+        type: 'string',
+        requiresArg: true,
+        description: "The version number in your OCWebsite"
+      })
+      yargs.positional('isViewable', {
+        type: 'boolean',
+        description: 'Whether the version is viewable or not',
+        default: true
       })
     }
   )
@@ -244,7 +310,7 @@ if(["mint", "list", "factory-infos"].includes(args._[0])) {
     })
   }
 
-  await processCommand(args._[0], args, viemClient);
+  await processFactoryCommand(args._[0], args, viemClient);
 
   process.exit(0)
 }
@@ -254,14 +320,22 @@ if(["mint", "list", "factory-infos"].includes(args._[0])) {
 // Commands requiring an existing website
 //
 
-// Private key and web3 address are required
-if(args.privateKey == null || args.web3Address == null) { 
-  console.error("Private key and web3 address are required.")
+// web3 address is required
+if(args.web3Address == null) { 
+  console.error("Web3 address is required.")
   process.exit(1)
 }
 
-// Website version: Ensure it is "live" or a number
-if(args.websiteVersion != "live") {
+// Private key is required for some commands
+const requirePrivateKey = ["version-add", "version-set-live", "version-set-viewable", "upload", "ls", "rm"].includes(args._[0])
+if(requirePrivateKey && args.privateKey == null) {
+  console.error("Private key is required.")
+  process.exit(1)
+}
+
+// Website version: Ensure it is "live" or a number.
+const requireWebsiteVersion = ["version-set-live", "version-set-viewable", "upload", "ls", "rm"].includes(args._[0])
+if(requireWebsiteVersion && args.websiteVersion != "live") {
   const versionNumber = parseInt(args.websiteVersion)
   if(isNaN(versionNumber)) {
     console.error("Invalid website version. Please use 'live' or a number.")
@@ -298,17 +372,26 @@ if(args.rpc) {
 }
 
 // Prepare the viem client
-const account = privateKeyToAccount(args.privateKey)
-const viemClient = createWalletClient({
-  account,
-  chain: viemChain,
-  transport: http(rpcUrl)
-}).extend(publicActions)
+let viemClient = null
+if(requirePrivateKey) {
+  const account = privateKeyToAccount(args.privateKey)
+  viemClient = createWalletClient({
+    account,
+    chain: viemChain,
+    transport: http(rpcUrl)
+  }).extend(publicActions)
 
-// Print the account address, and its balance
-const accountAddress = account.address
-const accountBalance = formatEther((await viemClient.getBalance({address: accountAddress})) / BigInt(10**13) * BigInt(10**13))
-console.log("Wallet: " + chalk.bold(accountAddress) + " Balance: " + chalk.bold(accountBalance + " " + viemChain.nativeCurrency.symbol))
+  // Print the account address, and its balance
+  const accountAddress = account.address
+  const accountBalance = formatEther((await viemClient.getBalance({address: accountAddress})) / BigInt(10**13) * BigInt(10**13))
+  console.log("Wallet: " + chalk.bold(accountAddress) + " Balance: " + chalk.bold(accountBalance + " " + viemChain.nativeCurrency.symbol))
+}
+else {
+  viemClient = createPublicClient({
+    chain: viemChain,
+    transport: http(rpcUrl)
+  })
+}
 
 
 console.log("OCWebsite: " + chalk.bold(contractAddress) + " on chain " + chalk.bold(viemChain.name) + " (id " + viemChain.id + ")")
@@ -316,6 +399,17 @@ console.log("OCWebsite: " + chalk.bold(contractAddress) + " on chain " + chalk.b
 
 // Prepare the VersionableWebsiteClient
 const websiteClient = new VersionableWebsiteClient(viemClient, contractAddress);
+
+if(["version-ls", "version-add"].includes(args._[0])) {
+  console.log("")
+  await processCommand(args._[0], args, websiteClient);
+  process.exit(0)
+}
+
+
+//
+// Commands requiring an existing website and a website version
+//
 
 // Get the live website version
 const liveWebsiteVersionInfos = await websiteClient.getLiveWebsiteVersion();
@@ -327,6 +421,16 @@ const websiteVersionIndex = args.websiteVersion == "live" ? liveWebsiteVersionIn
 const websiteVersion = await websiteClient.getWebsiteVersion(websiteVersionIndex);
 
 console.log("Website version: " + chalk.bold(websiteVersionIndex) + chalk.bold(websiteVersionIndex == liveWebsiteVersionInfos.websiteVersionIndex ? " (live version)" : "") + (websiteVersion.locked ? " (locked)" : ""))
+
+if(["version-set-live", "version-set-viewable"].includes(args._[0])) {
+  console.log("")
+  await processWebsiteVersionCommand(args._[0], args, websiteClient, websiteVersionIndex);
+  process.exit(0)
+}
+
+//
+// Commands requiring an existing website, a website version and plugins
+//
 
 // Get the installed plugins
 const installedPlugins = await websiteClient.getFrontendVersionPlugins(websiteVersionIndex)
