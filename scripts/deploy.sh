@@ -12,7 +12,7 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
 fi
 # Section. Default to "all"
 SECTION=${2:-all}
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ] && [ "$SECTION" != "indep-ocweb-admin-plugin" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -251,26 +251,3 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
   cast send $INJECTED_VARIABLES_PLUGIN_ADDRESS "addVariable(address,uint,string,string)" $OCWEBSITE_FACTORY_FRONTEND_ADDRESS 0 ocwebsite-example "${OCWEBSITE_TOKEN_ID}:${CHAIN_ID}" --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
 fi
 
-# Separate command: Deploy the OCWebAdminPlugin
-if [ "$SECTION" == "indep-ocweb-admin-plugin" ]; then
-  # Fetch the address of the OCWebsiteFactoryFrontend
-  OCWEBSITEFACTORY_FRONTEND_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "InjectedVariablesPlugin" and .function == "addVariable(address,uint256,string,string)")][0].arguments[0]')
-
-  # Fetch the address of the injectedVariables plugin
-  INJECTED_VARIABLES_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "InjectedVariablesPlugin" and .transactionType == "CREATE")][0].contractAddress')
-
-  # Fetch the LibString address
-  LIBSTRINGS_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "LibStrings" and .transactionType == "CREATE2")][0].contractAddress')
-
-  echo "Creating OCWebAdminPlugin with args ($OCWEBSITEFACTORY_FRONTEND_ADDRESS, $INJECTED_VARIABLES_PLUGIN_ADDRESS) lib(LibStrings:$LIBSTRINGS_ADDRESS) ..."
-
-  FORGE_CREATE_OPTIONS=
-  if [ "$CHAIN_ID" != "31337" ]; then
-    FORGE_CREATE_OPTIONS="--verify"
-  fi
-  forge create --private-key $PRIVKEY $FORGE_CREATE_OPTIONS \
-  --libraries "contracts/src/library/LibStrings.sol:LibStrings:$LIBSTRINGS_ADDRESS" \
-  --constructor-args $OCWEBSITEFACTORY_FRONTEND_ADDRESS $INJECTED_VARIABLES_PLUGIN_ADDRESS \
-  --rpc-url $RPC_URL \
-  contracts/src/OCWebsite/plugins/OCWebAdminPlugin.sol:OCWebAdminPlugin
-fi
