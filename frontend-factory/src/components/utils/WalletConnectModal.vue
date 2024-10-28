@@ -17,6 +17,9 @@ const { connectors, connect } = useConnect({
       show.value = false;
       emit('connected');
     },
+    onError: (error) => {
+      console.error(error);
+    },
   },
 });
 

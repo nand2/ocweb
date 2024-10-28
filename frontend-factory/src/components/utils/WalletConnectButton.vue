@@ -12,6 +12,9 @@ const { connectors, connect } = useConnect({
     onSuccess: () => {
       showModal.value = false;
     },
+    onError: (error) => {
+      console.error(error);
+    },
   },
 });
 
