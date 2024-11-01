@@ -10,7 +10,7 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
   echo "Invalid target chain: $TARGET_CHAIN"
   exit 1
 fi
-# Section. Default to "all"
+# Section.
 SECTION=${2:-}
 if [ "$SECTION" != "factory-frontend-files" ]; then
   echo "Invalid section: $SECTION"

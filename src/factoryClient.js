@@ -45,6 +45,10 @@ class FactoryClient {
   async website() {
     return await this.#viemWebsiteContract.read.website()
   }
+
+  async getWebsitePlugins(interfaceFilters) {
+    return await this.#viemWebsiteContract.read.getWebsitePlugins([interfaceFilters])
+  }
   
 
 

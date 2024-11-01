@@ -120,7 +120,12 @@ async function factoryInfos(factoryClient, args) {
 
   const websiteAddress = await factoryClient.website()
   console.log("Website: " + chalk.bold("web3://" + websiteAddress + (factoryClient.chain().id > 1 ? ":" + factoryClient.chain().id : "")))
-  // console.log("Website contract address: " + chalk.bold(websiteAddress))
+  
+  const plugins = await factoryClient.getWebsitePlugins([]);
+  console.log("Default installed plugins:")
+  plugins.forEach(plugin => {
+    console.log("  " + chalk.bold(plugin.plugin) + " " + plugin.infos.name + " " + plugin.infos.version)
+  })
 }
 
 async function processCommand(command, args, websiteClient) {
