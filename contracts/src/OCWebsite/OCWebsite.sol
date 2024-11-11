@@ -12,7 +12,7 @@ import "./VersionableWebsite.sol";
 
 contract OCWebsite is VersionableWebsite {
     bytes4 public constant IVersionableWebsiteInterfaceId = type(IVersionableWebsite).interfaceId;
-    uint public constant IVersionableWebsiteInterfaceImplementationVersion = 1;
+    uint public constant IVersionableWebsiteInterfaceImplementationVersion = 2;
 
     constructor(ClonableWebsiteVersionViewer _websiteVersionViewerImplementation) VersionableWebsite(_websiteVersionViewerImplementation) {
     }

@@ -12,7 +12,7 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
 fi
 # Section.
 SECTION=${2:-}
-if [ "$SECTION" != "factory-frontend-files" ]; then
+if [ "$SECTION" != "factory-frontend-files" ] && [ "$SECTION" != "clonable-ocwebsite-implementation" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -171,4 +171,13 @@ if [ "$SECTION" == "factory-frontend-files" ]; then
   PRIVATE_KEY=$PRIVKEY \
   WEB3_ADDRESS=${OCWEBSITE_FACTORY_FRONTEND_WEB3_ADDRESS} \
   node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS version-set-live $WEBSITE_VERSION_INDEX
+fi
+
+# Update the CloneableOCWebsite implementation
+if [ "$SECTION" == "clonable-ocwebsite-implementation" ]; then
+  # Execute the forge script, copy the output for later processing
+  exec 5>&1
+  OUTPUT="$(TARGET_CHAIN=$TARGET_CHAIN \
+    OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITE_FACTORY_ADDRESS \
+    forge script UpdateFactoryClonableWebsiteScript --private-key ${PRIVKEY} --rpc-url ${RPC_URL}  $FORGE_SCRIPT_OPTIONS | tee >(cat - >&5))"
 fi
