@@ -12,7 +12,7 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
 fi
 # Section. Default to "all"
 SECTION=${2:-all}
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ] && [ "$SECTION" != "plugin-visualizevalue-mint" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -251,3 +251,47 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
   cast send $INJECTED_VARIABLES_PLUGIN_ADDRESS "addVariable(address,uint,string,string)" $OCWEBSITE_FACTORY_FRONTEND_ADDRESS 0 ocwebsite-example "${OCWEBSITE_TOKEN_ID}:${CHAIN_ID}" --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
 fi
 
+# Section plugin-visualizevalue-mint: Setup the visualizevalue-mint plugin
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-visualizevalue-mint" ]; then
+
+  # Checking if the plugin is present in an adjacent folder
+  # Compute the plugin root folder
+  EXPECTED_PLUGIN_LOCATION=$ROOT_FOLDER/../ocweb-visualizevalue-mint
+  echo "Checking the plugin-visualizevalue-mint folder at $EXPECTED_PLUGIN_LOCATION ..."
+  if [ ! -d "$EXPECTED_PLUGIN_LOCATION" ]; then
+    echo "The plugin-visualizevalue-mint folder is missing"
+    exit 1
+  fi
+  PLUGIN_ROOT=$(cd $EXPECTED_PLUGIN_LOCATION && pwd)
+  echo "Plugin root folder: $PLUGIN_ROOT"
+
+  # Fetch the address of the OCWebsiteFactory
+  OCWEBSITE_FACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "ERC1967Proxy" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebsiteFactory: $OCWEBSITE_FACTORY_ADDRESS"
+
+  # Fetch the address of the static frontend plugin
+  STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin" and .transactionType == "CREATE")][0].contractAddress')
+  echo "StaticFrontendPlugin: $STATIC_FRONTEND_PLUGIN_ADDRESS"
+
+  # Fetch the address of the OCWebAdminPlugin
+  OCWEB_ADMIN_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebAdminPlugin" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebAdminPlugin: $OCWEB_ADMIN_PLUGIN_ADDRESS"
+
+  # Deploying the plugin
+  cd $PLUGIN_ROOT
+  echo "Deploying the plugin..."
+  exec 5>&1
+  OUTPUT="$(
+    PRIVATE_KEY=$PRIVKEY \
+    RPC_URL=$RPC_URL \
+    CHAIN_ID=$CHAIN_ID \
+    OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITE_FACTORY_ADDRESS \
+    STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
+    OCWEB_ADMIN_PLUGIN_ADDRESS=$OCWEB_ADMIN_PLUGIN_ADDRESS \
+    ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY \
+    ./scripts/deploy.sh | tee >(cat - >&5))"
+  
+  # Extract the address of the deployed plugin
+  PLUGIN_VISUALIZEVALUE_MINT_ADDRESS=$(echo "$OUTPUT" | grep -oP 'Deployed to: \K0x\w+')
+  echo "Plugin VisualizeValue Mint address: $PLUGIN_VISUALIZEVALUE_MINT_ADDRESS"
+fi

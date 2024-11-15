@@ -8,7 +8,8 @@ import SettingsPlugin from './plugins/SettingsPlugin.vue';
 import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
 import AddressSettings from './settings/AddressSettings.vue';
 import DeveloperModeSettings from './settings/DeveloperModeSettings.vue';
-import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
+// import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
+// import AdminPanel from '../../../../../../ocweb-visualizevalue-mint/admin/src/components/AdminPanel.vue';
 import { store } from '../../../utils/store';
 import WebsiteVersionsSettings from './settings/WebsiteVersionsSettings.vue';
 
@@ -112,7 +113,7 @@ const pluginHardcodedSettings = computed(() => {
       :websiteVersionIndex
       :websiteClient
       :pluginsInfos="websiteVersionPlugins"
-      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" /> -->
+      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'visualizeValueMint')" /> -->
 
       <!-- <AdminSettingsPanel
       v-if="websiteVersionPluginsLoaded"
