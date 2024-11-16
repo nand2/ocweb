@@ -113,7 +113,7 @@ const pluginHardcodedSettings = computed(() => {
       :websiteVersionIndex
       :websiteClient
       :pluginsInfos="websiteVersionPlugins"
-      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'visualizeValueMint')" /> -->
+      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" /> -->
 
       <!-- <AdminSettingsPanel
       v-if="websiteVersionPluginsLoaded"
@@ -124,6 +124,16 @@ const pluginHardcodedSettings = computed(() => {
       :websiteClient
       :pluginsInfos="websiteVersionPlugins"
       :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" />  -->
+
+      <!-- <AdminPanel
+      v-if="websiteVersionPluginsLoaded"
+      :contractAddress 
+      :chainId 
+      :websiteVersion
+      :websiteVersionIndex
+      :websiteClient
+      :pluginsInfos="websiteVersionPlugins"
+      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'visualizeValueMint')" /> -->
 
       <div class="settings-item" v-if="websiteVersionsLoaded && websiteVersionsData.totalCount == 1">
         <WebsiteVersionsSettings
