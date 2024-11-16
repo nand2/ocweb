@@ -10,8 +10,10 @@ export const config = createConfig({
       appName: 'OCWeb.eth',
     }),
   ],
-  // Storage: By default use localStorage, which is broken on EVM Browser
-  storage: null,
+  // Storage: 
+  // If protocol is "web3:", use no storage (localStorage+cookies are broken in EVM browser)
+  // Otherwise use default localStorage storage
+  storage: window.location.protocol === 'web3:' ? null : undefined,
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
