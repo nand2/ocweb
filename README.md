@@ -1,4 +1,4 @@
-# web3://ocweb.eth
+# OCWebsite && web3://ocweb.eth
 
 `web3://ocweb.eth` ([HTTPS gateway link](https://ocweb.eth.eth.web3gateway.dev/)) is a [`web3://`](https://docs.web3url.io/) website which lets you mint OCWebsites.
 
