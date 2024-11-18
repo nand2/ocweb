@@ -76,6 +76,33 @@ Several plugins come pre-installed with a newly minted OCWebsite.
 
 ![](./assets/ocWebAdminPlugins.png)
 
+## Local deployment for development
+
+To build and deploy locally, you will need [Foundry](https://getfoundry.sh/).
+
+### Installation
+
+```bash
+git clone git@github.com:nand2/ocweb.git
+cd ocweb
+git submodule init
+git submodule update --init --recursive
+npm ci
+cp .env.example .env
+```
+
+Edit `.env`, add on `PRIVATE_KEY_LOCAL` the private key of the first account of anvil (the local dev blockchain of Foundry) (private key written when you run `anvil`).
+
+### Local deployment
+
+```bash
+./scripts/deploy.sh
+```
+
+It will output the `web3://` address of the factory website, to view with [EVM Browser](https://github.com/nand2/evm-browser) or with a [web3protocol-http-gateway](https://github.com/web3-protocol/web3protocol-http-gateway-js).
+
+Note: A `forge clean` (cleaning of the previously compiled contract) may be required (due to OpenZeppelin Upgrade script checks).
+
 ## Develop your own OCWebsite plugin
 
 A plugin must implement the [IVersionableWebsitePlugin interface](https://github.com/nand2/ocweb/blob/master/contracts/src/interfaces/IVersionableWebsite.sol). 
