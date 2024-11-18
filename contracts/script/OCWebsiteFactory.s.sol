@@ -208,7 +208,7 @@ contract OCWebsiteFactoryScript is Script {
             if(block.chainid > 1) {
                 web3FactoryAddress = string.concat(web3FactoryAddress, ":", vm.toString(block.chainid));
             }
-            console.log("web3:// factory: ", web3FactoryAddress);
+            // console.log("web3:// factory: ", web3FactoryAddress);
 
             // If local, point the domain to the factory website
             // if(targetChain == TargetChain.LOCAL) {
@@ -403,7 +403,7 @@ contract OCWebsiteFactoryScript is Script {
         }
         // Holesky && mainnet: Not there yet
 
-        console.log("EthStorage: ", vm.toString(address(ethStorageContract)));
+        // console.log("EthStorage: ", vm.toString(address(ethStorageContract)));
 
         return ethStorageContract;
     }
