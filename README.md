@@ -1,4 +1,4 @@
-# web3://ocweb.eth
+# OCWebsite && web3://ocweb.eth
 
 `web3://ocweb.eth` ([HTTPS gateway link](https://ocweb.eth.eth.web3gateway.dev/)) is a [`web3://`](https://docs.web3url.io/) website which lets you mint OCWebsites.
 
@@ -25,12 +25,40 @@ They are useful for both :
 ocweb [options] <command>
 
 Commands:
-  mint <chainId> <subdomain>  Mint a new OCWebsite on a blockchain
-  list <chainId>              List the OCWebsites owned by the wallet
-  upload [arguments..]        Upload a static frontend to the website. Require the Static Frontend plugin installed.
-  ls [folder]                 List the files in the static frontend
-  rm <files..>                Remove a file from the static frontend
+  ocweb mint <chainId> <subdomain>          Mint a new OCWebsite on a blockchain
+  ocweb list <chainId>                      List the OCWebsites owned by the wallet
+  ocweb factory-infos <chainId>             Advanced: Show infos about the factory contract
+  ocweb version-ls                          List the versions of the OCWebsite
+  ocweb version-add [title]                 Add a new version in the OCWebsite
+  ocweb version-set-live <website-version>  Set the live version of the OCWebsite
+  ocweb version-set-viewable <isViewable>   Set the live version of the OCWebsite
+  ocweb upload [arguments..]                Upload a static frontend to the website. Require the Static Frontend plugin installed.
+  ocweb ls [folder]                         List the files in the static frontend
+  ocweb rm <files..>                        Remove a file from the static frontend
+
+Options:
+      --help                Show help                                                                                              [boolean]
+      --version             Show version number                                                                                    [boolean]
+  -r, --rpc                 Override the default RPC provider URL. Example: https://your.provider.com/                              [string]
+  -k, --private-key         The private key of the wallet to use for signing transactions (Environment variable: PRIVATE_KEY)       [string]
+      --skip-tx-validation  Skip the validation prompt for transactions. WARNING: This will make you sign transactions right away. Use with
+                            caution.                                                                              [boolean] [default: false]
 ```
+
+### Example CLI use: Upload a static frontend
+
+Mint an OCWebsite, build your static frontend and execute the following command:
+
+```bash
+PRIVATE_KEY=0xabc...def \
+npx ocweb upload --web3-address web3://0xab...cd:10 dist/* / --sync
+```
+
+where:
+- `PRIVATE_KEY=0xabc...def` is the private key of the Ethereum account that will do the uploading. Must be the owner of the OCWebsite.
+- `web3://0xab...cd:10` is the `web3://` address of your OCWebsite
+- `dist/` is the folder containing your static frontend files
+- `--sync` is optional, and indicate that files that are on the OCWebsite, but not on the local `dist/*` folder, will be deleted. Useful for an update.
 
 ## OCWebsite versioning
 
