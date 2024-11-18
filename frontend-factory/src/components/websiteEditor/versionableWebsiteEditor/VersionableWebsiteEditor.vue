@@ -16,7 +16,7 @@ import GearIcon from '../../../icons/GearIcon.vue';
 import ChevronDownIcon from '../../../icons/ChevronDownIcon.vue';
 import PagesTab from './PagesTab.vue';
 import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
-import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
+// import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
 import { store } from '../../../utils/store';
 
 const props = defineProps({
