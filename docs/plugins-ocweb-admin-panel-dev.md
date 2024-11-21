@@ -27,7 +27,7 @@ The ["Theme About me" plugin](https://github.com/nand2/ocweb-theme-about-me) exp
 - Its [AdminPanel.vue](https://github.com/nand2/ocweb-theme-about-me/blob/master/admin/src/components/AdminPanel.vue) is the Vue component being exported.
 
 
-**How to develop and test** 
+## How to develop and test
 
 - Install [OCWeb](https://github.com/nand2/ocweb) locally.
 - Run the dev version of the OCWeb admin interface (via `npm run dev-factory`). Go to `http://localhost:5173/`.

@@ -61,7 +61,9 @@ Here is a basic example, ignoring the OCWebsite it comes from. It will answer to
 
 ### copyFrontendSettings()
 
-`function copyFrontendSettings(IVersionableWebsite website, uint fromWebsiteVersionIndex, uint toWebsiteVersionIndex) external;`
+```
+function copyFrontendSettings(IVersionableWebsite website, uint fromWebsiteVersionIndex, uint toWebsiteVersionIndex) external;
+```
 
 A better naming would have been `copyWebsiteVersionSettings`. This function is called when the plugin is requested to copy the plugin settings of a OCWebsite version to another. The main usecase is : When creating a new OCWebsite version, the user can choose to "copy" a version, a bit like forking. So each plugin is requested to copy his settings.
 
@@ -172,3 +174,15 @@ This is more complex :
  
 If you want to develop a admin panel for the OCWeb `Admin interface` plugin, please [follow this guide](./plugins-ocweb-admin-panel-dev.md)
 
+
+### rewriteWeb3Request()
+
+```
+function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams);
+```
+
+This method is not recommended to be used.
+
+This method allows you to make a internal redirect. But since this method is called in all plugins first (before the calls to `processWeb3Request()`), you could redirect even though another plugin was about to process the page.
+
+For traditional internal redirect (e.g. for javascript single page apps redirecting to `index.html` if the page is not found), it is advised to do it inside `processWeb3Request()`.
