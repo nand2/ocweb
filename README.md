@@ -114,6 +114,4 @@ Note: A `forge clean` (cleaning of the previously compiled contract) may be requ
 
 ## Develop your own OCWebsite plugin
 
-A plugin must implement the [IVersionableWebsitePlugin interface](https://github.com/nand2/ocweb/blob/master/contracts/src/interfaces/IVersionableWebsite.sol). 
-
-The ["Theme About Me" plugin](https://github.com/nand2/ocweb-theme-about-me) is an example of standalone plugin providing a theme, and an admin panel loaded in the OCWebsite admin interface.
+See the [plugin documentation](./docs/plugins.md)
