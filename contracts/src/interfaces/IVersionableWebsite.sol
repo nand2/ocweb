@@ -111,11 +111,11 @@ interface IVersionableWebsitePlugin is IERC165 {
     }
     function infos() external view returns (Infos memory);
 
-    function rewriteWeb3Request(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams);
+    function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams);
 
-    function processWeb3Request(IVersionableWebsite website, uint frontendIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
+    function processWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (uint statusCode, string memory body, KeyValue[] memory headers);
 
-    function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) external;
+    function copyFrontendSettings(IVersionableWebsite website, uint fromWebsiteVersionIndex, uint toWebsiteVersionIndex) external;
 }
 
 interface IVersionableWebsiteViewer is IDecentralizedApp {
