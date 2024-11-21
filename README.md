@@ -103,6 +103,15 @@ It will output the `web3://` address of the factory website, to view with [EVM B
 
 Note: A `forge clean` (cleaning of the previously compiled contract) may be required (due to OpenZeppelin Upgrade script checks).
 
+### Local developer server of web3://ocweb.eth
+
+`web3://ocweb.eth` is a Vite-based Vue project. To launch its developer server, 
+
+- Make a local deployment as explained in the previous section
+- At the end of the `./script/deploy.sh` output, note the address of the OCWebsiteFactory contract, and of the factory website.
+- Edit [variables.json](https://github.com/nand2/ocweb/blob/master/frontend-factory/public/variables.json): put the address of the OCWebsiteFactory in the `factory-hardhat` field (keeping the `:31337` at the end), and the address part (without `web3://`) of the factory website in the `self` field.
+- Run `npm run dev-factory`
+
 ## Develop your own OCWebsite plugin
 
 A plugin must implement the [IVersionableWebsitePlugin interface](https://github.com/nand2/ocweb/blob/master/contracts/src/interfaces/IVersionableWebsite.sol). 
