@@ -142,8 +142,9 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
   # echo "$OUTPUT" | grep "ENS registry:"
   echo ""
   echo "Web3 addresses:"
-  CONTRACTS_WEB3_ADDRESSES=$(echo "$OUTPUT" | grep "web3://")
-  echo "$CONTRACTS_WEB3_ADDRESSES"
+  LOG_CONTRACTS_WEB3_ADDRESSES=$(echo "$OUTPUT" | grep "web3://")
+  echo "$LOG_CONTRACTS_WEB3_ADDRESSES"
+  LOG_OCWEBSITEFACTORY_ADDRESS=$(echo "$OUTPUT" | grep "OCWebsiteFactory: ")
 
 fi
 
@@ -303,6 +304,6 @@ fi
 # Final logging : Display the web3:// address of the factory
 if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
   echo ""
-  echo "Web3 addresses:"
-  echo "$CONTRACTS_WEB3_ADDRESSES"
+  echo "$LOG_OCWEBSITEFACTORY_ADDRESS"
+  echo "$LOG_CONTRACTS_WEB3_ADDRESSES"
 fi
