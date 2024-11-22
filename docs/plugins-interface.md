@@ -80,7 +80,10 @@ contract MyPlugin is ERC165, IVersionableWebsitePlugin {
     function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
         require(address(website) == msg.sender);
 
-        settings[website][toFrontendIndex] = settings[website][fromFrontendIndex];
+        Settings storage config = settings[website][toFrontendIndex];
+        Settings storage fromConfig = settings[website][fromFrontendIndex];
+
+        config.rootPath = fromConfig.rootPath;
     }
 }
 
