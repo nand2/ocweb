@@ -11,8 +11,10 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
   exit 1
 fi
 # Section. Default to "all"
+# - all: Contracts + ocweb plugins + example OCWebsite
+# - all-with-plugins: Contracts + ocweb plugins + example OCWebsite + plugins from external folders
 SECTION=${2:-all}
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ] && [ "$SECTION" != "plugin-visualizevalue-mint" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "all-with-plugins" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ] && [ "$SECTION" != "plugin-visualizevalue-mint" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -113,7 +115,7 @@ fi
 
 
 # Section contracts: Deploy the contracts
-if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
+if [ "$SECTION" == "all" ] || "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "contracts" ]; then
 
   # Launch the OCWebsiteFactoryScript forge script
   echo ""
@@ -154,7 +156,7 @@ fi
 #
 
 # Section frontend-factory: Upload the factory frontend
-if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
+if [ "$SECTION" == "all" ] || "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "frontend-factory" ]; then
 
   # Build factory
   echo "Building factory frontend..."
@@ -176,7 +178,7 @@ fi
 
 
 # Section plugin-theme-about-me: Setup the ThemeAboutMePlugin
-if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
+if [ "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
 
   # Checking if the plugin is present in an adjacent folder
   # Compute the plugin root folder
@@ -255,7 +257,7 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
 fi
 
 # Section plugin-visualizevalue-mint: Setup the visualizevalue-mint plugin
-if [ "$SECTION" == "all" ] || [ "$SECTION" == "plugin-visualizevalue-mint" ]; then
+if [ "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "plugin-visualizevalue-mint" ]; then
 
   # Checking if the plugin is present in an adjacent folder
   # Compute the plugin root folder
@@ -302,7 +304,7 @@ fi
 
 
 # Final logging : Display the web3:// address of the factory
-if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "contracts" ]; then
   echo ""
   echo "$LOG_OCWEBSITEFACTORY_ADDRESS"
   echo "$LOG_CONTRACTS_WEB3_ADDRESSES"
