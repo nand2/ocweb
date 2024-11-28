@@ -10,6 +10,8 @@ import AddressSettings from './settings/AddressSettings.vue';
 import DeveloperModeSettings from './settings/DeveloperModeSettings.vue';
 // import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
 // import AdminPanel from '../../../../../../ocweb-visualizevalue-mint/admin/src/components/AdminPanel.vue';
+// import ContractSettingsPanel from '../../../../../../ocweb-plugin-starter-kit/admin/src/components/ContractSettingsPanel.vue';
+// import FileSettingsPanel from '../../../../../../ocweb-plugin-starter-kit/admin/src/components/FileSettingsPanel.vue';
 import { store } from '../../../utils/store';
 import WebsiteVersionsSettings from './settings/WebsiteVersionsSettings.vue';
 
@@ -104,6 +106,26 @@ const pluginHardcodedSettings = computed(() => {
       </div>
     </div>
     <div v-else-if="websiteVersionPluginsLoaded" class="settings">
+
+      <!-- <ContractSettingsPanel
+      v-if="websiteVersionPluginsLoaded"
+      :contractAddress 
+      :chainId 
+      :websiteVersion
+      :websiteVersionIndex
+      :websiteClient
+      :pluginsInfos="websiteVersionPlugins"
+      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'starterKit')" /> -->
+
+      <!-- <FileSettingsPanel
+      v-if="websiteVersionPluginsLoaded"
+      :contractAddress 
+      :chainId 
+      :websiteVersion
+      :websiteVersionIndex
+      :websiteClient
+      :pluginsInfos="websiteVersionPlugins"
+      :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'starterKit')" /> -->
 
       <!-- <AdminPanel
       v-if="websiteVersionPluginsLoaded"

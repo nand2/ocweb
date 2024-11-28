@@ -11,10 +11,8 @@ if [ "$TARGET_CHAIN" != "local" ] && [ "$TARGET_CHAIN" != "sepolia" ] && [ "$TAR
   exit 1
 fi
 # Section. Default to "all"
-# - all: Contracts + ocweb plugins + example OCWebsite
-# - all-with-plugins: Contracts + ocweb plugins + example OCWebsite + plugins from external folders
 SECTION=${2:-all}
-if [ "$SECTION" != "all" ] && [ "$SECTION" != "all-with-plugins" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ] && [ "$SECTION" != "plugin-visualizevalue-mint" ]; then
+if [ "$SECTION" != "all" ] && [ "$SECTION" != "contracts" ] && [ "$SECTION" != "frontend-factory" ] && [ "$SECTION" != "plugin-theme-about-me" ] && [ "$SECTION" != "example-ocwebsite" ] && [ "$SECTION" != "plugin-visualizevalue-mint" ]; then
   echo "Invalid section: $SECTION"
   exit 1
 fi
@@ -115,7 +113,7 @@ fi
 
 
 # Section contracts: Deploy the contracts
-if [ "$SECTION" == "all" ] || "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "contracts" ]; then
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
 
   # Launch the OCWebsiteFactoryScript forge script
   echo ""
@@ -151,12 +149,8 @@ if [ "$SECTION" == "all" ] || "$SECTION" == "all-with-plugins" ] || [ "$SECTION"
 fi
 
 
-#
-# Do the frontend uploads
-#
-
 # Section frontend-factory: Upload the factory frontend
-if [ "$SECTION" == "all" ] || "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "frontend-factory" ]; then
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "frontend-factory" ]; then
 
   # Build factory
   echo "Building factory frontend..."
@@ -177,55 +171,63 @@ if [ "$SECTION" == "all" ] || "$SECTION" == "all-with-plugins" ] || [ "$SECTION"
 fi
 
 
-# Section plugin-theme-about-me: Setup the ThemeAboutMePlugin
-if [ "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "plugin-theme-about-me" ]; then
+# Process all plugins to build
+if [ "$SECTION" == "all" ]; then
+  # Fetch the address of the OCWebsiteFactory
+  OCWEBSITE_FACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "ERC1967Proxy" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebsiteFactory: $OCWEBSITE_FACTORY_ADDRESS"
 
-  # Checking if the plugin is present in an adjacent folder
-  # Compute the plugin root folder
-  EXPECTED_PLUGIN_LOCATION=$ROOT_FOLDER/../ocweb-theme-about-me
-  echo "Checking the plugin-theme-about-me folder at $EXPECTED_PLUGIN_LOCATION ..."
-  if [ ! -d "$EXPECTED_PLUGIN_LOCATION" ]; then
-    echo "The plugin-theme-about-me folder is missing, skipping..."
-  else
-    
-    PLUGIN_ROOT=$(cd $EXPECTED_PLUGIN_LOCATION && pwd)
-    echo "Plugin root folder: $PLUGIN_ROOT"
+  # Fetch the address of the static frontend plugin
+  STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin" and .transactionType == "CREATE")][0].contractAddress')
+  echo "StaticFrontendPlugin: $STATIC_FRONTEND_PLUGIN_ADDRESS"
 
-    # Fetch the address of the OCWebsiteFactory
-    OCWEBSITE_FACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "ERC1967Proxy" and .transactionType == "CREATE")][0].contractAddress')
-    echo "OCWebsiteFactory: $OCWEBSITE_FACTORY_ADDRESS"
+  # Fetch the address of the OCWebAdminPlugin
+  OCWEB_ADMIN_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebAdminPlugin" and .transactionType == "CREATE")][0].contractAddress')
+  echo "OCWebAdminPlugin: $OCWEB_ADMIN_PLUGIN_ADDRESS"
 
-    # Fetch the address of the static frontend plugin
-    STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin" and .transactionType == "CREATE")][0].contractAddress')
-    echo "StaticFrontendPlugin: $STATIC_FRONTEND_PLUGIN_ADDRESS"
+  # OCWEB_PLUGINS_BUILD is a string containing a list of plugins to build, in the format
+  # "plugin-folder:add-to-factory-library-bool:add-to-default-plugins-bool", separated by a whitespace
+  # Explode OCWEB_PLUGINS_BUILD into an array
+  IFS=' ' read -r -a OCWEB_PLUGINS_BUILD <<<"$OCWEB_PLUGINS_BUILD"
+  for PLUGIN_BUILD in "${OCWEB_PLUGINS_BUILD[@]}"; do
+    PLUGIN_FOLDER=$(echo $PLUGIN_BUILD | cut -d: -f1)
+    ADD_TO_FACTORY_LIBRARY=$(echo $PLUGIN_BUILD | cut -d: -f2)
+    ADD_TO_DEFAULT_PLUGINS=$(echo $PLUGIN_BUILD | cut -d: -f3)
+    # Check if the plugin folder exists
+    EXPECTED_PLUGIN_LOCATION=$ROOT_FOLDER/../$PLUGIN_FOLDER
+    if [ ! -d "$EXPECTED_PLUGIN_LOCATION" ]; then
+      echo "The plugin $PLUGIN_FOLDER folder is missing, skipping..."
+    else
+      PLUGIN_ROOT=$(cd $EXPECTED_PLUGIN_LOCATION && pwd)
+      echo "Plugin root folder: $PLUGIN_ROOT"
 
-    # Fetch the address of the OCWebAdminPlugin
-    OCWEB_ADMIN_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebAdminPlugin" and .transactionType == "CREATE")][0].contractAddress')
-    echo "OCWebAdminPlugin: $OCWEB_ADMIN_PLUGIN_ADDRESS"
+      # Deploying the plugin
+      cd $PLUGIN_ROOT
+      echo "Deploying the plugin $PLUGIN_FOLDER..."
+      exec 5>&1
+      OUTPUT="$(
+        PRIVATE_KEY=$PRIVKEY \
+        RPC_URL=$RPC_URL \
+        CHAIN_ID=$CHAIN_ID \
+        OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITE_FACTORY_ADDRESS \
+        STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
+        OCWEB_ADMIN_PLUGIN_ADDRESS=$OCWEB_ADMIN_PLUGIN_ADDRESS \
+        ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY \
+        ./scripts/deploy.sh | tee >(cat - >&5))"
 
-    # Deploying the plugin
-    cd $PLUGIN_ROOT
-    echo "Deploying the plugin..."
-    exec 5>&1
-    OUTPUT="$(
-      PRIVATE_KEY=$PRIVKEY \
-      RPC_URL=$RPC_URL \
-      CHAIN_ID=$CHAIN_ID \
-      OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITE_FACTORY_ADDRESS \
-      STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
-      OCWEB_ADMIN_PLUGIN_ADDRESS=$OCWEB_ADMIN_PLUGIN_ADDRESS \
-      ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY \
-      ./scripts/deploy.sh | tee >(cat - >&5))"
-    
-    # Extract the address of the deployed plugin
-    PLUGIN_THEME_ABOUT_ME_ADDRESS=$(echo "$OUTPUT" | grep -oP 'Deployed to: \K0x\w+')
-    echo "Plugin Theme About Me address: $PLUGIN_THEME_ABOUT_ME_ADDRESS"
+      # Extract the address of the deployed plugin
+      PLUGIN_ADDRESS=$(echo "$OUTPUT" | grep -oP 'Deployed to: \K0x\w+')
+      echo "Plugin $PLUGIN_FOLDER address: $PLUGIN_ADDRESS"
 
-    # Add the plugin to the OCWebsiteFactory library, and as a default plugin
-    echo "Adding the plugin to the OCWebsiteFactory library..."
-    cast send $OCWEBSITE_FACTORY_ADDRESS "addWebsitePlugin(address,bool)()" $PLUGIN_THEME_ABOUT_ME_ADDRESS true --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
-  fi
+      # Add the plugin to the OCWebsiteFactory library, and as a default plugin
+      if [ "$ADD_TO_FACTORY_LIBRARY" == "true" ]; then
+        echo "Adding the plugin to the OCWebsiteFactory library..."
+        cast send $OCWEBSITE_FACTORY_ADDRESS "addWebsitePlugin(address,bool)()" $PLUGIN_ADDRESS $ADD_TO_DEFAULT_PLUGINS --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
+      fi
+    fi
+  done
 fi
+
 
 # Make a example OCWebsite, and add it as a variable to the factory
 if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
@@ -256,55 +258,9 @@ if [ "$SECTION" == "all" ] || [ "$SECTION" == "example-ocwebsite" ]; then
   cast send $INJECTED_VARIABLES_PLUGIN_ADDRESS "addVariable(address,uint,string,string)" $OCWEBSITE_FACTORY_FRONTEND_ADDRESS 0 ocwebsite-example "${OCWEBSITE_TOKEN_ID}:${CHAIN_ID}" --private-key ${PRIVKEY} --rpc-url ${RPC_URL}
 fi
 
-# Section plugin-visualizevalue-mint: Setup the visualizevalue-mint plugin
-if [ "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "plugin-visualizevalue-mint" ]; then
-
-  # Checking if the plugin is present in an adjacent folder
-  # Compute the plugin root folder
-  EXPECTED_PLUGIN_LOCATION=$ROOT_FOLDER/../ocweb-visualizevalue-mint
-  echo "Checking the plugin-visualizevalue-mint folder at $EXPECTED_PLUGIN_LOCATION ..."
-  if [ ! -d "$EXPECTED_PLUGIN_LOCATION" ]; then
-    echo "The plugin-visualizevalue-mint folder is missing, skipping..."
-  else
-
-    PLUGIN_ROOT=$(cd $EXPECTED_PLUGIN_LOCATION && pwd)
-    echo "Plugin root folder: $PLUGIN_ROOT"
-
-    # Fetch the address of the OCWebsiteFactory
-    OCWEBSITE_FACTORY_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "ERC1967Proxy" and .transactionType == "CREATE")][0].contractAddress')
-    echo "OCWebsiteFactory: $OCWEBSITE_FACTORY_ADDRESS"
-
-    # Fetch the address of the static frontend plugin
-    STATIC_FRONTEND_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "StaticFrontendPlugin" and .transactionType == "CREATE")][0].contractAddress')
-    echo "StaticFrontendPlugin: $STATIC_FRONTEND_PLUGIN_ADDRESS"
-
-    # Fetch the address of the OCWebAdminPlugin
-    OCWEB_ADMIN_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebAdminPlugin" and .transactionType == "CREATE")][0].contractAddress')
-    echo "OCWebAdminPlugin: $OCWEB_ADMIN_PLUGIN_ADDRESS"
-
-    # Deploying the plugin
-    cd $PLUGIN_ROOT
-    echo "Deploying the plugin..."
-    exec 5>&1
-    OUTPUT="$(
-      PRIVATE_KEY=$PRIVKEY \
-      RPC_URL=$RPC_URL \
-      CHAIN_ID=$CHAIN_ID \
-      OCWEBSITE_FACTORY_ADDRESS=$OCWEBSITE_FACTORY_ADDRESS \
-      STATIC_FRONTEND_PLUGIN_ADDRESS=$STATIC_FRONTEND_PLUGIN_ADDRESS \
-      OCWEB_ADMIN_PLUGIN_ADDRESS=$OCWEB_ADMIN_PLUGIN_ADDRESS \
-      ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY \
-      ./scripts/deploy.sh | tee >(cat - >&5))"
-    
-    # Extract the address of the deployed plugin
-    PLUGIN_VISUALIZEVALUE_MINT_ADDRESS=$(echo "$OUTPUT" | grep -oP 'Deployed to: \K0x\w+')
-    echo "Plugin VisualizeValue Mint address: $PLUGIN_VISUALIZEVALUE_MINT_ADDRESS"
-  fi
-fi
-
 
 # Final logging : Display the web3:// address of the factory
-if [ "$SECTION" == "all" ] || [ "$SECTION" == "all-with-plugins" ] || [ "$SECTION" == "contracts" ]; then
+if [ "$SECTION" == "all" ] || [ "$SECTION" == "contracts" ]; then
   echo ""
   echo "$LOG_OCWEBSITEFACTORY_ADDRESS"
   echo "$LOG_CONTRACTS_WEB3_ADDRESSES"
