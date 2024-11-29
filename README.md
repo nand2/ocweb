@@ -1,6 +1,10 @@
-# OCWebsite && web3://ocweb.eth
+# OCWeb
 
-`web3://ocweb.eth` ([HTTPS gateway link](https://ocweb.eth.eth.web3gateway.dev/)) is a [`web3://`](https://docs.web3url.io/) website which lets you mint OCWebsites.
+This repository contains : 
+
+- OCWebsite : The smart contracts to make an OCWebsite
+- ocweb : An CLI tool to interact with an OCWebsite
+- `web3://ocweb.eth` ([HTTPS gateway link](https://ocweb.eth.eth.web3gateway.dev/)) is a [`web3://`](https://docs.web3url.io/) website which lets you mint OCWebsites.
 
 ## ``web3://`` protocol
 
@@ -102,6 +106,22 @@ Edit `.env`, add on `PRIVATE_KEY_LOCAL` the private key of the first account of 
 It will output the `web3://` address of the factory website, to view with [EVM Browser](https://github.com/nand2/evm-browser) or with a [web3protocol-http-gateway](https://github.com/web3-protocol/web3protocol-http-gateway-js).
 
 Note: A `forge clean` (cleaning of the previously compiled contract) may be required (due to OpenZeppelin Upgrade script checks).
+
+### Add external plugins to the local deployment
+
+Clone the plugin repository in the same folder than the `ocweb` folder (so both `ocweb` and your plugin folder are in the same folder). Then edit your `.env` with:
+
+```
+OCWEB_PLUGINS_BUILD="<folder-name>:<is-added-to-ocweb-library-boolean>:<is-installed-by-default-boolean> ..."
+```
+
+Running `./scripts/deploy/sh` will then also build the plugin. As an example : 
+
+```
+OCWEB_PLUGINS_BUILD="ocweb-plugin-starter-kit:true:true"
+```
+
+This will build the [OCWebsite Starter Kit Plugin](https://github.com/nand2/ocweb-plugin-starter-kit), with it being added to the OCWeb library (`true`) and installed by default in a newly minted OCWebsite (`true`)
 
 ### Local developer server of web3://ocweb.eth
 
