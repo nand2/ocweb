@@ -6,6 +6,9 @@ A OCWebsite plugin is a smart contract which implements the [IVersionableWebsite
 
 See [the interface description](./plugins-interface.md).
 
+## Plugin starter kit
+
+The [OCWebsite Starter Kit Plugin](https://github.com/nand2/ocweb-plugin-starter-kit) is a template to help you make your OCWebsite plugin. Fork it, build it, and experiment with it.
 
 ## Existing plugins
 
