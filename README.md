@@ -1,6 +1,10 @@
-# OCWebsite && web3://ocweb.eth
+# OCWeb
 
-`web3://ocweb.eth` ([HTTPS gateway link](https://ocweb.eth.eth.web3gateway.dev/)) is a [`web3://`](https://docs.web3url.io/) website which lets you mint OCWebsites.
+This repository contains : 
+
+- OCWebsite : The smart contracts to make an OCWebsite
+- ocweb : An CLI tool to interact with an OCWebsite
+- `web3://ocweb.eth` ([HTTPS gateway link](https://ocweb.eth.eth.web3gateway.dev/)) is a [`web3://`](https://docs.web3url.io/) website which lets you mint OCWebsites.
 
 ## ``web3://`` protocol
 
