@@ -220,9 +220,9 @@ const removeItem = async (pluginAddress) => {
 
   <div v-if="isInstalled && (pluginSecondaryAdminPanels.length > 0 || pluginHasHardcodedSettings)" style="margin-top: 0.5em;">
 
-    <div v-if="showSecondaryConfigPanels" class="config-panel">
+    <div v-if="showSecondaryConfigPanels" class="config-panels">
       
-      <div v-for="panel in pluginSecondaryAdminPanels" style="margin-top: 0.75em;">
+      <div v-for="panel in pluginSecondaryAdminPanels"  class="config-panel">
         <!-- <div>
           {{ panel.panel.title }}
         </div> -->
@@ -324,9 +324,14 @@ const removeItem = async (pluginAddress) => {
   font-size: 0.8em;
 }
 
+.config-panels {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
 .config-panel {
+  padding-top: 1em;
   margin-top: 1em;
   border-top: 1px solid var(--color-divider-secondary);
-  margin-bottom: 1em;
 }
 </style>
