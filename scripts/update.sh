@@ -145,13 +145,15 @@ if [ "$SECTION" == "factory-frontend-files" ]; then
   WEB3_ADDRESS=${OCWEBSITE_FACTORY_FRONTEND_WEB3_ADDRESS} \
   node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS version-add "$NEW_VERSION_MESSAGE"
 
-  sleep 1
+  sleep 2
 
   # Get the number of the newly created version
   echo "Fetching the number of the new website version..."
   WEBSITE_VERSION_INDEX=$(WEB3_ADDRESS=${OCWEBSITE_FACTORY_FRONTEND_WEB3_ADDRESS} \
   node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS version-ls | tail -n1 | awk '{print $1}')
   echo "New website version number: $WEBSITE_VERSION_INDEX"
+
+  sleep 2
 
   # Make it viewable
   echo "Making the new website version viewable..."
