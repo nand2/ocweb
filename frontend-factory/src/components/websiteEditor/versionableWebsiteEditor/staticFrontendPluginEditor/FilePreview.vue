@@ -62,15 +62,29 @@ const fileCanBeDownloaded = computed(() => {
 // Fetch the config file content, when requested
 const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, props.pluginInfos.plugin, computed(() => props.websiteVersionIndex), computed(() => props.fileInfos), computed(() => fileCanBeDownloaded.value))
 
+// Determine if the file is text-editable
+const fileIsTextEditable = computed(() => {
+  return fileContentLoaded.value && (
+    props.fileInfos.contentType.startsWith("text/") ||
+    props.fileInfos.contentType.startsWith("application/json") ||
+    props.fileInfos.contentType.startsWith("application/xml") ||
+    props.fileInfos.contentType.startsWith("application/javascript") ||
+    props.fileInfos.contentType.startsWith("application/typescript") ||
+    props.fileInfos.contentType.startsWith("application/css") ||
+    props.fileInfos.contentType.startsWith("application/html") ||
+    props.fileInfos.contentType.startsWith("image/svg+xml")
+  )
+})
+
 // Editable text content of the file
 const decodeFileContentAsText = (fileContent) => {
   return fileContent ? new TextDecoder().decode(fileContent) : '';
 }
-const text = ref(fileContentLoaded.value && props.fileInfos.contentType.startsWith("text/") ? decodeFileContentAsText(fileContent.value) : "")
+const text = ref(fileContentLoaded.value && fileIsTextEditable.value ? decodeFileContentAsText(fileContent.value) : "")
 const originalText = ref(text.value)
 // When the file content is fetched, set the text
 watch(fileContent, (newValue) => {
-  if(props.fileInfos.contentType.startsWith("text/")) {
+  if(fileIsTextEditable.value) {
     text.value = decodeFileContentAsText(newValue)
     originalText.value = text.value
   }
@@ -201,7 +215,7 @@ const executePreparedAddFilesTransactions = async () => {
       Error loading the file content: {{ fileContentError.shortMessage || fileContentError.message }}
     </div>
     <div v-else-if="fileContentLoaded" class="preview-container">
-      <div v-if="fileInfos.contentType.startsWith('text/')">
+      <div v-if="fileIsTextEditable">
         <Suspense>
           <TextEditor 
             v-model:text="text" 
@@ -235,7 +249,7 @@ const executePreparedAddFilesTransactions = async () => {
         Download
       </button>
 
-      <button v-if="fileInfos.contentType.startsWith('text/')" @click="prepareAddFilesTransactions" :disabled="text == originalText || prepareAddFilesIsPending || addFilesIsPending">
+      <button v-if="fileIsTextEditable" @click="prepareAddFilesTransactions" :disabled="text == originalText || prepareAddFilesIsPending || addFilesIsPending">
         <span v-if="prepareAddFilesIsPending || addFilesIsPending">
           <SaveIcon class="anim-pulse" />
           Saving in progress...
