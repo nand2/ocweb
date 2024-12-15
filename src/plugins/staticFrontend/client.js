@@ -328,8 +328,12 @@ class StaticFrontendPluginClient {
               alreadyExists: fileInfo.alreadyExists,
             })
 
-            // More than 1 chunk? We finalize the addFiles batch
-            if(chunkSizes.length > 1) {
+            // More than 1 chunk? Or the current addFiles batch has more than 15 files?
+            // We finalize the addFiles batch
+            // (The 10 files limit is arbitrary: If too many files we end up with a too big transaction
+            // (had the case with 31 files), maybe ideally we should simulate the transaction up until
+            // everything fits in a tx)
+            if(chunkSizes.length > 1 || currentFileUploadInfos.length >= 15) {
               transactions.push({
                 functionName: 'addFiles',
                 args: [this.#websiteContractAddress, websiteVersionIndex, currentFileUploadInfos],
