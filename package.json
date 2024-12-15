@@ -1,6 +1,6 @@
 {
   "name": "ocweb",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "description": "Interacts with OCWebsites from web3://ocweb.eth",
   "main": "src/cli.js",
