@@ -172,6 +172,9 @@ contract OCWebsiteFactoryScript is Script {
             if(targetChain != TargetChain.HOLESKY) {
                 injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x94FeD796154344A96152d19c841073d9804Bf0b5), ":", LibStrings.toString(17000)));
             }
+            if(targetChain == TargetChain.LOCAL) {
+                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "oeth"), string.concat(LibStrings.toHexString(0x9fEB198ec07B31A9A34221c1AA53b71E0d38dA58), ":", LibStrings.toString(10)));
+            }
             // if(targetChain != TargetChain.SEPOLIA && targetChain != TargetChain.LOCAL) {
             //     injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "sep"), string.concat(LibStrings.toHexString(0x27D14546641278e8B097f3c7AbfC8e7609725f2F), ":", LibStrings.toString(11155111)));
             // }            
