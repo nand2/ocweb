@@ -9,9 +9,9 @@ import RemoteAsyncComponent from '../../utils/RemoteAsyncComponent.vue';
 import AddressSettings from './settings/AddressSettings.vue';
 import DeveloperModeSettings from './settings/DeveloperModeSettings.vue';
 // import AdminPanel from '../../../../../../ocweb-theme-about-me/admin/src/components/AdminPanel.vue';
-// import AdminPanel from '../../../../../../ocweb-visualizevalue-mint/admin/src/components/AdminPanel.vue';
+// import AdminPanel from '../../../../../../ocweb-visualizevalue-mint/admin/src/components/PrimaryAdminPanel.vue';
 // import ContractSettingsPanel from '../../../../../../ocweb-plugin-starter-kit/admin/src/components/ContractSettingsPanel.vue';
-// import FileSettingsPanel from '../../../../../../ocweb-plugin-starter-kit/admin/src/components/FileSettingsPanel.vue';
+// import FileSettingsPanel from '../../../../../../ocweb-visualizevalue-mint/admin/src/components/FileSettingsPanel.vue';
 import { store } from '../../../utils/store';
 import WebsiteVersionsSettings from './settings/WebsiteVersionsSettings.vue';
 
@@ -147,7 +147,7 @@ const pluginHardcodedSettings = computed(() => {
       :pluginsInfos="websiteVersionPlugins"
       :pluginInfos="websiteVersionPlugins.find(plugin => plugin.infos.name == 'themeAboutMe')" />  -->
 
-      <!-- <AdminPanel
+      <!-- <FileSettingsPanel
       v-if="websiteVersionPluginsLoaded"
       :contractAddress 
       :chainId 
