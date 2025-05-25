@@ -47,8 +47,14 @@ contract InjectedVariablesPlugin is ERC165, IVersionableWebsitePlugin {
         if(resource.length == 1 && LibStrings.compare(resource[0], "variables.json")) {
             // We output all the static contract addresses and ourselves
             // Manual JSON serialization, safe with the vars we encode
-            body = string.concat('{'
-                '"self":"', LibStrings.toHexString(address(website)), ':', LibStrings.toString(block.chainid), '"');
+            if(block.chainid == 1) {
+                body = string.concat('{'
+                    '"self":"', LibStrings.toHexString(address(website)), '"');
+            }
+            else {
+                body = string.concat('{'
+                    '"self":"', LibStrings.toHexString(address(website)), ':', LibStrings.toString(block.chainid), '"');
+            }
 
             KeyValueVariable[] memory injectedVariables = variables[website][websiteVersionIndex];
             for(uint i = 0; i < injectedVariables.length; i++) {
