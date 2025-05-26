@@ -94,7 +94,7 @@ const setIsViewable = async () => {
     </div>
     
     <div v-if="chainShortNames[chainId]" style="margin-top: 1em;">
-      <div style="font-size: 0.9em; font-weight: bold; margin-bottom: 0.4em">
+      <div style="font-size: 0.9em; font-weight: bold; margin-bottom: 0.2em">
         Using your own ENS domain name
       </div>
 
@@ -126,14 +126,33 @@ const setIsViewable = async () => {
     </div>
 
     <div class="text-90" style="font-weight: bold; margin-top: 1em;">
-      Using a <code>web3://</code> HTTPS gateway
+      Using a general purpose <code>web3://</code> HTTPS gateway
     </div>
-    <div>
+    <div style="margin-bottom: 0.2em">
       <code>https://{{ contractAddress }}.{{ chainId }}.<span class="text-muted">gateway-domain.tld</span></code>
     </div>
-    <div class="text-muted text-80">
-      Replace <code>gateway-domain.tld</code> with the domain of the HTTPS gateway you want to use.
+    <div class="text-90">
+      Known <code>web3://</code> gateways:
     </div>
+    <div>
+      <ul style="margin:0">
+        <li>
+          <code>
+            <a :href="`https://${contractAddress}.${chainId}.web3gateway.dev`" target="_blank">
+              https://{{ contractAddress }}.{{ chainId }}.web3gateway.dev
+            </a>
+          </code>
+        </li>
+      </ul>
+    </div>
+
+    <div class="text-90" style="font-weight: bold; margin-top: 1em; margin-bottom: 0.2em">
+      Using your own DNS domain name
+    </div>
+    <div class="text-90">
+      You can host your own <code>web3://</code> HTTPS gateway (such as <a href="https://github.com/web3-protocol/web3protocol-http-gateway-js" target="_blank">web3protocol-http-gateway</a>), and use your own <code>my-domain.tld</code> DNS domain name to point to it.
+    </div>
+
   </div>
 
   
