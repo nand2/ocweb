@@ -43,7 +43,7 @@ const factoryAddress = computed(() => contractAddresses.value?.factories.find(f 
 
 // Fetch the details of the token (contract address, subdomain, SVG)
 const { data: detailedToken, isSuccess: detailedTokenLoaded, error: detailedTokenError } = useQuery({
-  queryKey: ['OCWebsiteDetailedToken', factoryAddress, props.chainId, props.tokenId],
+  queryKey: ['OCWebsiteDetailedToken', factoryAddress, computed(() => props.chainId), props.tokenId],
   queryFn: async () => {
     const response = await fetch(`web3://${factoryAddress.value}:${props.chainId}/detailedToken/${props.tokenId}?returns=((uint256,address,string,string))`)
     if (!response.ok) {
