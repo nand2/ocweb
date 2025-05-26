@@ -163,48 +163,52 @@ contract OCWebsiteFactoryScript is Script {
                 factory.addWebsitePlugin(proxiedWebsitesPlugin, false);
             }
 
-            // Create a website from the factory, to use as frontend for the factory itself
-            OCWebsite factoryFrontend = factory.mintWebsite("factory");
+            // Factory frontend, and the admin plugin using it : for all but mainnet 
+            // (too expensive to deploy and update)
+            if(targetChain != TargetChain.MAINNET) {
+                // Create a website from the factory, to use as frontend for the factory itself
+                OCWebsite factoryFrontend = factory.mintWebsite("factory");
 
-            // Add the factory contract address to the frontend
-            injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
-            // Testing: Add hardcoded factory for sepolia && holesky
-            if(targetChain != TargetChain.HOLESKY) {
-                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x94FeD796154344A96152d19c841073d9804Bf0b5), ":", LibStrings.toString(17000)));
-            }
-            if(targetChain == TargetChain.LOCAL) {
-                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "oeth"), string.concat(LibStrings.toHexString(0x9fEB198ec07B31A9A34221c1AA53b71E0d38dA58), ":", LibStrings.toString(10)));
-            }
-            // if(targetChain != TargetChain.SEPOLIA && targetChain != TargetChain.LOCAL) {
-            //     injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "sep"), string.concat(LibStrings.toHexString(0x27D14546641278e8B097f3c7AbfC8e7609725f2F), ":", LibStrings.toString(11155111)));
-            // }            
+                // Add the factory contract address to the frontend
+                injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", getChainShortName(targetChain)), string.concat(LibStrings.toHexString(address(factory)), ":", LibStrings.toString(block.chainid)));
+                // Testing: Add hardcoded factory for sepolia && holesky
+                if(targetChain != TargetChain.HOLESKY) {
+                    injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "holesky"), string.concat(LibStrings.toHexString(0x94FeD796154344A96152d19c841073d9804Bf0b5), ":", LibStrings.toString(17000)));
+                }
+                if(targetChain == TargetChain.LOCAL) {
+                    injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "oeth"), string.concat(LibStrings.toHexString(0x9fEB198ec07B31A9A34221c1AA53b71E0d38dA58), ":", LibStrings.toString(10)));
+                }
+                // if(targetChain != TargetChain.SEPOLIA && targetChain != TargetChain.LOCAL) {
+                //     injectedVariablesPlugin.addVariable(factoryFrontend, 0, string.concat("factory-", "sep"), string.concat(LibStrings.toHexString(0x27D14546641278e8B097f3c7AbfC8e7609725f2F), ":", LibStrings.toString(11155111)));
+                // }            
 
-            // Set the website as the factory frontend
-            factory.setFactoryWebsite(factoryFrontend);
+                // Set the website as the factory frontend
+                factory.setFactoryWebsite(factoryFrontend);
 
-            // Add the admin plugin, which use the factory frontend as admin interface
-            {
-                // Admin plugin
-                OCWebAdminPlugin adminPlugin = new OCWebAdminPlugin(factory.website(), injectedVariablesPlugin);
-                factory.addWebsitePlugin(adminPlugin, true);
+                // Add the admin plugin, which use the factory frontend as admin interface
+                {
+                    // Admin plugin
+                    OCWebAdminPlugin adminPlugin = new OCWebAdminPlugin(factory.website(), injectedVariablesPlugin);
+                    factory.addWebsitePlugin(adminPlugin, true);
 
-                // Add the admin plugin to the factory frontend
-                IVersionableWebsite.WebsiteVersion memory websiteVersion = factoryFrontend.getWebsiteVersion(0);
-                factoryFrontend.addPlugin(0, adminPlugin, websiteVersion.pluginNodes.length);
+                    // Add the admin plugin to the factory frontend
+                    IVersionableWebsite.WebsiteVersion memory websiteVersion = factoryFrontend.getWebsiteVersion(0);
+                    factoryFrontend.addPlugin(0, adminPlugin, websiteVersion.pluginNodes.length);
+                }
+
+                console.log("OCWebsiteFactory frontend: ", address(factoryFrontend));
+                // Printing the web3:// address of the factory frontend
+                string memory web3FactoryWebsiteAddress = string.concat("web3://", vm.toString(address(factory.website())));
+                if(block.chainid > 1) {
+                    web3FactoryWebsiteAddress = string.concat(web3FactoryWebsiteAddress, ":", vm.toString(block.chainid));
+                }
+                console.log("web3:// factory website: ", web3FactoryWebsiteAddress);
             }
 
 
             console.log("OCWebsiteFactory: ", address(factory));
             // console.log("OCWebsiteFactoryToken: ", address(factoryToken));
-            console.log("OCWebsiteFactory frontend: ", address(factoryFrontend));
             // console.log("OCWebsite implementation: ", address(websiteImplementation));
-
-            // Printing the web3:// address of the factory frontend
-            string memory web3FactoryWebsiteAddress = string.concat("web3://", vm.toString(address(factory.website())));
-            if(block.chainid > 1) {
-                web3FactoryWebsiteAddress = string.concat(web3FactoryWebsiteAddress, ":", vm.toString(block.chainid));
-            }
-            console.log("web3:// factory website: ", web3FactoryWebsiteAddress);
 
             // Printing the web3:// address of the factory contract
             string memory web3FactoryAddress = string.concat("web3://", vm.toString(address(factory)));
