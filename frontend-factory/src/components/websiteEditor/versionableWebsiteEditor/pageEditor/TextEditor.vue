@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, shallowRef } from 'vue'
+import { ref, onMounted, watch, shallowRef, computed } from 'vue'
 const { default: markdownit } = await import('markdown-it')
 // import markdownit from 'markdown-it'
 const { basicSetup: codeMirrorBasicSetup, EditorView } = await import("codemirror")
@@ -140,6 +140,19 @@ const setFullscreen = (value) => {
 }
 
 const fullscreen = ref(false)
+
+const markdownedText = computed(() => {
+  if (props.contentType === 'text/markdown') {
+    const rendered = markdownitEngine.render(text.value);
+    // Because we could be run outside of the website (e.g. in the factory frontend), we need to 
+    // transform relative URLs to absolute URLs
+    return rendered.replace(
+      /src="\//g,
+      `src="web3://${props.contractAddress}:${props.chainId}/`
+    );
+  }
+  return null;
+});
 </script>
 
 <template>
@@ -163,7 +176,7 @@ const fullscreen = ref(false)
           <!-- Markdown editor goes here -->
         </div>
       </div>
-      <div class="preview" v-if="contentType == 'text/markdown'" v-html="markdownitEngine.render(text)">
+      <div class="preview" v-if="contentType == 'text/markdown'" v-html="markdownedText">
       </div>
     </div>
   </div>
