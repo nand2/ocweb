@@ -150,7 +150,7 @@ const setIsViewable = async () => {
       Using your own DNS domain name
     </div>
     <div class="text-90">
-      You can host your own <code>web3://</code> HTTPS gateway (such as <a href="https://github.com/web3-protocol/web3protocol-http-gateway-js" target="_blank">web3protocol-http-gateway</a>), and use your own <code>my-domain.tld</code> DNS domain name to point to it.
+      To access this website with <code style="font-weight: bold;">https://my-domain.tld</code>, you can host your own <code>web3://</code> HTTPS gateway (such as <a href="https://github.com/web3-protocol/web3protocol-http-gateway-js" target="_blank">web3protocol-http-gateway</a>), and point your DNS domain name to it.
     </div>
 
   </div>
