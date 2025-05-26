@@ -166,7 +166,7 @@ if [ "$SECTION" == "factory-frontend-files" ]; then
   PRIVATE_KEY=$PRIVKEY \
   WEB3_ADDRESS=${OCWEBSITE_FACTORY_FRONTEND_WEB3_ADDRESS} \
   node . --rpc $RPC_URL $OCWEB_CLI_EXTRA_ARGS --website-version $WEBSITE_VERSION_INDEX \
-  upload frontend-factory/dist/* / --sync --exclude 'frontend-factory/dist/variables.json' --exclude 'frontend-factory/dist/config/featured.yml'
+  upload frontend-factory/dist/* / --sync --exclude 'frontend-factory/dist/variables.json'
 
   # Set the new website version live
   echo "Setting the new website version live..."
