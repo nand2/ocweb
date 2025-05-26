@@ -4,6 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/vue-query'
 import TextEditor from './TextEditor.vue';
 
 import { useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from '../../../../../../src/plugins/staticFrontend/tanstack-vue';
+import SaveIcon from '../../../../icons/SaveIcon.vue';
 
 
 const emit = defineEmits(['editCancelled', 'pageSaved'])
@@ -225,7 +226,15 @@ const executePreparedAddFilesTransactions = async () => {
 
       <div class="buttons">
         <button @click="$emit('editCancelled')" :disabled="prepareAddFilesIsPending || addFilesIsPending">Cancel</button>
-        <button @click="prepareAddFilesTransactions" :disabled="nameIsValid == false ||  prepareAddFilesIsPending || addFilesIsPending">Save</button>
+        <button @click="prepareAddFilesTransactions" :disabled="nameIsValid == false ||  prepareAddFilesIsPending || addFilesIsPending">
+          <span v-if="prepareAddFilesIsPending || addFilesIsPending">
+            <SaveIcon class="anim-pulse" />
+            Saving in progress...
+          </span>
+          <span v-else>
+            Save
+          </span>
+        </button>
       </div>
       
     </div>
