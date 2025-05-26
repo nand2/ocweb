@@ -61,6 +61,10 @@ elif [ "$TARGET_CHAIN" == "optimism" ]; then
   PRIVKEY=$PRIVATE_KEY_OPTIMISM
   RPC_URL=https://mainnet.optimism.io/
   CHAIN_ID=10
+elif [ "$TARGET_CHAIN" == "mainnet" ]; then
+  PRIVKEY=$PRIVATE_KEY_MAINNET
+  RPC_URL=https://ethereum-rpc.publicnode.com
+  CHAIN_ID=1
 else
   echo "Not implemented yet"
   exit 1
@@ -97,6 +101,9 @@ elif [ "$TARGET_CHAIN" == "base" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   FORGE_SCRIPT_OPTIONS="--broadcast --verify --slow"
 elif [ "$TARGET_CHAIN" == "optimism" ]; then
+  # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
+  FORGE_SCRIPT_OPTIONS="--broadcast --verify --slow"
+elif [ "$TARGET_CHAIN" == "mainnet" ]; then
   # 0xAafA7E1FBE681de12D41Ef9a5d5206A96963390e
   FORGE_SCRIPT_OPTIONS="--broadcast --verify --slow"
 else
@@ -183,6 +190,9 @@ if [ "$SECTION" == "all" ]; then
 
   # Fetch the address of the OCWebAdminPlugin
   OCWEB_ADMIN_PLUGIN_ADDRESS=$(cat contracts/broadcast/OCWebsiteFactory.s.sol/${CHAIN_ID}/run-latest.json | jq -r '[.transactions[] | select(.contractName == "OCWebAdminPlugin" and .transactionType == "CREATE")][0].contractAddress')
+  if [ "$OCWEB_ADMIN_PLUGIN_ADDRESS" == "null" ]; then
+    OCWEB_ADMIN_PLUGIN_ADDRESS="0x0000000000000000000000000000000000000000"
+  fi
   echo "OCWebAdminPlugin: $OCWEB_ADMIN_PLUGIN_ADDRESS"
 
   # OCWEB_PLUGINS_BUILD is a string containing a list of plugins to build, in the format
