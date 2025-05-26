@@ -106,7 +106,7 @@ const pluginSecondaryAdminPanels = computed(() => {
     // Only the secondary panels
     .filter(panel => panel.panel.panelType == 1 /* Secondary */)
     // Either the panel is a module for ocWebAdmin, or it's not a module (will be iframed)
-    .filter(panel => panel.panel.moduleForGlobalAdminPanel == null || panel.panel.moduleForGlobalAdminPanel == ocWebAdminInstalledPlugin.value.plugin)
+    .filter(panel => panel.panel.moduleForGlobalAdminPanel == null || panel.panel.moduleForGlobalAdminPanel == "0x0000000000000000000000000000000000000000" || ocWebAdminInstalledPlugin.value && panel.panel.moduleForGlobalAdminPanel == ocWebAdminInstalledPlugin.value.plugin)
 })
 
 

@@ -56,7 +56,7 @@ const tokenSVGDataUrlForCSS = computed(() => {
 // Copy the web3 address to the clipboard
 const showCopiedIndicator = ref(false)
 function copyWeb3AddressToClipboard() {
-  navigator.clipboard.writeText(`web3://${props.contractAddress}:${props.chainId}`)
+  navigator.clipboard.writeText(`web3://${props.contractAddress}${props.chainId > 1 ? ':' + props.chainId : ''}`);
 
   // Show a success message
   showCopiedIndicator.value = true
@@ -96,7 +96,7 @@ const onClick = () => {
     <div class="ocwebsite-widget" @click="onClick">
       <div class="header">
         <a @click.stop.prevent="copyWeb3AddressToClipboard()" :class="{'web3-address': true, copied: showCopiedIndicator}">
-          web3://{{ contractAddress }}:{{ chainId }} 
+          web3://{{ contractAddress }}{{ chainId > 1 ? ':' + chainId : '' }}
           <CopyIcon />
           <span class="copy-indicator">
             Copied!

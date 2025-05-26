@@ -15,7 +15,11 @@ export const config = createConfig({
   // Otherwise use default localStorage storage
   storage: window.location.protocol === 'web3:' ? null : undefined,
   transports: {
-    [mainnet.id]: http(),
+    // Below RPCs are used, in the context of this website, for functions that :
+    // 1/ Do not require a wallet connection (so cannot use the wallet RPC)
+    // 2/ Is not provided by the web3:// protocol
+    // So that includes: Balance fetching, making some transactions
+    [mainnet.id]: http("https://ethereum-rpc.publicnode.com"), // Default (cloudflare) is having issues
     [sepolia.id]: http(),
     [holesky.id]: http(),
     [hardhat.id]: http(),
