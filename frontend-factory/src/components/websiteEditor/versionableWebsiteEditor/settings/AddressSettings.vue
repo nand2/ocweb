@@ -90,7 +90,7 @@ const setIsViewable = async () => {
       Default <code>web3://</code> address
     </div>
     <div>
-      <code>web3://{{ contractAddress }}{{ chainId > 1 ? ':' + chainId : '' }}</code>
+      <code style="word-break: break-all;">web3://{{ contractAddress }}{{ chainId > 1 ? ':' + chainId : '' }}</code>
     </div>
     
     <div v-if="chainShortNames[chainId]" style="margin-top: 1em;">
@@ -129,7 +129,7 @@ const setIsViewable = async () => {
       Using a general purpose <code>web3://</code> HTTPS gateway
     </div>
     <div style="margin-bottom: 0.2em">
-      <code>https://{{ contractAddress }}.{{ chainId }}.<span class="text-muted">gateway-domain.tld</span></code>
+      <code style="word-break: break-all;">https://{{ contractAddress }}.{{ chainId }}.<span class="text-muted">gateway-domain.tld</span></code>
     </div>
     <div class="text-90">
       Known <code>web3://</code> gateways:
@@ -137,7 +137,7 @@ const setIsViewable = async () => {
     <div>
       <ul style="margin:0">
         <li>
-          <code>
+          <code style="word-break: break-all;">
             <a :href="`https://${contractAddress}.${chainId}.web3gateway.dev`" target="_blank">
               https://{{ contractAddress }}.{{ chainId }}.web3gateway.dev
             </a>
