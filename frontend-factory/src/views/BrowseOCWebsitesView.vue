@@ -71,7 +71,7 @@ const startTokenId = computed(() => (page.value - 1) * numberPerPage)
 // Get the detailed tokens for the current page
 // (Prefetch all infos in one go, more efficient)
 const { data: ocWebsites, isSuccess: ocWebsitesLoaded } = useQuery({
-  queryKey: ['OCWebsiteList', browsedChainFactoryAddress, browsedChainId.value, startTokenId],
+  queryKey: ['OCWebsiteList', browsedChainFactoryAddress, browsedChainId, startTokenId],
   queryFn: async () => {
     const response = await fetch(`web3://${browsedChainFactoryAddress.value}:${browsedChainId.value}/detailedTokens/${startTokenId.value}/${numberPerPage}?returns=((uint256,address,string,string)[])`)
     if (!response.ok) {
